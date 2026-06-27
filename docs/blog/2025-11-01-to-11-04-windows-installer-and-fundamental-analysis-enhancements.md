@@ -1,7 +1,7 @@
 # Windows 安装器与基本面分析增强
 
 **日期**: 2025-11-01 至 2025-11-04  
-**作者**: TradingAgents-CN 开发团队  
+**作者**: TradingAgentsA 开发团队  
 **标签**: `Windows安装器` `便携版` `基本面分析` `总市值` `端口冲突` `LLM配置` `多平台打包`
 
 ---
@@ -164,10 +164,10 @@ class WindowsPortablePackager:
         # 创建 start.bat
         start_script = """@echo off
 chcp 65001 >nul
-title TradingAgents-CN 启动器
+title TradingAgentsA 启动器
 
 echo ========================================
-echo   TradingAgents-CN 绿色版启动器
+echo   TradingAgentsA 绿色版启动器
 echo ========================================
 echo.
 
@@ -224,10 +224,10 @@ call scripts\\stop.bat
         # 创建 stop.bat
         stop_script = """@echo off
 chcp 65001 >nul
-title TradingAgents-CN 停止器
+title TradingAgentsA 停止器
 
 echo ========================================
-echo   TradingAgents-CN 绿色版停止器
+echo   TradingAgentsA 绿色版停止器
 echo ========================================
 echo.
 
@@ -320,14 +320,14 @@ __pycache__/
 
 ```nsis
 ; scripts/windows_installer.nsi
-; TradingAgents-CN Windows 安装器脚本
+; TradingAgentsA Windows 安装器脚本
 
 !include "MUI2.nsh"
 
 ; 基本信息
-Name "TradingAgents-CN"
-OutFile "TradingAgents-CN-Setup.exe"
-InstallDir "$PROGRAMFILES64\TradingAgents-CN"
+Name "TradingAgentsA"
+OutFile "TradingAgentsA-Setup.exe"
+InstallDir "$PROGRAMFILES64\TradingAgentsA"
 RequestExecutionLevel admin
 
 ; 界面设置
@@ -357,15 +357,15 @@ Section "主程序" SecMain
     File /r "dist\windows-portable\*.*"
     
     ; 创建快捷方式
-    CreateDirectory "$SMPROGRAMS\TradingAgents-CN"
-    CreateShortcut "$SMPROGRAMS\TradingAgents-CN\TradingAgents-CN.lnk" "$INSTDIR\start.bat"
-    CreateShortcut "$DESKTOP\TradingAgents-CN.lnk" "$INSTDIR\start.bat"
+    CreateDirectory "$SMPROGRAMS\TradingAgentsA"
+    CreateShortcut "$SMPROGRAMS\TradingAgentsA\TradingAgentsA.lnk" "$INSTDIR\start.bat"
+    CreateShortcut "$DESKTOP\TradingAgentsA.lnk" "$INSTDIR\start.bat"
     
     ; 写入卸载信息
     WriteUninstaller "$INSTDIR\Uninstall.exe"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\TradingAgents-CN" \
-                     "DisplayName" "TradingAgents-CN"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\TradingAgents-CN" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\TradingAgentsA" \
+                     "DisplayName" "TradingAgentsA"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\TradingAgentsA" \
                      "UninstallString" "$INSTDIR\Uninstall.exe"
 SectionEnd
 
@@ -378,11 +378,11 @@ Section "Uninstall"
     RMDir /r "$INSTDIR"
     
     ; 删除快捷方式
-    Delete "$DESKTOP\TradingAgents-CN.lnk"
-    RMDir /r "$SMPROGRAMS\TradingAgents-CN"
+    Delete "$DESKTOP\TradingAgentsA.lnk"
+    RMDir /r "$SMPROGRAMS\TradingAgentsA"
     
     ; 删除注册表
-    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\TradingAgents-CN"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\TradingAgentsA"
 SectionEnd
 ```
 
@@ -429,7 +429,7 @@ def build_installer():
     
     if result.returncode == 0:
         print("✅ 安装器构建成功！")
-        print(f"📦 输出文件: TradingAgents-CN-Setup.exe")
+        print(f"📦 输出文件: TradingAgentsA-Setup.exe")
     else:
         print("❌ 安装器构建失败")
         print(result.stderr)
@@ -646,7 +646,7 @@ def kill_process_on_port(port: int) -> bool:
 def main():
     """主函数"""
     print("=" * 60)
-    print("  TradingAgents-CN 端口冲突检测")
+    print("  TradingAgentsA 端口冲突检测")
     print("=" * 60)
     print()
     
@@ -948,7 +948,7 @@ start.bat
 python scripts/build_installer.py
 
 # 2. 运行安装程序
-TradingAgents-CN-Setup.exe
+TradingAgentsA-Setup.exe
 
 # 3. 检查安装
 # - 桌面快捷方式

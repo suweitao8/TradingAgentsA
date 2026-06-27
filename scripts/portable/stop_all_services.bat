@@ -4,7 +4,7 @@ setlocal enabledelayedexpansion
 
 echo.
 echo ========================================
-echo   TradingAgents-CN Stop All Services
+echo   TradingAgentsA Stop All Services
 echo ========================================
 echo.
 

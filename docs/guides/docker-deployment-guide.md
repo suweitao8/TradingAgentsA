@@ -2,7 +2,7 @@
 
 ## 📋 概述
 
-TradingAgents-CN v0.1.7 引入了完整的Docker容器化部署方案，让您可以通过一条命令启动完整的股票分析环境。本指南将详细介绍如何使用Docker部署和管理TradingAgents-CN。
+TradingAgentsA v0.1.7 引入了完整的Docker容器化部署方案，让您可以通过一条命令启动完整的股票分析环境。本指南将详细介绍如何使用Docker部署和管理TradingAgentsA。
 
 ## 🎯 Docker部署优势
 
@@ -88,7 +88,7 @@ docker-compose --version
 ```bash
 # 克隆项目
 git clone https://github.com/hsliuping/TradingAgents-CN.git
-cd TradingAgents-CN
+cd TradingAgentsA
 
 # 检查版本
 cat VERSION
@@ -96,7 +96,7 @@ cat VERSION
 
 ### 📦 关于Docker镜像
 
-**重要说明**: TradingAgents-CN目前不提供预构建的Docker镜像，需要在本地构建。
+**重要说明**: TradingAgentsA目前不提供预构建的Docker镜像，需要在本地构建。
 
 #### 为什么需要本地构建？
 

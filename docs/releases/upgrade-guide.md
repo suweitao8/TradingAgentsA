@@ -1,8 +1,8 @@
-# 🔄 TradingAgents-CN 升级指南
+# 🔄 TradingAgentsA 升级指南
 
 ## 📋 概述
 
-本指南提供TradingAgents-CN各版本之间的升级方法，确保用户能够安全、顺利地升级到最新版本。
+本指南提供TradingAgentsA各版本之间的升级方法，确保用户能够安全、顺利地升级到最新版本。
 
 ## 🚀 v1.0.1 升级指南 (2026-04-14)
 
@@ -412,8 +412,8 @@ cp .env custom_config_backup.env
 
 ```bash
 # 创建新目录
-mkdir TradingAgents-CN-v0.1.7
-cd TradingAgents-CN-v0.1.7
+mkdir TradingAgentsA-v0.1.7
+cd TradingAgentsA-v0.1.7
 
 # 克隆最新版本
 git clone https://github.com/hsliuping/TradingAgents-CN.git .
@@ -627,4 +627,4 @@ docker-compose up -d
 
 *最后更新: 2025-07-13*
 *版本: cn-0.1.7*
-*维护团队: TradingAgents-CN开发团队*
+*维护团队: TradingAgentsA开发团队*

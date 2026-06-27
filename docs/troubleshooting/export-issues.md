@@ -2,7 +2,7 @@
 
 ## 🎯 概述
 
-本文档提供了TradingAgents-CN导出功能常见问题的详细解决方案，包括Word、PDF、Markdown导出的各种故障排除方法。
+本文档提供了TradingAgentsA导出功能常见问题的详细解决方案，包括Word、PDF、Markdown导出的各种故障排除方法。
 
 ## 📄 Word导出问题
 
@@ -89,7 +89,7 @@ docker exec TradingAgents-web python test_conversion.py
 ```bash
 # 重新构建Docker镜像
 docker-compose down
-docker build -t tradingagents-cn:latest . --no-cache
+docker build -t tradingagentsa:latest . --no-cache
 docker-compose up -d
 ```
 
@@ -157,7 +157,7 @@ docker-compose restart web
 
 ```bash
 # Docker环境已预配置，如有问题请重新构建
-docker build -t tradingagents-cn:latest . --no-cache
+docker build -t tradingagentsa:latest . --no-cache
 ```
 
 ## 📝 Markdown导出问题
@@ -244,7 +244,7 @@ docker-compose down
 docker system prune -f
 
 # 3. 重新构建镜像
-docker build -t tradingagents-cn:latest . --no-cache
+docker build -t tradingagentsa:latest . --no-cache
 
 # 4. 重新启动服务
 docker-compose up -d

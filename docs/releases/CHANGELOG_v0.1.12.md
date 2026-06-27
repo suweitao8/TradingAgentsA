@@ -1,4 +1,4 @@
-# TradingAgents-CN v0.1.12 更新日志
+# TradingAgentsA v0.1.12 更新日志
 
 ## 📅 版本信息
 
@@ -318,4 +318,4 @@ news_filter:
 
 ---
 
-**🌟 TradingAgents-CN v0.1.12 - 让AI新闻分析更智能！**
+**🌟 TradingAgentsA v0.1.12 - 让AI新闻分析更智能！**

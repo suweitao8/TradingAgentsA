@@ -34,7 +34,7 @@
 ```powershell
 # 1. 下载项目
 git clone https://github.com/hsliuping/TradingAgents-CN.git
-cd TradingAgents-CN
+cd TradingAgentsA
 
 # 2. 运行一键安装脚本
 powershell -ExecutionPolicy Bypass -File scripts/easy_install.ps1
@@ -55,7 +55,7 @@ powershell -ExecutionPolicy Bypass -File scripts/easy_install.ps1
 ```bash
 # 1. 下载项目
 git clone https://github.com/hsliuping/TradingAgents-CN.git
-cd TradingAgents-CN
+cd TradingAgentsA
 
 # 2. 运行一键安装脚本
 chmod +x scripts/easy_install.sh

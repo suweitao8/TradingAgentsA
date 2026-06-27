@@ -5,7 +5,7 @@ echo "🚀 TradingAgents Docker日志获取工具"
 echo "=================================="
 
 # 查找容器
-CONTAINER_NAMES=("tradingagents-data-service" "tradingagents_data-service_1" "data-service" "tradingagents-cn-data-service-1")
+CONTAINER_NAMES=("tradingagents-data-service" "tradingagents_data-service_1" "data-service" "tradingagentsa-data-service-1")
 CONTAINER=""
 
 for name in "${CONTAINER_NAMES[@]}"; do

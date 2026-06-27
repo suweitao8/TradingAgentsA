@@ -85,48 +85,38 @@ export const useNotificationStore = defineStore('notifications', () => {
       const authStore = useAuthStore()
       const token = authStore.token || localStorage.getItem('auth-token') || ''
       if (!token) {
-        console.warn('[WS] 未找到 token，无法连接 WebSocket')
         return
       }
 
       // WebSocket 连接地址
-      // 🔥 统一使用当前访问的服务器地址（开发环境通过 Vite 代理，生产环境通过 Nginx 代理）
+      // 统一使用当前访问的服务器地址（开发环境通过 Vite 代理，生产环境通过 Nginx 代理）
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
       const host = window.location.host
       const wsUrl = `${wsProtocol}//${host}/api/ws/notifications?token=${encodeURIComponent(token)}`
-
-      console.log('[WS] 连接到:', wsUrl)
 
       const socket = new WebSocket(wsUrl)
       ws.value = socket
 
       socket.onopen = () => {
-        console.log('[WS] 连接成功')
         wsConnected.value = true
         wsReconnectAttempts = 0
       }
 
       socket.onclose = (event) => {
-        console.log('[WS] 连接关闭:', event.code, event.reason)
         wsConnected.value = false
         ws.value = null
 
         // 自动重连
         if (wsReconnectAttempts < maxReconnectAttempts) {
           const delay = Math.min(1000 * Math.pow(2, wsReconnectAttempts), 30000)
-          console.log(`[WS] ${delay}ms 后重连 (尝试 ${wsReconnectAttempts + 1}/${maxReconnectAttempts})`)
-
           wsReconnectTimer = setTimeout(() => {
             wsReconnectAttempts++
             connectWebSocket()
           }, delay)
-        } else {
-          console.error('[WS] 达到最大重连次数，停止重连')
         }
       }
 
-      socket.onerror = (error) => {
-        console.error('[WS] 连接错误:', error)
+      socket.onerror = () => {
         wsConnected.value = false
       }
 
@@ -146,11 +136,8 @@ export const useNotificationStore = defineStore('notifications', () => {
 
   // 处理 WebSocket 消息
   function handleWebSocketMessage(message: any) {
-    console.log('[WS] 收到消息:', message)
-
     switch (message.type) {
       case 'connected':
-        console.log('[WS] 连接确认:', message.data)
         break
 
       case 'notification':
@@ -174,7 +161,7 @@ export const useNotificationStore = defineStore('notifications', () => {
         break
 
       default:
-        console.warn('[WS] 未知消息类型:', message.type)
+        break
     }
   }
 
@@ -196,13 +183,11 @@ export const useNotificationStore = defineStore('notifications', () => {
 
   // 🔥 连接 WebSocket
   function connect() {
-    console.log('[Notifications] 开始连接...')
     connectWebSocket()
   }
 
   // 🔥 断开 WebSocket
   function disconnect() {
-    console.log('[Notifications] 断开连接...')
     disconnectWebSocket()
   }
 

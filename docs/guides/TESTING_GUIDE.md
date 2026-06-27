@@ -11,7 +11,7 @@
 ```bash
 # 1. 克隆预览分支
 git clone -b feature/deepseek-v3-integration https://github.com/hsliuping/TradingAgents-CN.git
-cd TradingAgents-CN
+cd TradingAgentsA
 
 # 2. 创建虚拟环境
 python -m venv env

@@ -1,6 +1,6 @@
-# TradingAgents-CN Web应用启动脚本
+# TradingAgentsA Web应用启动脚本
 
-Write-Host "🚀 启动TradingAgents-CN Web应用..." -ForegroundColor Green
+Write-Host "🚀 启动TradingAgentsA Web应用..." -ForegroundColor Green
 Write-Host ""
 
 # 激活虚拟环境

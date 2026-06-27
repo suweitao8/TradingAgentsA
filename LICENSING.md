@@ -1,8 +1,8 @@
-# TradingAgents-CN 许可证说明
+# TradingAgentsA 许可证说明
 
 ## 📋 许可证概述
 
-TradingAgents-CN 项目采用**混合许可证策略**，不同组件使用不同的许可证：
+TradingAgentsA 项目采用**混合许可证策略**，不同组件使用不同的许可证：
 
 ## 🔓 开源组件 (Apache License 2.0)
 

@@ -22,7 +22,7 @@
 **✅ 官方唯一渠道**：
 - 📦 GitHub 仓库：https://github.com/hsliuping/TradingAgents-CN
 - 📧 官方邮箱：hsliup@163.com
-- 📱 微信公众号：TradingAgents-CN
+- 📱 微信公众号：TradingAgentsA
 
 如发现任何未经授权的商业使用，请通过上述渠道联系我们。
 
@@ -141,13 +141,13 @@
 - **[v1.0.1 使用手册](./docs/guides/v1.0.1-user-manual.md)**
 - **[v1.0.1 升级指南](./docs/releases/upgrade-guide.md)**
 - **[完整更新日志](./docs/releases/CHANGELOG.md)**
-- **[0、📘 TradingAgents-CN v1.0.0-preview 快速入门视频](https://www.bilibili.com/video/BV1i2CeBwEP7/?vd_source=5d790a5b8d2f46d2c10fd4e770be1594)**
+- **[0、📘 TradingAgentsA v1.0.0-preview 快速入门视频](https://www.bilibili.com/video/BV1i2CeBwEP7/?vd_source=5d790a5b8d2f46d2c10fd4e770be1594)**
 
-- **[1、📘 TradingAgents-CN v1.0.0-preview 使用指南](https://mp.weixin.qq.com/s/ppsYiBncynxlsfKFG8uEbw)**
-- **[2、📘 使用 Docker Compose 部署TradingAgents-CN v1.0.0-preview（完全版）](https://mp.weixin.qq.com/s/JkA0cOu8xJnoY_3LC5oXNw)**
+- **[1、📘 TradingAgentsA v1.0.0-preview 使用指南](https://mp.weixin.qq.com/s/ppsYiBncynxlsfKFG8uEbw)**
+- **[2、📘 使用 Docker Compose 部署TradingAgentsA v1.0.0-preview（完全版）](https://mp.weixin.qq.com/s/JkA0cOu8xJnoY_3LC5oXNw)**
 - **[3、📘 从 Docker Hub 更新 TradingAgents‑CN 镜像](https://mp.weixin.qq.com/s/WKYhW8J80Watpg8K6E_dSQ)**
-- **[4、📘 TradingAgents-CN v1.0.0-preview绿色版安装和升级指南](https://mp.weixin.qq.com/s/eoo_HeIGxaQZVT76LBbRJQ)**
-- **[5、📘 TradingAgents-CN v1.0.0-preview绿色版端口配置说明](https://mp.weixin.qq.com/s/o5QdNuh2-iKkIHzJXCj7vQ)**
+- **[4、📘 TradingAgentsA v1.0.0-preview绿色版安装和升级指南](https://mp.weixin.qq.com/s/eoo_HeIGxaQZVT76LBbRJQ)**
+- **[5、📘 TradingAgentsA v1.0.0-preview绿色版端口配置说明](https://mp.weixin.qq.com/s/o5QdNuh2-iKkIHzJXCj7vQ)**
 - **[6、📘 TradingAgents v1.0.0-preview 源码版安装手册（修订版）](https://mp.weixin.qq.com/s/cqUGf-sAzcBV19gdI4sYfA)**
 - **[7、📘 TradingAgents v1.0.0-preview 源码安装视频教程](https://www.bilibili.com/video/BV1FxCtBHEte/?vd_source=5d790a5b8d2f46d2c10fd4e770be1594)**
 
@@ -181,11 +181,11 @@
 
 #### 关注公众号
 
-1. **关注公众号**: 微信搜索 **"TradingAgents-CN"** 并关注
+1. **关注公众号**: 微信搜索 **"TradingAgentsA"** 并关注
 2. 公众号每天推送项目最新进展和使用教程
 
 
-- **微信公众号**: TradingAgents-CN（推荐）
+- **微信公众号**: TradingAgentsA（推荐）
 
   <img src="assets/wexin.png" alt="微信公众号" width="200"/>
 
@@ -260,7 +260,7 @@
 
 ### 🤝 社区贡献者致谢
 
-感谢所有为TradingAgents-CN项目做出贡献的开发者和用户！
+感谢所有为TradingAgentsA项目做出贡献的开发者和用户！
 
 详细的贡献者名单和贡献内容请查看：**[📋 贡献者名单](CONTRIBUTORS.md)**
 
@@ -330,7 +330,7 @@
 - **GitHub Issues**: [提交问题和建议](https://github.com/hsliuping/TradingAgents-CN/issues)
 - **邮箱**: hsliup@163.com
 - 项目ＱＱ群：1091917201
-- 项目微信公众号：TradingAgents-CN
+- 项目微信公众号：TradingAgentsA
 
   <img src="assets/wexin.png" alt="微信公众号" width="200"/>
 

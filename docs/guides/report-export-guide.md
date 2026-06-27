@@ -2,7 +2,7 @@
 
 ## 📋 概述
 
-TradingAgents-CN v0.1.7 引入了专业级的报告导出功能，支持将股票分析结果导出为Word、PDF、Markdown三种格式。本指南将详细介绍如何使用报告导出功能。
+TradingAgentsA v0.1.7 引入了专业级的报告导出功能，支持将股票分析结果导出为Word、PDF、Markdown三种格式。本指南将详细介绍如何使用报告导出功能。
 
 ## 🎯 导出功能特色
 
@@ -363,7 +363,7 @@ for symbol in symbols:
 crontab -e
 
 # 每日导出重要股票分析
-0 18 * * 1-5 cd /path/to/TradingAgents-CN && python scripts/daily_export.py
+0 18 * * 1-5 cd /path/to/TradingAgentsA && python scripts/daily_export.py
 ```
 
 ## 📈 最佳实践

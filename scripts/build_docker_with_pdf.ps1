@@ -1,5 +1,5 @@
 # Docker 镜像构建脚本（包含 PDF 导出支持）- PowerShell 版本
-# 用于构建支持 PDF 导出的 TradingAgents-CN Docker 镜像
+# 用于构建支持 PDF 导出的 TradingAgentsA Docker 镜像
 
 param(
     [switch]$Build,
@@ -230,7 +230,7 @@ function Start-WithCompose {
 function Show-Usage {
     Write-Host @"
 
-TradingAgents-CN Docker 构建脚本（PDF 导出支持）
+TradingAgentsA Docker 构建脚本（PDF 导出支持）
 
 用法:
     .\scripts\build_docker_with_pdf.ps1 [选项]

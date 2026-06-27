@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 简单股票分析演示
-展示如何快速使用TradingAgents-CN进行投资分析
+展示如何快速使用TradingAgentsA进行投资分析
 """
 
 import os
@@ -19,7 +19,7 @@ sys.path.insert(0, str(project_root))
 def quick_analysis_demo():
     """快速分析演示"""
     
-    logger.info(f"🚀 TradingAgents-CN 快速投资分析演示")
+    logger.info(f"🚀 TradingAgentsA 快速投资分析演示")
     logger.info(f"=")
     
     # 检查环境

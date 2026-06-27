@@ -1,6 +1,6 @@
-# TradingAgents-CN Portable Scripts
+# TradingAgentsA Portable Scripts
 
-This directory contains scripts for the TradingAgents-CN portable (green) version.
+This directory contains scripts for the TradingAgentsA portable (green) version.
 
 ## Files
 

@@ -30,7 +30,7 @@ def find_container():
         "tradingagents-data-service",
         "tradingagents_data-service_1",
         "data-service",
-        "tradingagents-cn-data-service-1"
+        "tradingagentsa-data-service-1"
     ]
     
     for name in possible_names:

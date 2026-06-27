@@ -2,12 +2,12 @@
 
 ## 🎯 软件性质
 
-TradingAgents-CN 采用**双许可证（混合许可证）模式**：
+TradingAgentsA 采用**双许可证（混合许可证）模式**：
 
 ### 许可证结构
 
 ```
-TradingAgents-CN/
+TradingAgentsA/
 ├── 🔓 Apache 2.0 开源组件
 │   ├── tradingagents/    # 核心交易智能体库
 │   ├── cli/              # 命令行工具
@@ -324,7 +324,7 @@ TradingAgents-CN/
 - 🎓 **学习**：促进知识传播
 - 🌍 **共享**：造福整个社区
 
-感谢您选择使用 TradingAgents-CN！
+感谢您选择使用 TradingAgentsA！
 
 ---
 

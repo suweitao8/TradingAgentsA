@@ -2,7 +2,7 @@
 
 ## 📋 概述
 
-本文档介绍如何配置TradingAgents-CN的开发环境，包括Docker映射配置和快速调试方法。
+本文档介绍如何配置TradingAgentsA的开发环境，包括Docker映射配置和快速调试方法。
 
 ## 🐳 Docker开发环境
 
@@ -140,7 +140,7 @@ docker exec TradingAgents-web head -10 /app/test_conversion.py
 docker-compose down
 
 # 2. 重新构建镜像
-docker build -t tradingagents-cn:latest .
+docker build -t tradingagentsa:latest .
 
 # 3. 启动生产环境（不使用volume映射）
 # 修改docker-compose.yml移除volume映射
@@ -247,7 +247,7 @@ docker-compose up -d
 
 3. **重新构建镜像**
    ```bash
-   docker build -t tradingagents-cn:latest .
+   docker build -t tradingagentsa:latest .
    ```
 
 4. **启动生产环境**

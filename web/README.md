@@ -1,4 +1,4 @@
-# TradingAgents-CN Web管理界面
+# TradingAgentsA Web管理界面
 
 基于Streamlit构建的TradingAgents Web管理界面，提供直观的股票分析体验。支持多种LLM提供商和AI模型，让您轻松进行专业的股票投资分析。
 
@@ -190,7 +190,7 @@ FINNHUB_API_KEY=your_finnhub_key
 # Reddit API（可选，用于社交媒体分析）
 REDDIT_CLIENT_ID=your_reddit_client_id
 REDDIT_CLIENT_SECRET=your_reddit_client_secret
-REDDIT_USER_AGENT=TradingAgents-CN/1.0
+REDDIT_USER_AGENT=TradingAgentsA/1.0
 ```
 
 ### 🤖 模型配置说明

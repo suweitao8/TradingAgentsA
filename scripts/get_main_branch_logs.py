@@ -30,7 +30,7 @@ def find_tradingagents_container():
         "TradingAgents-web",
         "tradingagents-web", 
         "tradingagents_web_1",
-        "tradingagents-cn_web_1"
+        "tradingagentsa_web_1"
     ]
     
     for name in container_names:

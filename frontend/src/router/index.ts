@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { nextTick } from 'vue'
-import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 import { ElMessage } from 'element-plus'
 import NProgress from 'nprogress'
@@ -10,9 +9,10 @@ import 'nprogress/nprogress.css'
 // 配置NProgress
 NProgress.configure({
   showSpinner: false,
-  minimum: 0.2,
+  minimum: 0.1,
   easing: 'ease',
-  speed: 500
+  speed: 200,
+  trickleSpeed: 100
 })
 
 // 路由配置
@@ -412,41 +412,17 @@ router.beforeEach(async (to, _from, next) => {
   // 开始进度条
   NProgress.start()
 
-  const authStore = useAuthStore()
   const appStore = useAppStore()
 
   // 设置页面标题
   const title = to.meta.title as string
   if (title) {
-    document.title = `${title} - TradingAgents-CN`
+    document.title = `${title} - TradingAgentsA`
   }
 
-  console.log('🚦 路由守卫检查:', {
-    path: to.fullPath,
-    name: to.name,
-    requiresAuth: to.meta.requiresAuth,
-    isAuthenticated: authStore.isAuthenticated,
-    hasToken: !!authStore.token
-  })
-
-  // 检查是否需要认证
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    console.log('🔒 需要认证但用户未登录:', {
-      path: to.fullPath,
-      requiresAuth: to.meta.requiresAuth,
-      isAuthenticated: authStore.isAuthenticated,
-      token: authStore.token ? '存在' : '不存在'
-    })
-    // 保存原始路径，登录后跳转
-    authStore.setRedirectPath(to.fullPath)
-    next('/login')
-    return
-  }
-
-
-
-  // 如果已登录且访问登录页，重定向到仪表板
-  if (authStore.isAuthenticated && to.name === 'Login') {
+  // 单用户本地部署模式：无需认证，直接放行所有路由
+  // 若误访问 /login，重定向到仪表板
+  if (to.name === 'Login') {
     next('/dashboard')
     return
   }

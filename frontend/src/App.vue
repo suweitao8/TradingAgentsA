@@ -4,17 +4,13 @@
     <NetworkStatus />
 
     <!-- 主要内容区域 -->
-    <router-view v-slot="{ Component, route }">
-      <transition
-        :name="(route?.meta?.transition as string) || 'fade'"
-        mode="out-in"
-        appear
-      >
-        <keep-alive :include="keepAliveComponents">
-          <component :is="Component" :key="route?.fullPath || 'default'" />
-        </keep-alive>
-      </transition>
-    </router-view>
+    <!--
+      注意：此处仅渲染顶层路由组件（BasicLayout / Login / 404 等）。
+      不对顶层 router-view 添加 transition / keep-alive / key，
+      否则在同布局页面间切换时，整个 BasicLayout（含侧边栏、顶栏）会被销毁重建，
+      造成"整页刷新"的视觉闪烁。页面过渡动画由 BasicLayout 内部的 router-view 负责。
+    -->
+    <router-view />
 
     <!-- 配置向导 -->
     <ConfigWizard
@@ -25,18 +21,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import NetworkStatus from '@/components/NetworkStatus.vue'
 import axios from 'axios'
 import { configApi } from '@/api/config'
-
-// 需要缓存的组件
-const keepAliveComponents = computed(() => [
-  'Dashboard',
-  'StockScreening',
-  'AnalysisHistory'
-])
 
 // 配置向导
 const showConfigWizard = ref(false)
@@ -157,7 +146,7 @@ const handleWizardComplete = async (data: any) => {
     localStorage.setItem('config_wizard_completed', 'true')
 
     ElMessage.success({
-      message: '配置完成！欢迎使用 TradingAgents-CN',
+      message: '配置完成！欢迎使用 TradingAgentsA',
       duration: 3000
     })
   } catch (error) {

@@ -4,7 +4,7 @@ Write-Host "🚀 TradingAgents Docker日志获取工具" -ForegroundColor Green
 Write-Host "==================================" -ForegroundColor Green
 
 # 查找容器
-$ContainerNames = @("tradingagents-data-service", "tradingagents_data-service_1", "data-service", "tradingagents-cn-data-service-1")
+$ContainerNames = @("tradingagents-data-service", "tradingagents_data-service_1", "data-service", "tradingagentsa-data-service-1")
 $Container = $null
 
 foreach ($name in $ContainerNames) {

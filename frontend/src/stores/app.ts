@@ -85,7 +85,7 @@ export const useAppStore = defineStore('app', {
     
     // 当前页面标题
     currentPageTitle(): string {
-      return this.currentRoute?.meta?.title as string || 'TradingAgents-CN'
+      return this.currentRoute?.meta?.title as string || 'TradingAgentsA'
     },
     
     // 应用信息
@@ -216,9 +216,7 @@ export const useAppStore = defineStore('app', {
       } catch (error) {
         const err = error as Error
         if (err.name === 'AbortError') {
-          console.warn('API连接检查超时')
-        } else {
-          console.warn('API连接检查失败:', err)
+          // 连接超时
         }
         this.setApiConnected(false)
         return false
@@ -246,12 +244,6 @@ export const useAppStore = defineStore('app', {
           this.setApiConnected(false)
         }
       } catch (error) {
-        const err = error as Error
-        if (err.name === 'AbortError') {
-          console.warn('获取API版本超时')
-        } else {
-          console.warn('获取API版本失败:', err)
-        }
         this.apiVersion = 'unknown'
         this.setApiConnected(false)
       }

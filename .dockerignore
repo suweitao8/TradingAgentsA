@@ -1,4 +1,4 @@
-# TradingAgents-CN Docker构建忽略文件
+# TradingAgentsA Docker构建忽略文件
 # 用于减小Docker镜像大小和加快构建速度
 #
 # 注意：此文件同时用于后端和前端镜像构建

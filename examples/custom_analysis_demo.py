@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 自定义股票分析演示
-展示如何使用TradingAgents-CN进行个性化投资分析
+展示如何使用TradingAgentsA进行个性化投资分析
 """
 
 import os
@@ -151,7 +151,7 @@ def analyze_stock_custom(symbol, analysis_focus="comprehensive"):
 def interactive_analysis():
     """交互式分析界面"""
     
-    logger.info(f"🚀 TradingAgents-CN 自定义股票分析工具")
+    logger.info(f"🚀 TradingAgentsA 自定义股票分析工具")
     logger.info(f"=")
     
     while True:
@@ -251,7 +251,7 @@ def batch_analysis_demo():
 def main():
     """主函数"""
     
-    logger.info(f"🚀 TradingAgents-CN 自定义分析演示")
+    logger.info(f"🚀 TradingAgentsA 自定义分析演示")
     logger.info(f"=")
     logger.info(f"选择运行模式:")
     logger.info(f"1. 交互式分析")

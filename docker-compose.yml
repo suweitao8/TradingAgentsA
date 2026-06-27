@@ -1,6 +1,6 @@
 version: '3.8'
 
-# TradingAgents-CN v1.0.0-preview Docker Compose配置
+# TradingAgentsA v1.0.0-preview Docker Compose配置
 # 支持前后端分离部署
 
 services:
@@ -127,7 +127,7 @@ services:
     container_name: tradingagents-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "6380:6379"
     environment:
       TZ: "Asia/Shanghai"
     command: redis-server --appendonly yes --requirepass tradingagents123

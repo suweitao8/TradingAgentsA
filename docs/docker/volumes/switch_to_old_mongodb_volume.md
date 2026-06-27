@@ -6,7 +6,7 @@
 
 | 项目 | 数据卷名称 | 状态 | 数据 |
 |------|-----------|------|------|
-| **当前运行的容器** | `tradingagents-cn_tradingagents_mongodb_data_v1` | ✅ 正在使用 | ❌ 空的（只有3个LLM配置） |
+| **当前运行的容器** | `tradingagentsa_tradingagents_mongodb_data_v1` | ✅ 正在使用 | ❌ 空的（只有3个LLM配置） |
 | **昨天使用的数据卷** | `tradingagents_mongodb_data` | ⚠️ 未使用 | ✅ **有完整数据**（15个LLM配置） |
 
 ### 数据卷内容对比
@@ -34,7 +34,7 @@
   - openrouter: google/gemini-2.0-flash-001
 ```
 
-#### 新数据卷 `tradingagents-cn_tradingagents_mongodb_data_v1`（空的）
+#### 新数据卷 `tradingagentsa_tradingagents_mongodb_data_v1`（空的）
 
 ```
 启用的 LLM: 3 个
@@ -340,7 +340,7 @@ echo "✅ 切换完成！"
 
 **关键点**：
 - ✅ 旧数据卷 `tradingagents_mongodb_data` 包含完整的配置数据（15个LLM）
-- ✅ 新数据卷 `tradingagents-cn_tradingagents_mongodb_data_v1` 是空的（只有3个LLM）
+- ✅ 新数据卷 `tradingagentsa_tradingagents_mongodb_data_v1` 是空的（只有3个LLM）
 - 🔧 解决方案：停止容器，使用旧数据卷重新启动
 - 📋 建议：统一所有 docker-compose 文件使用相同的数据卷名称
 

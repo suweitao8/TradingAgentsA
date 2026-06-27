@@ -81,7 +81,7 @@ docker images | findstr tradingagents
 docker-compose build --no-cache
 
 # 删除镜像重新构建
-docker rmi tradingagents-cn:latest
+docker rmi tradingagentsa:latest
 docker-compose up -d --build
 ```
 

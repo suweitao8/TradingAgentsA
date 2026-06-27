@@ -182,7 +182,7 @@ def check_disk_space() -> Tuple[bool, str]:
 
 def main():
     """主函数"""
-    print_header("🔍 TradingAgents-CN 系统诊断工具")
+    print_header("🔍 TradingAgentsA 系统诊断工具")
     
     print_info(f"项目目录: {project_root}")
     print()

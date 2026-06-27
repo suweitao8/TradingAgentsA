@@ -2,7 +2,7 @@
 
 ## 📋 概述
 
-TradingAgents-CN采用本地构建Docker镜像的方式，而不是提供预构建镜像。本文档详细说明了Docker镜像的构建过程、优化方法和常见问题解决方案。
+TradingAgentsA采用本地构建Docker镜像的方式，而不是提供预构建镜像。本文档详细说明了Docker镜像的构建过程、优化方法和常见问题解决方案。
 
 ## 🎯 为什么需要本地构建？
 
@@ -209,10 +209,10 @@ docker-compose build web
 time docker-compose build
 
 # 分析构建层
-docker history tradingagents-cn:latest
+docker history tradingagentsa:latest
 
 # 查看镜像大小
-docker images tradingagents-cn
+docker images tradingagentsa
 ```
 
 ### 资源使用监控
@@ -303,12 +303,12 @@ docker-compose build --no-cache && docker-compose up -d  # 完全重新构建
 
 ```bash
 # 为镜像打标签
-docker build -t tradingagents-cn:v0.1.7 .
-docker build -t tradingagents-cn:latest .
+docker build -t tradingagentsa:v0.1.7 .
+docker build -t tradingagentsa:latest .
 
 # 推送到私有仓库 (可选)
-docker tag tradingagents-cn:latest your-registry/tradingagents-cn:latest
-docker push your-registry/tradingagents-cn:latest
+docker tag tradingagentsa:latest your-registry/tradingagentsa:latest
+docker push your-registry/tradingagentsa:latest
 ```
 
 ### 3. 安全考虑
@@ -319,7 +319,7 @@ RUN adduser --disabled-password --gecos '' appuser
 USER appuser
 
 # 扫描安全漏洞
-docker scan tradingagents-cn:latest
+docker scan tradingagentsa:latest
 ```
 
 ## 🔮 未来优化方向

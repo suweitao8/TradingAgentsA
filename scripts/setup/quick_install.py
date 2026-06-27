@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-TradingAgents-CN 快速安装脚本
+TradingAgentsA 快速安装脚本
 自动检测环境并引导用户完成安装配置
 """
 
@@ -27,7 +27,7 @@ def print_colored(text, color=Colors.GREEN):
 def print_header():
     """打印欢迎信息"""
     print_colored("=" * 60, Colors.BLUE)
-    print_colored("🚀 TradingAgents-CN 快速安装向导", Colors.BOLD)
+    print_colored("🚀 TradingAgentsA 快速安装向导", Colors.BOLD)
     print_colored("=" * 60, Colors.BLUE)
     print()
 

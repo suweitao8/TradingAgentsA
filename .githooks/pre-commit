@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# Pre-commit hook: 主工作区分支保护
+#
+# 逻辑：
+#   - 在 worktree 内 → 放行
+#   - 在 main/master 主工作区 → 检查暂存文件：
+#       * 含代码文件（app/ tradingagents/ cli/ web/ scripts/ tests/ utils/ 下的 *.py，
+#         或 frontend/src/ 下的 *.vue/.ts/.js/.tsx/.jsx）→ 拦截
+#       * 只改配置/文档/规则文件 → 放行并提示
+#   - 其他分支 → 放行
+
+set -e
+
+# --- 判断是否在 worktree 内 ---
+in_worktree() {
+  local git_dir common_dir
+  git_dir=$(git rev-parse --git-dir 2>/dev/null) || return 1
+  common_dir=$(git rev-parse --git-common-dir 2>/dev/null) || return 1
+  [ "$git_dir" != "$common_dir" ]
+}
+
+# worktree 内直接放行
+if in_worktree; then
+  exit 0
+fi
+
+# --- 判断当前分支 ---
+branch=$(git branch --show-current 2>/dev/null || echo "")
+
+# 非 main/master 分支放行
+if [ "$branch" != "main" ] && [ "$branch" != "master" ]; then
+  exit 0
+fi
+
+# --- 在 main 主工作区：检查暂存文件是否含代码 ---
+# 代码文件路径前缀 + 后缀判定
+is_code_file() {
+  local f="$1"
+  case "$f" in
+    app/*)            [[ "$f" == *.py ]] && return 0 ;;
+    tradingagents/*)  [[ "$f" == *.py ]] && return 0 ;;
+    cli/*)            [[ "$f" == *.py ]] && return 0 ;;
+    web/*)            [[ "$f" == *.py ]] && return 0 ;;
+    scripts/*)        [[ "$f" == *.py ]] && return 0 ;;
+    tests/*)          [[ "$f" == *.py ]] && return 0 ;;
+    utils/*)          [[ "$f" == *.py ]] && return 0 ;;
+    frontend/src/*)   case "$f" in *.vue|*.ts|*.js|*.tsx|*.jsx) return 0 ;; esac ;;
+  esac
+  return 1
+}
+
+# 收集暂存的代码文件
+code_files=""
+while IFS= read -r f; do
+  if is_code_file "$f"; then
+    code_files="$code_files\n  $f"
+  fi
+done < <(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -n "$code_files" ]; then
+  echo "" >&2
+  echo "🚫 分支保护：禁止在 main 分支直接提交代码文件" >&2
+  echo "" >&2
+  echo "检测到代码文件：$code_files" >&2
+  echo "" >&2
+  echo "当前分支：$branch（主工作区）" >&2
+  echo "" >&2
+  echo "请使用隔离 worktree 开发：" >&2
+  echo "  1. git worktree add .worktrees/<task-name> -b feat/<task-name> main" >&2
+  echo "  2. cd .worktrees/<task-name>" >&2
+  echo "  3. 在分支内完成开发和提交" >&2
+  echo "  4. 合并回 main 并推送，然后删除 worktree" >&2
+  echo "" >&2
+  echo "（配置/文档/规则文件可在 main 上直接提交，代码文件不行）" >&2
+  echo "" >&2
+  exit 1
+fi
+
+# 只有配置/文档/规则文件 → 放行
+exit 0

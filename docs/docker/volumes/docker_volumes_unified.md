@@ -157,7 +157,7 @@ volumes:
 
 **作用**：
 - 告诉 Docker Compose 这个数据卷已经存在，不要创建新的
-- 避免 Docker Compose 自动添加项目名称前缀（例如 `tradingagents-cn_`）
+- 避免 Docker Compose 自动添加项目名称前缀（例如 `tradingagentsa_`）
 - 确保所有 docker-compose 文件使用同一个数据卷
 
 **对比**：
@@ -166,7 +166,7 @@ volumes:
 |------|---------------|
 | `name: tradingagents_mongodb_data` | `tradingagents_mongodb_data` |
 | `name: tradingagents_mongodb_data` + `external: true` | `tradingagents_mongodb_data` |
-| 不指定 `name` | `<项目名>_mongodb_data`（例如 `tradingagents-cn_mongodb_data`） |
+| 不指定 `name` | `<项目名>_mongodb_data`（例如 `tradingagentsa_mongodb_data`） |
 
 ---
 
@@ -178,8 +178,8 @@ volumes:
 |-----------|------|------|
 | `tradingagents_mongodb_data_v1` | ⚠️ 未使用 | 🗑️ 删除 |
 | `tradingagents_redis_data_v1` | ⚠️ 未使用 | 🗑️ 删除 |
-| `tradingagents-cn_tradingagents_mongodb_data_v1` | ⚠️ 未使用 | 🗑️ 删除 |
-| `tradingagents-cn_tradingagents_redis_data_v1` | ⚠️ 未使用 | 🗑️ 删除 |
+| `tradingagentsa_tradingagents_mongodb_data_v1` | ⚠️ 未使用 | 🗑️ 删除 |
+| `tradingagentsa_tradingagents_redis_data_v1` | ⚠️ 未使用 | 🗑️ 删除 |
 | 匿名数据卷（10+ 个） | ⚠️ 未使用 | 🗑️ 删除 |
 
 ### 保留的数据卷
@@ -225,8 +225,8 @@ docker volume rm tradingagents_mongodb_data_v1
 docker volume rm tradingagents_redis_data_v1
 
 # 删除带项目前缀的数据卷
-docker volume rm tradingagents-cn_tradingagents_mongodb_data_v1
-docker volume rm tradingagents-cn_tradingagents_redis_data_v1
+docker volume rm tradingagentsa_tradingagents_mongodb_data_v1
+docker volume rm tradingagentsa_tradingagents_redis_data_v1
 ```
 
 #### 步骤 3：清理匿名数据卷
@@ -282,10 +282,10 @@ docker-compose -f docker-compose.hub.yml up -d
 数据卷总数: 16 个
   - tradingagents_mongodb_data (有数据)
   - tradingagents_mongodb_data_v1 (空)
-  - tradingagents-cn_tradingagents_mongodb_data_v1 (空)
+  - tradingagentsa_tradingagents_mongodb_data_v1 (空)
   - tradingagents_redis_data (有数据)
   - tradingagents_redis_data_v1 (空)
-  - tradingagents-cn_tradingagents_redis_data_v1 (空)
+  - tradingagentsa_tradingagents_redis_data_v1 (空)
   - 10+ 个匿名数据卷
 ```
 
