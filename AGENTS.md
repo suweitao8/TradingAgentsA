@@ -15,19 +15,35 @@
 
 本项目所有任务由**会话工具独立完成**——开发、修 bug、重构、规则优化、查询，全部自己做，走 Superpowers 流程。所有会话工具共用本文件，工作流完全一致，不区分具体工具。
 
+### 项目级 Skills（`.agents/skills/`）
+
+以下技能安装在本项目 `.agents/skills/` 下，随 git 走，换机器/clone 后自动可用。按任务类型按需激活：
+
+| Skill | 来源 | 触发场景 | 说明 |
+|-------|------|---------|------|
+| `full-output-enforcement` | animcg 迁移 | 任何要求完整代码输出的任务 | 禁止占位符（`// ...`/`// TODO`），强制完整交付，token 超限时分片处理 |
+| `modern-python` | [trailofbits/skills](https://github.com/trailofbits/skills) | 新建 Python 项目/脚本、配置 ruff/pytest、工具链迁移 | uv/ruff/ty 现代工具链。**本项目当前用 pip+3.10，此 skill 作升级参考，勿擅自迁移** |
+| `fastapi-router-py` | [microsoft/skills](https://github.com/microsoft/skills) | 新建 FastAPI 路由、CRUD 端点、加鉴权 | 已适配本项目结构（`app/routers/`、MongoDB） |
+| `pydantic-models-py` | [microsoft/skills](https://github.com/microsoft/skills) | 定义 API 请求/响应 schema、Pydantic v2 模型 | 多模型模式（Base/Create/Update/Response/InDB），已适配 MongoDB |
+
+> 用户级 skills（`~/.agents/skills/`，37 个通用工作流 skill 如 tdd-workflow、systematic-debugging、git-workflow 等）全局可用，不在此重复列出。
+
 ### 任务路由（按需读取领域知识）
 
-| 任务关键词 | 必读 AGENTS.md 章节 | 按需读 docs/ 章节 |
-|------------|-------------------|-------------------------------|
-| 任何开发任务 | 全文（本文件精简版） | — |
-| 改 LLM 适配器/Provider | — | `docs/llm/`、`docs/technical/` |
-| 加/改数据源 | — | `docs/development/ADD_NEW_DATA_SOURCE.md`、`docs/data/` |
-| 改 MongoDB/数据库 | — | `docs/deployment/database/` |
-| 改配置/Settings | — | `docs/configuration/`、`docs/SETTINGS_MERGE.md` |
-| 前端 Vue/样式 | — | `docs/frontend/` |
-| 部署/Docker | — | `docs/deployment/`、`docs/BUILD_GUIDE.md` |
-| 上游同步 | — | `docs/maintenance/upstream-sync.md`、`docs/maintenance/manual-upstream-absorption-checklist.md` |
-| 写测试/验证 | 验证与收尾 | `docs/development/DEVELOPMENT_SETUP.md` |
+| 任务关键词 | 必读 AGENTS.md 章节 | 按需读 docs/ 章节 | 可用 Skill |
+|------------|-------------------|-------------------------------|-----------|
+| 任何开发任务 | 全文（本文件精简版） | — | `full-output-enforcement` |
+| 新建 FastAPI 路由/CRUD | — | — | `fastapi-router-py` |
+| 定义 API schema/Pydantic 模型 | — | — | `pydantic-models-py` |
+| 新建 Python 脚本/配 ruff/pytest | — | — | `modern-python`（升级参考，勿擅自迁移） |
+| 改 LLM 适配器/Provider | — | `docs/llm/`、`docs/technical/` | — |
+| 加/改数据源 | — | `docs/development/ADD_NEW_DATA_SOURCE.md`、`docs/data/` | — |
+| 改 MongoDB/数据库 | — | `docs/deployment/database/` | — |
+| 改配置/Settings | — | `docs/configuration/`、`docs/SETTINGS_MERGE.md` | — |
+| 前端 Vue/样式 | — | `docs/frontend/` | — |
+| 部署/Docker | — | `docs/deployment/`、`docs/BUILD_GUIDE.md` | — |
+| 上游同步 | — | `docs/maintenance/upstream-sync.md`、`docs/maintenance/manual-upstream-absorption-checklist.md` | — |
+| 写测试/验证 | 验证与收尾 | `docs/development/DEVELOPMENT_SETUP.md` | `modern-python`（testing.md） |
 
 ### 工作流硬规则（最高优先级）
 
