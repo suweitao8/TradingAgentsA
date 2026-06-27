@@ -1,4 +1,4 @@
-# TradingAgents-CN 详细安装配置指南
+# TradingAgentsA 详细安装配置指南
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
@@ -52,7 +52,7 @@
 ```bash
 # 1. 克隆项目
 git clone https://github.com/hsliuping/TradingAgents-CN.git
-cd TradingAgents-CN
+cd TradingAgentsA
 
 # 2. 复制环境配置
 cp .env.example .env
@@ -73,7 +73,7 @@ docker-compose up -d
 ```bash
 # 1. 克隆项目
 git clone https://github.com/hsliuping/TradingAgents-CN.git
-cd TradingAgents-CN
+cd TradingAgentsA
 
 # 2. 创建虚拟环境
 python -m venv env
@@ -162,7 +162,7 @@ docker run hello-world
 git clone https://github.com/hsliuping/TradingAgents-CN.git
 
 # 进入项目目录
-cd TradingAgents-CN
+cd TradingAgentsA
 
 # 查看项目结构
 ls -la
@@ -246,7 +246,7 @@ sudo ln -sf /usr/bin/pip3 /usr/bin/pip
 ```bash
 # 克隆项目
 git clone https://github.com/hsliuping/TradingAgents-CN.git
-cd TradingAgents-CN
+cd TradingAgentsA
 ```
 
 ### 步骤3：创建虚拟环境
@@ -767,4 +767,4 @@ pip install -r requirements.txt
 
 ---
 
-🎉 **恭喜！** 您已成功安装TradingAgents-CN。开始您的AI股票分析之旅吧！
+🎉 **恭喜！** 您已成功安装TradingAgentsA。开始您的AI股票分析之旅吧！

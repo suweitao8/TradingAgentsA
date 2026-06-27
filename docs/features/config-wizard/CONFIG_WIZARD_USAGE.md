@@ -8,7 +8,7 @@
 
 ## 📋 概述
 
-本文档介绍如何使用 TradingAgents-CN 的配置向导和配置验证功能，帮助用户快速完成系统配置。
+本文档介绍如何使用 TradingAgentsA 的配置向导和配置验证功能，帮助用户快速完成系统配置。
 
 ---
 
@@ -48,7 +48,7 @@
 
 ```bash
 # 启动后端服务
-cd TradingAgents-CN
+cd TradingAgentsA
 .\.venv\Scripts\python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 # 启动前端服务（新终端）
@@ -370,7 +370,7 @@ GET /api/system/config/validate
 - **配置错误定位**: 从查看日志 → 可视化显示 (+80%)
 - **用户体验**: 从复杂 → 简单友好 (+100%)
 
-开始使用 TradingAgents-CN，享受智能股票分析的乐趣！🚀
+开始使用 TradingAgentsA，享受智能股票分析的乐趣！🚀
 
 ---
 

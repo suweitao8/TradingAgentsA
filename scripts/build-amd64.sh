@@ -1,5 +1,5 @@
 #!/bin/bash
-# TradingAgents-CN AMD64 (x86_64) 架构 Docker 镜像构建脚本
+# TradingAgentsA AMD64 (x86_64) 架构 Docker 镜像构建脚本
 # 适用于：Intel/AMD 处理器的 PC、服务器
 
 set -e
@@ -23,7 +23,7 @@ FRONTEND_IMAGE="tradingagents-frontend-amd64"
 PLATFORM="linux/amd64"
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}TradingAgents-CN AMD64 镜像构建${NC}"
+echo -e "${BLUE}TradingAgentsA AMD64 镜像构建${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 echo -e "${GREEN}版本: ${VERSION}${NC}"

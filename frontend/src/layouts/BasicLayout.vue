@@ -8,9 +8,9 @@
     >
       <div class="sidebar-header">
         <div class="logo">
-          <img src="/logo.svg" alt="TradingAgents-CN" />
+          <img src="/logo.svg" alt="TradingAgentsA" />
           <span v-show="!appStore.sidebarCollapsed" class="logo-text">
-            TradingAgents-CN
+            TradingAgentsA
           </span>
         </div>
       </div>
@@ -55,15 +55,18 @@
       <!-- 页面内容 -->
       <main class="main-content">
         <div class="content-wrapper">
+          <!--
+            key 使用 route.path 而非 route.fullPath，避免仅 query 参数变化时
+            （如 /settings?tab=appearance → /settings?tab=security）整页重建。
+            keep-alive 暂时禁用：组件未声明 name，:include 无法匹配，留空即可。
+          -->
           <router-view v-slot="{ Component, route }">
             <transition
               :name="route.meta.transition || 'fade'"
               mode="out-in"
               appear
             >
-              <keep-alive :include="keepAliveComponents">
-                <component :is="Component" :key="route.fullPath" />
-              </keep-alive>
+              <component :is="Component" :key="route.path" />
             </transition>
           </router-view>
         </div>
@@ -93,14 +96,6 @@ import { Expand, Fold } from '@element-plus/icons-vue'
 const appStore = useAppStore()
 const route = useRoute()
 const { width } = useWindowSize()
-
-// 需要缓存的组件
-const keepAliveComponents = computed(() => [
-  'Dashboard',
-  'StockScreening',
-  'AnalysisHistory',
-  'QueueManagement'
-])
 
 // 移动端判断
 const isMobile = computed(() => width.value < 768)

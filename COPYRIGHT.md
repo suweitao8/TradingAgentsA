@@ -1,5 +1,5 @@
-# TradingAgents-CN 版权信息
-# TradingAgents-CN Copyright Information
+# TradingAgentsA 版权信息
+# TradingAgentsA Copyright Information
 
 ## 📋 版权声明 / Copyright Notice
 

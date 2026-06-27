@@ -1,4 +1,4 @@
-# Backend Dockerfile for FastAPI service (TradingAgents-CN v1.0.0-preview)
+# Backend Dockerfile for FastAPI service (TradingAgentsA v1.0.0-preview)
 # 前后端分离架构 - 后端服务
 # 支持多架构: amd64, arm64
 
@@ -42,17 +42,17 @@ RUN mkdir -p /app/logs /app/data /app/config && \
         PANDOC_ARCH="amd64"; \
         WKHTMLTOPDF_ARCH="amd64"; \
     fi && \
-    # 下载并安装 pandoc
-    wget -q https://github.com/jgm/pandoc/releases/download/3.8.2.1/pandoc-3.8.2.1-1-${PANDOC_ARCH}.deb && \
-    dpkg -i pandoc-3.8.2.1-1-${PANDOC_ARCH}.deb && \
-    rm pandoc-3.8.2.1-1-${PANDOC_ARCH}.deb && \
-    # 下载并安装 wkhtmltopdf
-    wget -q https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_${WKHTMLTOPDF_ARCH}.deb && \
-    apt-get install -y --no-install-recommends \
-        ./wkhtmltox_0.12.6.1-3.bookworm_${WKHTMLTOPDF_ARCH}.deb && \
-    rm wkhtmltox_0.12.6.1-3.bookworm_${WKHTMLTOPDF_ARCH}.deb && \
+    # 下载并安装 pandoc（网络失败时跳过，仅影响 PDF/Word 报告导出）
+    (wget -q https://github.com/jgm/pandoc/releases/download/3.8.2.1/pandoc-3.8.2.1-1-${PANDOC_ARCH}.deb && \
+     dpkg -i pandoc-3.8.2.1-1-${PANDOC_ARCH}.deb && \
+     rm pandoc-3.8.2.1-1-${PANDOC_ARCH}.deb || echo "WARN: pandoc 下载失败，跳过（不影响启动，仅影响报告导出）") && \
+    # 下载并安装 wkhtmltopdf（网络失败时跳过，仅影响 PDF 报告导出）
+    (wget -q https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_${WKHTMLTOPDF_ARCH}.deb && \
+     apt-get install -y --no-install-recommends \
+         ./wkhtmltox_0.12.6.1-3.bookworm_${WKHTMLTOPDF_ARCH}.deb && \
+     rm wkhtmltox_0.12.6.1-3.bookworm_${WKHTMLTOPDF_ARCH}.deb || echo "WARN: wkhtmltopdf 下载失败，跳过（不影响启动，仅影响 PDF 导出）") && \
     # 更新字体缓存
-    fc-cache -fv && \
+    (fc-cache -fv || true) && \
     rm -rf /var/lib/apt/lists/*
 
 # 复制pyproject.toml和README.md（pip安装需要）

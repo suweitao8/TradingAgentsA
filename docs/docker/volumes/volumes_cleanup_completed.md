@@ -29,8 +29,8 @@
 
 | 容器 | 旧数据卷 | 新数据卷 | 状态 |
 |------|---------|---------|------|
-| `tradingagents-mongodb` | `tradingagents-cn_tradingagents_mongodb_data_v1` | `tradingagents_mongodb_data` | ✅ 完成 |
-| `tradingagents-redis` | `tradingagents-cn_tradingagents_redis_data_v1` | `tradingagents_redis_data` | ✅ 完成 |
+| `tradingagents-mongodb` | `tradingagentsa_tradingagents_mongodb_data_v1` | `tradingagents_mongodb_data` | ✅ 完成 |
+| `tradingagents-redis` | `tradingagentsa_tradingagents_redis_data_v1` | `tradingagents_redis_data` | ✅ 完成 |
 
 ---
 
@@ -79,8 +79,8 @@
 |-----------|------|
 | `tradingagents_mongodb_data_v1` | ✅ 已删除 |
 | `tradingagents_redis_data_v1` | ✅ 已删除 |
-| `tradingagents-cn_tradingagents_mongodb_data_v1` | ✅ 已删除 |
-| `tradingagents-cn_tradingagents_redis_data_v1` | ✅ 已删除 |
+| `tradingagentsa_tradingagents_mongodb_data_v1` | ✅ 已删除 |
+| `tradingagentsa_tradingagents_redis_data_v1` | ✅ 已删除 |
 | 6 个匿名数据卷 | ✅ 已删除 |
 
 **总计删除**: 10 个数据卷
@@ -95,10 +95,10 @@
 数据卷总数: 20 个
   - tradingagents_mongodb_data (有数据，15个LLM)
   - tradingagents_mongodb_data_v1 (空)
-  - tradingagents-cn_tradingagents_mongodb_data_v1 (空)
+  - tradingagentsa_tradingagents_mongodb_data_v1 (空)
   - tradingagents_redis_data (有数据)
   - tradingagents_redis_data_v1 (空)
-  - tradingagents-cn_tradingagents_redis_data_v1 (空)
+  - tradingagentsa_tradingagents_redis_data_v1 (空)
   - 14+ 个匿名数据卷
 ```
 

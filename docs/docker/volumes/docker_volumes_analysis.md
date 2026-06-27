@@ -8,7 +8,7 @@
 
 | 卷名 | 创建时间 | 项目 | 状态 |
 |------|---------|------|------|
-| `tradingagents-cn_tradingagents_mongodb_data_v1` | 2025-10-16 | tradingagents-cn | ✅ **正在使用** |
+| `tradingagentsa_tradingagents_mongodb_data_v1` | 2025-10-16 | tradingagentsa | ✅ **正在使用** |
 | `tradingagents_mongodb_data` | 2025-08-24 | tradingagentscn | ⚠️ 旧版本 |
 | `tradingagents_mongodb_data_v1` | - | - | ⚠️ 未使用 |
 
@@ -16,7 +16,7 @@
 
 | 卷名 | 创建时间 | 项目 | 状态 |
 |------|---------|------|------|
-| `tradingagents-cn_tradingagents_redis_data_v1` | - | tradingagents-cn | ✅ **正在使用** |
+| `tradingagentsa_tradingagents_redis_data_v1` | - | tradingagentsa | ✅ **正在使用** |
 | `tradingagents_redis_data` | - | tradingagentscn | ⚠️ 旧版本 |
 | `tradingagents_redis_data_v1` | - | - | ⚠️ 未使用 |
 
@@ -47,8 +47,8 @@
 **挂载的数据卷**：
 ```
 Type: volume
-Name: tradingagents-cn_tradingagents_mongodb_data_v1
-Source: /var/lib/docker/volumes/tradingagents-cn_tradingagents_mongodb_data_v1/_data
+Name: tradingagentsa_tradingagents_mongodb_data_v1
+Source: /var/lib/docker/volumes/tradingagentsa_tradingagents_mongodb_data_v1/_data
 ```
 
 **详细信息**：
@@ -57,10 +57,10 @@ Source: /var/lib/docker/volumes/tradingagents-cn_tradingagents_mongodb_data_v1/_
   "CreatedAt": "2025-10-16T01:04:44Z",
   "Driver": "local",
   "Labels": {
-    "com.docker.compose.project": "tradingagents-cn",
+    "com.docker.compose.project": "tradingagentsa",
     "com.docker.compose.volume": "tradingagents_mongodb_data_v1"
   },
-  "Name": "tradingagents-cn_tradingagents_mongodb_data_v1"
+  "Name": "tradingagentsa_tradingagents_mongodb_data_v1"
 }
 ```
 
@@ -73,8 +73,8 @@ Source: /var/lib/docker/volumes/tradingagents-cn_tradingagents_mongodb_data_v1/_
 **挂载的数据卷**：
 ```
 Type: volume
-Name: tradingagents-cn_tradingagents_redis_data_v1
-Source: /var/lib/docker/volumes/tradingagents-cn_tradingagents_redis_data_v1/_data
+Name: tradingagentsa_tradingagents_redis_data_v1
+Source: /var/lib/docker/volumes/tradingagentsa_tradingagents_redis_data_v1/_data
 ```
 
 ---
@@ -94,11 +94,11 @@ volumes:
 ```
 
 **实际使用的数据卷名称**：
-- MongoDB: `tradingagents-cn_tradingagents_mongodb_data_v1`
-- Redis: `tradingagents-cn_tradingagents_redis_data_v1`
+- MongoDB: `tradingagentsa_tradingagents_mongodb_data_v1`
+- Redis: `tradingagentsa_tradingagents_redis_data_v1`
 
 **差异原因**：
-- Docker Compose 会在卷名前添加项目名称前缀（`tradingagents-cn_`）
+- Docker Compose 会在卷名前添加项目名称前缀（`tradingagentsa_`）
 - 实际使用的卷名包含 `_v1` 后缀
 
 ---
@@ -181,8 +181,8 @@ Redis 数据卷: 3 个
 ### 清理后（2 个数据卷）
 
 ```
-MongoDB 数据卷: 1 个 (tradingagents-cn_tradingagents_mongodb_data_v1)
-Redis 数据卷: 1 个 (tradingagents-cn_tradingagents_redis_data_v1)
+MongoDB 数据卷: 1 个 (tradingagentsa_tradingagents_mongodb_data_v1)
+Redis 数据卷: 1 个 (tradingagentsa_tradingagents_redis_data_v1)
 总计: 2 个
 ```
 
@@ -226,14 +226,14 @@ Redis 数据卷: 1 个 (tradingagents-cn_tradingagents_redis_data_v1)
 
 | 问题 | 答案 |
 |------|------|
-| **正在使用的 MongoDB 数据卷** | `tradingagents-cn_tradingagents_mongodb_data_v1` |
-| **正在使用的 Redis 数据卷** | `tradingagents-cn_tradingagents_redis_data_v1` |
+| **正在使用的 MongoDB 数据卷** | `tradingagentsa_tradingagents_mongodb_data_v1` |
+| **正在使用的 Redis 数据卷** | `tradingagentsa_tradingagents_redis_data_v1` |
 | **可以删除的数据卷** | 4 个旧版本数据卷 + 10 个匿名数据卷 |
 | **清理后的数据卷数量** | 2 个（MongoDB + Redis） |
 | **是否需要备份** | 建议备份 MongoDB 数据 |
 
 **关键点**：
-- ✅ 当前正在使用：`tradingagents-cn_tradingagents_mongodb_data_v1` 和 `tradingagents-cn_tradingagents_redis_data_v1`
+- ✅ 当前正在使用：`tradingagentsa_tradingagents_mongodb_data_v1` 和 `tradingagentsa_tradingagents_redis_data_v1`
 - ⚠️ 旧版本数据卷可以安全删除
 - 🗑️ 匿名数据卷可以使用 `docker volume prune` 清理
 - 💾 建议在清理前备份 MongoDB 数据
@@ -281,8 +281,8 @@ KEYS *
 ## 📝 注意事项
 
 1. **不要删除正在使用的数据卷**：
-   - `tradingagents-cn_tradingagents_mongodb_data_v1`
-   - `tradingagents-cn_tradingagents_redis_data_v1`
+   - `tradingagentsa_tradingagents_mongodb_data_v1`
+   - `tradingagentsa_tradingagents_redis_data_v1`
 
 2. **备份重要数据**：
    - 在删除旧数据卷前，确认其中没有重要数据

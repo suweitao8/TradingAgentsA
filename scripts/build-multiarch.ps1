@@ -1,4 +1,4 @@
-# TradingAgents-CN 多架构 Docker 镜像构建脚本 (PowerShell)
+# TradingAgentsA 多架构 Docker 镜像构建脚本 (PowerShell)
 # 支持 amd64 (x86_64) 和 arm64 (ARM) 架构
 
 param(
@@ -14,7 +14,7 @@ $BackendImage = "tradingagents-backend"
 $FrontendImage = "tradingagents-frontend"
 
 Write-Host "========================================" -ForegroundColor Blue
-Write-Host "TradingAgents-CN 多架构镜像构建" -ForegroundColor Blue
+Write-Host "TradingAgentsA 多架构镜像构建" -ForegroundColor Blue
 Write-Host "========================================" -ForegroundColor Blue
 Write-Host ""
 Write-Host "版本: $Version" -ForegroundColor Green

@@ -145,8 +145,8 @@ Write-Host "`n[10] 清理旧数据卷..." -ForegroundColor Yellow
 $volumesToDelete = @(
     "tradingagents_mongodb_data_v1",
     "tradingagents_redis_data_v1",
-    "tradingagents-cn_tradingagents_mongodb_data_v1",
-    "tradingagents-cn_tradingagents_redis_data_v1"
+    "tradingagentsa_tradingagents_mongodb_data_v1",
+    "tradingagentsa_tradingagents_redis_data_v1"
 )
 
 Write-Host "  准备删除以下数据卷:" -ForegroundColor Yellow

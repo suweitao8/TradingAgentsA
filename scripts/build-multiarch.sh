@@ -1,5 +1,5 @@
 #!/bin/bash
-# TradingAgents-CN 多架构 Docker 镜像构建脚本
+# TradingAgentsA 多架构 Docker 镜像构建脚本
 # 支持 amd64 (x86_64) 和 arm64 (ARM) 架构
 
 set -e
@@ -23,7 +23,7 @@ FRONTEND_IMAGE="tradingagents-frontend"
 PLATFORMS="${PLATFORMS:-linux/amd64,linux/arm64}"
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}TradingAgents-CN 多架构镜像构建${NC}"
+echo -e "${BLUE}TradingAgentsA 多架构镜像构建${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 echo -e "${GREEN}版本: ${VERSION}${NC}"

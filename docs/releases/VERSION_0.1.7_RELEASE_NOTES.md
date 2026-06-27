@@ -1,4 +1,4 @@
-# 🎉 TradingAgents-CN v0.1.7 发布说明
+# 🎉 TradingAgentsA v0.1.7 发布说明
 
 ## 📅 发布信息
 
@@ -10,7 +10,7 @@
 
 ### 🚀 重大功能突破
 
-本版本实现了**完整的报告导出功能**，这是用户期待已久的核心功能，标志着TradingAgents-CN在实用性方面的重大突破。
+本版本实现了**完整的报告导出功能**，这是用户期待已久的核心功能，标志着TradingAgentsA在实用性方面的重大突破。
 
 ## ✨ 新增功能
 
@@ -247,7 +247,7 @@ git pull origin develop
 
 # 2. 重新构建镜像
 docker-compose down
-docker build -t tradingagents-cn:latest .
+docker build -t tradingagentsa:latest .
 
 # 3. 构建并启动新版本
 docker-compose up -d --build
@@ -303,7 +303,7 @@ docker-compose up -d --build
 
 ### 👥 其他贡献者
 
-- **核心开发**: TradingAgents-CN团队
+- **核心开发**: TradingAgentsA团队
 - **测试反馈**: 社区用户
 - **文档完善**: 技术文档团队
 - **问题反馈**: GitHub Issues贡献者
@@ -318,5 +318,5 @@ docker-compose up -d --build
 
 ---
 
-*TradingAgents-CN开发团队*
+*TradingAgentsA开发团队*
 *2025年1月13日*

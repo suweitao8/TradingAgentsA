@@ -1,7 +1,7 @@
 # 2025-10-24 项目优化日志：数据源统一、实时行情优化与基本面分析增强
 
 **日期**: 2025-10-24
-**作者**: TradingAgents-CN 开发团队
+**作者**: TradingAgentsA 开发团队
 **标签**: `feature`, `optimization`, `refactor`, `bug-fix`, `data-quality`, `performance`
 
 ---
@@ -902,24 +902,24 @@ const filteredJobs = computed(() => {
 
 ```bash
 # AMD64 架构（Linux/Windows）
-docker build --platform linux/amd64 -t tradingagents-cn:amd64 .
-docker tag tradingagents-cn:amd64 your-registry/tradingagents-cn:amd64
-docker push your-registry/tradingagents-cn:amd64
+docker build --platform linux/amd64 -t tradingagentsa:amd64 .
+docker tag tradingagentsa:amd64 your-registry/tradingagentsa:amd64
+docker push your-registry/tradingagentsa:amd64
 
 # ARM64 架构（Apple Silicon/ARM服务器）
-docker build --platform linux/arm64 -t tradingagents-cn:arm64 .
-docker tag tradingagents-cn:arm64 your-registry/tradingagents-cn:arm64
-docker push your-registry/tradingagents-cn:arm64
+docker build --platform linux/arm64 -t tradingagentsa:arm64 .
+docker tag tradingagentsa:arm64 your-registry/tradingagentsa:arm64
+docker push your-registry/tradingagentsa:arm64
 ```
 
 **策略 2：用户根据架构选择镜像**
 
 ```bash
 # AMD64 用户
-docker pull your-registry/tradingagents-cn:amd64
+docker pull your-registry/tradingagentsa:amd64
 
 # ARM64 用户
-docker pull your-registry/tradingagents-cn:arm64
+docker pull your-registry/tradingagentsa:arm64
 ```
 
 **效果**：
@@ -1330,7 +1330,7 @@ TUSHARE_TOKEN=  # 不配置 Token
 
 ---
 
-**感谢使用 TradingAgents-CN！** 🚀
+**感谢使用 TradingAgentsA！** 🚀
 
 如有问题或建议，欢迎在 [GitHub Issues](https://github.com/hsliuping/TradingAgents-CN/issues) 中反馈。
 

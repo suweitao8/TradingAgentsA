@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to TradingAgents-CN will be documented in this file.
+All notable changes to TradingAgentsA will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎉 重大里程碑
 
-这是TradingAgents-CN的第一个预览版本，标志着项目从原型阶段进入生产就绪阶段。
+这是TradingAgentsA的第一个预览版本，标志着项目从原型阶段进入生产就绪阶段。
 
 ### ✨ 新增功能
 
@@ -292,5 +292,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 **发布日期**: 2025-10-15  
-**维护者**: TradingAgents-CN Team
+**维护者**: TradingAgentsA Team
 

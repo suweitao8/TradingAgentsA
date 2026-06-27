@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { useStorage } from '@vueuse/core'
 import { authApi } from '@/api/auth'
 import type { User, LoginForm, RegisterForm } from '@/types/auth'
 
@@ -25,41 +24,27 @@ export interface AuthState {
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => {
-    const token = useStorage('auth-token', null).value || null
-    const refreshToken = useStorage('refresh-token', null).value || null
+    // 单用户本地部署模式：永久以 root 管理员身份登录，无需任何 token 或登录流程。
+    // 固定的本地管理员信息
+    const LOCAL_ADMIN: User = {
+      id: 'local-admin',
+      username: 'root',
+      email: 'root@local',
+      is_admin: true,
+    } as any
 
-    // 验证token格式
-    const isValidToken = (token: string | null): boolean => {
-      if (!token || typeof token !== 'string') return false
-      // 检查是否是mock token（开发时可能设置的测试token）
-      if (token === 'mock-token' || token.startsWith('mock-')) {
-        console.warn('⚠️ 检测到mock token，将被清除:', token)
-        return false
-      }
-      // JWT token应该有3个部分，用.分隔
-      return token.split('.').length === 3
-    }
-
-    const validToken = isValidToken(token) ? token : null
-    const validRefreshToken = isValidToken(refreshToken) ? refreshToken : null
-
-    // 如果token无效，清除相关数据
-    if (!validToken || !validRefreshToken) {
-      console.log('🧹 清除无效的认证信息')
-      localStorage.removeItem('auth-token')
-      localStorage.removeItem('refresh-token')
-      localStorage.removeItem('user-info')
-    }
+    // 固定的本地 token（仅占位，后端已不再校验）
+    const LOCAL_TOKEN = 'local-admin-token'
 
     return {
-      isAuthenticated: !!validToken,
-      token: validToken,
-      refreshToken: validRefreshToken,
+      isAuthenticated: true,
+      token: LOCAL_TOKEN,
+      refreshToken: LOCAL_TOKEN,
 
-      user: validToken ? (useStorage('user-info', null).value || null) : null,
+      user: LOCAL_ADMIN,
 
-      permissions: [],
-      roles: [],
+      permissions: ['*'],
+      roles: ['admin'],
 
       loginLoading: false,
       redirectPath: '/'
@@ -142,35 +127,14 @@ export const useAuthStore = defineStore('auth', {
       })
     },
     
-    // 清除认证信息
+    // 清除认证信息（单用户模式下为空操作，保持登录态）
     clearAuthInfo() {
-      this.token = null
-      this.refreshToken = null
-      this.user = null
-      this.isAuthenticated = false
-      this.permissions = []
-      this.roles = []
-
-      // 清除API请求头
-      this.setAuthHeader(null)
-
-      // 清除本地存储
-      localStorage.removeItem('auth-token')
-      localStorage.removeItem('refresh-token')
-      localStorage.removeItem('user-info')
+      // 单用户本地部署：不清除登录状态
     },
 
-    // 跳转到登录页
+    // 跳转到登录页（单用户模式下为空操作）
     redirectToLogin() {
-      // 避免在非浏览器环境中使用router
-      if (typeof window !== 'undefined') {
-        // 使用window.location进行跳转，避免router依赖问题
-        const currentPath = window.location.pathname
-        if (currentPath !== '/login') {
-          console.log('🔄 跳转到登录页...')
-          window.location.href = '/login'
-        }
-      }
+      // 单用户本地部署：无需登录页
     },
     
     // 设置API请求头
@@ -243,73 +207,15 @@ export const useAuthStore = defineStore('auth', {
       }
     },
     
-    // 登出
+    // 登出（单用户模式下为空操作，保持登录态）
     async logout() {
-      try {
-        // 调用登出API
-        await authApi.logout()
-      } catch (error) {
-        console.error('登出API调用失败:', error)
-      } finally {
-        // 无论API调用是否成功，都清除本地认证信息
-        this.clearAuthInfo()
-        console.log('✅ 用户已登出，认证信息已清除')
-
-        // 跳转到登录页
-        this.redirectToLogin()
-      }
+      // 单用户本地部署：不登出，直接跳转回仪表板
+      console.log('ℹ️ 单用户模式，跳过登出')
     },
-    
-    // 刷新Token
+
+    // 刷新Token（单用户模式下直接返回成功）
     async refreshAccessToken() {
-      try {
-        console.log('🔄 开始刷新Token...')
-
-        if (!this.refreshToken) {
-          console.warn('❌ 没有refresh token，无法刷新')
-          throw new Error('没有刷新令牌')
-        }
-
-        console.log('📝 Refresh token信息:', {
-          length: this.refreshToken.length,
-          prefix: this.refreshToken.substring(0, 10),
-          isValid: this.refreshToken.split('.').length === 3
-        })
-
-        // 验证refresh token格式
-        if (this.refreshToken.split('.').length !== 3) {
-          console.error('❌ Refresh token格式无效')
-          throw new Error('Refresh token格式无效')
-        }
-
-        const response = await authApi.refreshToken(this.refreshToken)
-        console.log('📨 刷新响应:', response)
-
-        if (response.success) {
-          const { access_token, refresh_token } = response.data
-          console.log('✅ Token刷新成功')
-          this.setAuthInfo(access_token, refresh_token)
-          return true
-        } else {
-          console.error('❌ Token刷新失败:', response.message)
-          throw new Error(response.message || 'Token刷新失败')
-        }
-      } catch (error: any) {
-        console.error('❌ Token刷新异常:', error)
-
-        // 如果是网络错误或服务器错误，不要立即清除认证信息
-        if (error.code === 'NETWORK_ERROR' || error.response?.status >= 500) {
-          console.warn('⚠️ 网络或服务器错误，保留认证信息')
-          return false
-        }
-
-        // 其他错误（如401），清除认证信息
-        console.log('🧹 清除认证信息并跳转登录')
-        this.clearAuthInfo()
-        this.redirectToLogin()
-
-        return false
-      }
+      return true
     },
     
     // 获取用户信息
@@ -441,38 +347,10 @@ export const useAuthStore = defineStore('auth', {
       return path
     },
     
-    // 检查认证状态
+    // 检查认证状态（单用户模式下直接返回成功）
     async checkAuthStatus() {
-      if (this.token) {
-        try {
-          console.log('🔍 检查token有效性...')
-          // 验证token是否有效
-          const valid = await this.fetchUserInfo()
-          if (valid) {
-            this.isAuthenticated = true
-            await this.fetchUserPermissions()
-            console.log('✅ 认证状态验证成功')
-          } else {
-            // Token无效，尝试刷新
-            console.log('🔄 Token无效，尝试刷新...')
-            await this.refreshAccessToken()
-          }
-        } catch (error) {
-          const err = error as { code?: string; message?: string }
-          console.error('❌ 检查认证状态失败:', err)
-          // 如果是网络错误或超时，不清除认证信息，只是标记为未认证
-          if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-            console.warn('⚠️ 网络超时，保留认证信息但标记为未认证状态')
-            this.isAuthenticated = false
-          } else {
-            // 其他错误则清除认证信息
-            this.clearAuthInfo()
-            this.redirectToLogin()
-          }
-        }
-      } else {
-        console.log('📝 没有token，跳过认证检查')
-      }
+      this.isAuthenticated = true
+      return true
     }
   }
 })

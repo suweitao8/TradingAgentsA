@@ -1,10 +1,10 @@
 #!/bin/bash
-# TradingAgents-CN 简化启动脚本 (Linux/Mac)
+# TradingAgentsA 简化启动脚本 (Linux/Mac)
 # 用于日常快速启动应用
 
 echo ""
 echo "========================================"
-echo "  TradingAgents-CN 快速启动"
+echo "  TradingAgentsA 快速启动"
 echo "========================================"
 echo ""
 

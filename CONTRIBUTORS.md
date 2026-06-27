@@ -1,6 +1,6 @@
 # 🤝 贡献者名单
 
-感谢所有为TradingAgents-CN项目做出贡献的开发者和用户！
+感谢所有为TradingAgentsA项目做出贡献的开发者和用户！
 
 ## 🌟 贡献者分类
 
@@ -87,7 +87,7 @@
 ### 🏅 最佳AI集成贡献奖
 
 - **[@charliecai](https://github.com/charliecai)** - 硅基流动(SiliconFlow) LLM提供商集成
-- **TradingAgents-CN团队** - 百度千帆(Qianfan) ERNIE模型集成，提供OpenAI兼容接口
+- **TradingAgentsA团队** - 百度千帆(Qianfan) ERNIE模型集成，提供OpenAI兼容接口
 
 ### 🛠️ 最佳Bug修复贡献奖
 
@@ -143,7 +143,7 @@
 
 ## 🙏 致谢
 
-感谢每一位贡献者的无私奉献！正是因为有了大家的支持和贡献，TradingAgents-CN才能不断发展壮大，为中文用户提供更好的AI金融分析工具。
+感谢每一位贡献者的无私奉献！正是因为有了大家的支持和贡献，TradingAgentsA才能不断发展壮大，为中文用户提供更好的AI金融分析工具。
 
 ---
 

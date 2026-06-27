@@ -1,5 +1,5 @@
 #!/bin/bash
-# TradingAgents-CN Docker镜像构建和发布脚本（Linux服务器版 - 多架构支持）
+# TradingAgentsA Docker镜像构建和发布脚本（Linux服务器版 - 多架构支持）
 # 使用方法: ./scripts/build-and-publish-linux.sh <dockerhub-username>
 
 set -e
@@ -26,7 +26,7 @@ VERSION=${2:-"v1.0.0-preview"}
 PLATFORMS=${3:-"linux/amd64,linux/arm64"}
 
 echo -e "${CYAN}========================================${NC}"
-echo -e "${CYAN}TradingAgents-CN Docker多架构构建和发布${NC}"
+echo -e "${CYAN}TradingAgentsA Docker多架构构建和发布${NC}"
 echo -e "${CYAN}========================================${NC}"
 echo ""
 echo -e "${BLUE}Docker Hub用户名: ${DOCKERHUB_USERNAME}${NC}"

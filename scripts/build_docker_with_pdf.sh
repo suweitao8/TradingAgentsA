@@ -1,6 +1,6 @@
 #!/bin/bash
 # Docker 镜像构建脚本（包含 PDF 导出支持）
-# 用于构建支持 PDF 导出的 TradingAgents-CN Docker 镜像
+# 用于构建支持 PDF 导出的 TradingAgentsA Docker 镜像
 
 set -e
 
@@ -150,7 +150,7 @@ except ImportError:
 # 显示使用说明
 show_usage() {
     cat << EOF
-${GREEN}TradingAgents-CN Docker 构建脚本（PDF 导出支持）${NC}
+${GREEN}TradingAgentsA Docker 构建脚本（PDF 导出支持）${NC}
 
 用法:
     $0 [选项]

@@ -1,4 +1,4 @@
-# TradingAgents-CN AMD64 (x86_64) 架构 Docker 镜像构建脚本 (PowerShell)
+# TradingAgentsA AMD64 (x86_64) 架构 Docker 镜像构建脚本 (PowerShell)
 # 适用于：Intel/AMD 处理器的 PC、服务器
 
 param(
@@ -15,7 +15,7 @@ $Platform = "linux/amd64"
 $ArchSuffix = "amd64"
 
 Write-Host "========================================" -ForegroundColor Blue
-Write-Host "TradingAgents-CN AMD64 镜像构建" -ForegroundColor Blue
+Write-Host "TradingAgentsA AMD64 镜像构建" -ForegroundColor Blue
 Write-Host "========================================" -ForegroundColor Blue
 Write-Host ""
 Write-Host "版本: $Version" -ForegroundColor Green

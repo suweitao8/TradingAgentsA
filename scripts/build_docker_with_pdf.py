@@ -80,7 +80,7 @@ def check_dockerfile():
 def build_docker_image():
     """构建Docker镜像"""
     return run_command(
-        "docker build -t tradingagents-cn:latest .",
+        "docker build -t tradingagentsa:latest .",
         "构建Docker镜像",
         timeout=600  # 10分钟超时
     )
@@ -93,7 +93,7 @@ def test_docker_container():
     start_cmd = """docker run -d --name tradingagents-test \
         -e DOCKER_CONTAINER=true \
         -e DISPLAY=:99 \
-        tradingagents-cn:latest \
+        tradingagentsa:latest \
         python scripts/test_docker_pdf.py"""
     
     if not run_command(start_cmd, "启动测试容器", timeout=60):
@@ -143,9 +143,9 @@ def main():
     logger.info(f"1. 启动完整服务:")
     logger.info(f"   docker-compose up -d")
     logger.info(f"\n2. 仅启动Web服务:")
-    logger.info(f"   docker run -p 8501:8501 tradingagents-cn:latest")
+    logger.info(f"   docker run -p 8501:8501 tradingagentsa:latest")
     logger.info(f"\n3. 测试PDF功能:")
-    logger.info(f"   docker run tradingagents-cn:latest python scripts/test_docker_pdf.py")
+    logger.info(f"   docker run tradingagentsa:latest python scripts/test_docker_pdf.py")
     
     logger.info(f"\n💡 提示:")
     logger.info(f"- PDF导出功能已在Docker环境中优化")

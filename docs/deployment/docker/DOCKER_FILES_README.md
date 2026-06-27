@@ -1,10 +1,10 @@
 # Docker 文件说明
 
-> 📦 TradingAgents-CN v1.0.0-preview Docker配置文件说明
+> 📦 TradingAgentsA v1.0.0-preview Docker配置文件说明
 
 ## 📋 概述
 
-TradingAgents-CN v1.0.0-preview采用**前后端分离架构**，使用独立的Docker镜像分别构建和部署前端和后端服务。
+TradingAgentsA v1.0.0-preview采用**前后端分离架构**，使用独立的Docker镜像分别构建和部署前端和后端服务。
 
 ---
 
@@ -358,6 +358,6 @@ docker-compose -f docker-compose.v1.0.0.yml build --no-cache frontend
 ---
 
 **更新日期**: 2025-10-15  
-**适用版本**: TradingAgents-CN v1.0.0-preview  
-**维护者**: TradingAgents-CN Team
+**适用版本**: TradingAgentsA v1.0.0-preview  
+**维护者**: TradingAgentsA Team
 

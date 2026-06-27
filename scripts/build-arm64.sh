@@ -1,5 +1,5 @@
 #!/bin/bash
-# TradingAgents-CN ARM64 架构 Docker 镜像构建脚本
+# TradingAgentsA ARM64 架构 Docker 镜像构建脚本
 # 适用于：ARM 服务器、树莓派 4/5、NVIDIA Jetson 等
 
 set -e
@@ -23,7 +23,7 @@ FRONTEND_IMAGE="tradingagents-frontend-arm64"
 PLATFORM="linux/arm64"
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}TradingAgents-CN ARM64 镜像构建${NC}"
+echo -e "${BLUE}TradingAgentsA ARM64 镜像构建${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 echo -e "${GREEN}版本: ${VERSION}${NC}"

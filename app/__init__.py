@@ -1,1 +1,1 @@
-"""TradingAgents-CN Web API package."""
+"""TradingAgentsA Web API package."""

@@ -3,9 +3,9 @@
 
 ## 📋 概述 / Overview
 
-TradingAgents-CN 支持多种货币单位的模型定价，不同的 LLM 厂家使用不同的货币进行计费。
+TradingAgentsA 支持多种货币单位的模型定价，不同的 LLM 厂家使用不同的货币进行计费。
 
-TradingAgents-CN supports multiple currency units for model pricing. Different LLM providers use different currencies for billing.
+TradingAgentsA supports multiple currency units for model pricing. Different LLM providers use different currencies for billing.
 
 ## 💱 货币单位规范 / Currency Standards
 

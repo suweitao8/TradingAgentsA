@@ -12,9 +12,7 @@ import 'dayjs/locale/zh-cn'
 import App from './App.vue'
 import router from './router'
 import { setupGlobalComponents } from './components'
-import { useAuthStore } from './stores/auth'
-import { useAppStore } from './stores/app'
-import { setupTokenRefreshTimer } from './utils/auth'
+import { useAppStore } from '@/stores/app'
 import './styles/index.scss'
 import './styles/dark-theme.scss'
 
@@ -49,101 +47,49 @@ setupGlobalComponents(app)
 
 // 全局错误处理
 app.config.errorHandler = (err, _vm, info) => {
-  console.error('全局错误:', err, info)
-
-  // 检查是否是认证错误
-  if (err && typeof err === 'object') {
-    const error = err as any
-    // 检查错误消息或状态码
-    if (
-      error.message?.includes('认证失败') ||
-      error.message?.includes('登录已过期') ||
-      error.message?.includes('Token') ||
-      error.response?.status === 401 ||
-      error.code === 401
-    ) {
-      console.log('🔒 全局错误处理：检测到认证错误，跳转登录页')
-      const authStore = useAuthStore()
-      authStore.clearAuthInfo()
-      router.push('/login')
-    }
-  }
-
-  // 这里可以集成错误监控服务
+  console.error('[App] 全局错误:', err, info)
 }
 
 // 全局警告处理
 app.config.warnHandler = (msg, _vm, trace) => {
-  console.warn('全局警告:', msg, trace)
+  // 仅在开发环境输出警告，减少生产环境噪音
+  if (import.meta.env.DEV) {
+    console.warn('[App] 警告:', msg, trace)
+  }
 }
 
-// 初始化认证状态
+// 初始化应用
 const initApp = async () => {
   try {
     const authStore = useAuthStore()
     const appStore = useAppStore()
 
-    console.log('🔄 初始化应用状态...')
-
     // 应用主题
     appStore.applyTheme()
-    console.log('🎨 主题已应用:', appStore.theme)
 
     // 设置网络状态监听
     window.addEventListener('online', () => {
-      console.log('🌐 网络已连接')
       appStore.setOnlineStatus(true)
       appStore.checkApiConnection()
     })
 
     window.addEventListener('offline', () => {
-      console.log('📱 网络已断开')
       appStore.setOnlineStatus(false)
       appStore.setApiConnected(false)
     })
 
     // 检查API连接状态
-    console.log('🔍 检查API连接状态...')
-    const apiConnected = await appStore.checkApiConnection()
+    await appStore.checkApiConnection()
 
-    if (apiConnected) {
-      console.log('✅ API连接正常，检查认证状态...')
-      // 检查本地存储的认证信息（设置较短的超时时间）
-      const checkPromise = authStore.checkAuthStatus()
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('认证检查超时')), 5000) // 5秒超时
-      })
-
-      await Promise.race([checkPromise, timeoutPromise])
-      console.log('✅ 认证状态初始化完成')
-
-      // 如果用户已登录，启动 token 自动刷新定时器
-      if (authStore.isAuthenticated) {
-        setupTokenRefreshTimer()
-      }
-    } else {
-      console.log('⚠️ API连接失败，跳过认证检查')
-    }
+    // 单用户本地部署模式：无需认证状态检查与 token 刷新
   } catch (error) {
     const err = error as { code?: string; message?: string }
-    console.warn('⚠️ 应用初始化失败，但应用将继续启动:', err)
-    // 如果是网络错误，不影响应用启动
-    if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-      console.log('📱 离线模式：应用将在没有后端连接的情况下启动')
-    }
+    console.warn('[App] 初始化失败，应用仍将继续启动:', err.message || err)
   } finally {
     // 无论认证状态如何，都挂载应用
     app.mount('#app')
-    console.log('🚀 应用已挂载')
   }
 }
 
 // 启动应用
 initApp()
-
-// 开发环境下的调试信息
-if (import.meta.env.DEV) {
-  console.log('🚀 TradingAgents-CN v1.0.0-preview 前端应用已启动')
-  console.log('📊 当前环境:', import.meta.env.MODE)
-  console.log('🔗 API地址:', import.meta.env.VITE_API_BASE_URL || '/api')
-}
