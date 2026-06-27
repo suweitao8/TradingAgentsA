@@ -9,8 +9,6 @@ from typing import Dict, Set
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, HTTPException
 from datetime import datetime
 
-from app.services.auth_service import AuthService
-
 router = APIRouter()
 logger = logging.getLogger("webapi.websocket")
 
@@ -109,13 +107,13 @@ manager = ConnectionManager()
 @router.websocket("/ws/notifications")
 async def websocket_notifications_endpoint(
     websocket: WebSocket,
-    token: str = Query(...)
+    token: str = Query(default="", description="JWT token（单用户模式下已跳过校验）")
 ):
     """
     WebSocket 通知端点
     
     客户端连接: ws://localhost:8000/api/ws/notifications?token=<jwt_token>
-    
+
     消息格式:
     {
         "type": "notification",  // 消息类型: notification, heartbeat, connected
@@ -131,14 +129,10 @@ async def websocket_notifications_endpoint(
         }
     }
     """
-    # 验证 token
-    token_data = AuthService.verify_token(token)
-    if not token_data:
-        await websocket.close(code=1008, reason="Unauthorized")
-        return
-    
-    user_id = "admin"  # 从 token_data 中获取
-    
+    # 单用户本地部署模式：跳过 token 校验，直接使用管理员身份
+    # （与 auth_db.get_current_user 保持一致）
+    user_id = "admin"
+
     # 连接 WebSocket
     await manager.connect(websocket, user_id)
     
@@ -201,13 +195,13 @@ async def websocket_notifications_endpoint(
 async def websocket_task_progress_endpoint(
     websocket: WebSocket,
     task_id: str,
-    token: str = Query(...)
+    token: str = Query(default="", description="JWT token（单用户模式下已跳过校验）")
 ):
     """
     WebSocket 任务进度端点
     
     客户端连接: ws://localhost:8000/api/ws/tasks/<task_id>?token=<jwt_token>
-    
+
     消息格式:
     {
         "type": "progress",  // 消息类型: progress, completed, error, heartbeat
@@ -221,12 +215,8 @@ async def websocket_task_progress_endpoint(
         }
     }
     """
-    # 验证 token
-    token_data = AuthService.verify_token(token)
-    if not token_data:
-        await websocket.close(code=1008, reason="Unauthorized")
-        return
-    
+    # 单用户本地部署模式：跳过 token 校验，直接使用管理员身份
+    # （与 auth_db.get_current_user 保持一致）
     user_id = "admin"
     channel = f"task_progress:{task_id}"
     
