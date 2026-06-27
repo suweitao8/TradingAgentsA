@@ -445,9 +445,27 @@ router.afterEach((_to, _from) => {
 })
 
 // 路由错误处理
-router.onError((error) => {
+// 懒加载 chunk 失效时（dev server 重启、构建更新后浏览器缓存了旧 hash 的 chunk），
+// 自动整页刷新一次以丢弃失效缓存；刷新后若仍失败，才提示用户手动处理。
+let chunkErrorHandled = false
+router.onError((error, to) => {
   console.error('路由错误:', error)
   NProgress.done()
+  const message = (error as Error)?.message ?? ''
+  const isChunkLoadError =
+    message.includes('Failed to fetch dynamically imported module') ||
+    message.includes('error loading dynamically imported module') ||
+    message.includes('Loading chunk') ||
+    message.includes('Loading CSS chunk') ||
+    message.includes('Importing a module script failed')
+  if (isChunkLoadError && !chunkErrorHandled) {
+    // 标记位避免重复刷新死循环；整页刷新后模块重载，标志位自动重置
+    chunkErrorHandled = true
+    const target = to?.fullPath || window.location.pathname + window.location.search + window.location.hash
+    window.location.assign(target)
+    return
+  }
+  // 非 chunk 错误，或刷新后仍失败，提示用户手动处理
   ElMessage.error('页面加载失败，请重试')
 })
 
