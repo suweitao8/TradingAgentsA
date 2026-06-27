@@ -155,8 +155,8 @@
 
 如果您发现文档中的问题或有改进建议，请通过以下方式反馈：
 
-- 🐛 [GitHub Issues](https://github.com/hsliuping/TradingAgents-CN/issues)
-- 💡 [GitHub Discussions](https://github.com/hsliuping/TradingAgents-CN/discussions)
+- 🐛 [GitHub Issues](https://github.com/suweitao8/TradingAgentsA/issues)
+- 💡 [GitHub Discussions](https://github.com/suweitao8/TradingAgentsA/discussions)
 - 📧 直接联系维护团队
 
 ---

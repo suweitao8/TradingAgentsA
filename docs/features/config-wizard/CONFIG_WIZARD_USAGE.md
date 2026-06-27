@@ -376,7 +376,7 @@ GET /api/system/config/validate
 
 **需要帮助？**
 
-- 📧 提交 Issue: https://github.com/hsliuping/TradingAgents-CN/issues
+- 📧 提交 Issue: https://github.com/suweitao8/TradingAgentsA/issues
 - 📖 查看文档: `docs/` 目录
 - 💬 加入讨论: GitHub Discussions
 

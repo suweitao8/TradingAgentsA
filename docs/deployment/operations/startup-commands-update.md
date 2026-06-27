@@ -109,7 +109,7 @@ python start_web.py
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 
 # 2. 创建虚拟环境

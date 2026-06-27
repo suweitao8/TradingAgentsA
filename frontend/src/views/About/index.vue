@@ -375,15 +375,6 @@
 
       <div class="contact-grid">
         <div class="contact-card">
-          <div class="contact-icon email">
-            <el-icon><Message /></el-icon>
-          </div>
-          <h4>邮箱联系</h4>
-          <p>hsliup@163.com</p>
-          <span class="contact-desc">技术支持和商务合作</span>
-        </div>
-
-        <div class="contact-card">
           <div class="contact-icon qq">
             <el-icon><ChatDotRound /></el-icon>
           </div>

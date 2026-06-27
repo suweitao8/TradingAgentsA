@@ -17,6 +17,7 @@ _ALIASES = {
     "qianfan": "qianfan",
     "custom_openai": "custom_openai",
     "siliconflow": "siliconflow",
+    "jdcloud": "jdcloud",
 }
 
 _CANONICAL_ALIASES = {
@@ -55,6 +56,7 @@ def env_key_for_provider(provider: str) -> str:
         "siliconflow": "SILICONFLOW_API_KEY",
         "qianfan": "QIANFAN_API_KEY",
         "glm": "ZHIPU_API_KEY",
+        "jdcloud": "JDCLOUD_API_KEY",
     }
     return env_key_map.get(key, "")
 
@@ -73,6 +75,7 @@ def default_backend_url(provider: str) -> str:
         "qianfan": "https://qianfan.baidubce.com/v2",
         "siliconflow": "https://api.siliconflow.cn/v1",
         "glm": "https://open.bigmodel.cn/api/paas/v4/",
+        "jdcloud": "https://modelservice.jdcloud.com/coding/openai/v1",
     }
     return default_urls.get(key, "https://dashscope.aliyuncs.com/compatible-mode/v1")
 

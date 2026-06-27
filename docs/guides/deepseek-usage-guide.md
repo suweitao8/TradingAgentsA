@@ -404,9 +404,9 @@ results = asyncio.run(batch_analysis(symbols))
 - 💬 [DeepSeek社区](https://github.com/deepseek-ai)
 
 ### TradingAgentsA支持
-- 🐛 [GitHub Issues](https://github.com/hsliuping/TradingAgents-CN/issues)
-- 💬 [GitHub Discussions](https://github.com/hsliuping/TradingAgents-CN/discussions)
-- 📚 [完整文档](https://github.com/hsliuping/TradingAgents-CN/tree/main/docs)
+- 🐛 [GitHub Issues](https://github.com/suweitao8/TradingAgentsA/issues)
+- 💬 [GitHub Discussions](https://github.com/suweitao8/TradingAgentsA/discussions)
+- 📚 [完整文档](https://github.com/suweitao8/TradingAgentsA/tree/main/docs)
 
 ---
 

@@ -20,8 +20,7 @@
 - ⚠️ **请大家注意识别，避免上当受骗**
 
 **✅ 官方唯一渠道**：
-- 📦 GitHub 仓库：https://github.com/hsliuping/TradingAgents-CN
-- 📧 官方邮箱：hsliup@163.com
+- 📦 GitHub 仓库：https://github.com/suweitao8/TradingAgentsA
 - 📱 微信公众号：TradingAgentsA
 
 如发现任何未经授权的商业使用，请通过上述渠道联系我们。
@@ -31,7 +30,6 @@
 #### v1.0.1（当前稳定版本）
 - ✅ **个人使用**：完全开源，可自由使用
 - ❌ **商业使用**：**必须获得商业授权**，未经授权禁止商业使用
-- 📧 **授权联系**：[hsliup@163.com](mailto:hsliup@163.com)
 
 #### v2.0.0（开发中）
 - 🔄 **开发状态**：已完成两轮内测，接近完工上线阶段
@@ -119,8 +117,6 @@
 | **API 架构** | 单体应用 | RESTful API + WebSocket |
 | **部署方式** | 本地/Docker | Docker 多架构 + GitHub Actions |
 
-
-
 #### 📥 安装部署
 
 **两种部署方式，任选其一**：
@@ -131,8 +127,6 @@
 | 💻 **本地代码版** | 开发者、定制需求 | ⭐⭐⭐ 较难 | [本地安装指南](https://mp.weixin.qq.com/s/cqUGf-sAzcBV19gdI4sYfA) |
 
 ⚠️ **重要提醒**：在分析股票之前，请按相关文档要求，将股票数据同步完成，否则分析结果将会出现数据错误。
-
-
 
 #### 📚 使用指南
 
@@ -151,7 +145,6 @@
 - **[6、📘 TradingAgents v1.0.0-preview 源码版安装手册（修订版）](https://mp.weixin.qq.com/s/cqUGf-sAzcBV19gdI4sYfA)**
 - **[7、📘 TradingAgents v1.0.0-preview 源码安装视频教程](https://www.bilibili.com/video/BV1FxCtBHEte/?vd_source=5d790a5b8d2f46d2c10fd4e770be1594)**
 
-
 使用指南包含：
 - ✅ 完整的功能介绍和操作演示
 - ✅ 详细的配置说明和最佳实践
@@ -164,10 +157,6 @@
   - [数据库版本隔离与 Provider 规范化](./docs/deployment/database/DB_VERSION_ISOLATION_AND_PROVIDER_NORMALIZATION.md)
 
 ### 上游吸收补充
-
-- 当前项目采用人工选择性吸收上游更新：
-  - [上游同步策略](./docs/maintenance/upstream-sync.md)
-  - [人工上游吸收清单](./docs/maintenance/manual-upstream-absorption-checklist.md)
 
 - `v1.0.1` 已明确同步到当前版本的上游能力包括：
   - `llm_clients` 抽象层主链路
@@ -184,17 +173,13 @@
 1. **关注公众号**: 微信搜索 **"TradingAgentsA"** 并关注
 2. 公众号每天推送项目最新进展和使用教程
 
-
 - **微信公众号**: TradingAgentsA（推荐）
 
   <img src="assets/wexin.png" alt="微信公众号" width="200"/>
 
-
 ## 🆚 中文增强特色
 
 **相比原版新增**: 智能新闻分析 | 多层次新闻过滤 | 新闻质量评估 | 统一新闻工具 | 多LLM提供商集成 | 模型选择持久化 | 快速切换按钮 | | 实时进度显示 | 智能会话管理 | 中文界面 | A股数据 | 国产LLM | Docker部署 | 专业报告导出 | 统一日志管理 | Web配置界面 | 成本优化
-
-
 
 ## 🤝 贡献指南
 
@@ -232,7 +217,6 @@
 ### 🔒 专有部分（需商业授权）
 - **适用范围**：`app/`（FastAPI后端）和 `frontend/`（Vue前端）目录
 - **商业使用**：需要单独许可协议
-- **联系授权**：[hsliup@163.com](mailto:hsliup@163.com)
 
 ### 📋 许可证选择建议
 - **个人学习/研究**：可自由使用全部功能
@@ -327,8 +311,7 @@
 
 ## 📞 联系方式
 
-- **GitHub Issues**: [提交问题和建议](https://github.com/hsliuping/TradingAgents-CN/issues)
-- **邮箱**: hsliup@163.com
+- **GitHub Issues**: [提交问题和建议](https://github.com/suweitao8/TradingAgentsA/issues)
 - 项目ＱＱ群：1091917201
 - 项目微信公众号：TradingAgentsA
 
@@ -352,6 +335,6 @@
 
 **🌟 如果这个项目对您有帮助，请给我们一个 Star！**
 
-[⭐ Star this repo](https://github.com/hsliuping/TradingAgents-CN) | [🍴 Fork this repo](https://github.com/hsliuping/TradingAgents-CN/fork) | [📖 Read the docs](./docs/)
+[⭐ Star this repo](https://github.com/suweitao8/TradingAgentsA) | [🍴 Fork this repo](https://github.com/suweitao8/TradingAgentsA/fork) | [📖 Read the docs](./docs/)
 
 </div>

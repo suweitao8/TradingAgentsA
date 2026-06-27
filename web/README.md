@@ -254,7 +254,7 @@ streamlit run web/app.py --logger.level=debug
 
 1. 📖 查看 [完整文档](../docs/)
 2. 🧪 运行 [测试程序](../tests/test_web_interface.py)
-3. 💬 提交 [GitHub Issue](https://github.com/hsliuping/TradingAgents-CN/issues)
+3. 💬 提交 [GitHub Issue](https://github.com/suweitao8/TradingAgentsA/issues)
 
 ## 🚀 开发指南
 

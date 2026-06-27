@@ -205,4 +205,4 @@ TUSHARE_TOKEN=your_tushare_token_here
 
 🚀 **立即体验**: [快速开始指南](docs/overview/quick-start.md)
 📚 **完整文档**: [项目文档](docs/)
-🐛 **问题反馈**: [GitHub Issues](https://github.com/hsliuping/TradingAgents/issues)
+🐛 **问题反馈**: [GitHub Issues](https://github.com/suweitao8/TradingAgentsA/issues)

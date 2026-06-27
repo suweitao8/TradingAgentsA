@@ -775,5 +775,5 @@ source_priority = ["tushare", "multi_source", "akshare", "baostock"]
 
 **感谢使用 TradingAgentsA！** 🚀
 
-如有问题或建议，欢迎在 [GitHub Issues](https://github.com/hsliuping/TradingAgents-CN/issues) 中反馈。
+如有问题或建议，欢迎在 [GitHub Issues](https://github.com/suweitao8/TradingAgentsA/issues) 中反馈。
 

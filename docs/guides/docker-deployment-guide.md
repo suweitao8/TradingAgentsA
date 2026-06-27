@@ -87,7 +87,7 @@ docker-compose --version
 
 ```bash
 # 克隆项目
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 
 # 检查版本
@@ -428,8 +428,8 @@ REDIS_PASSWORD=secure_redis_password
 
 如果在Docker部署过程中遇到问题：
 
-- 🐛 [GitHub Issues](https://github.com/hsliuping/TradingAgents-CN/issues)
-- 💬 [GitHub Discussions](https://github.com/hsliuping/TradingAgents-CN/discussions)
+- 🐛 [GitHub Issues](https://github.com/suweitao8/TradingAgentsA/issues)
+- 💬 [GitHub Discussions](https://github.com/suweitao8/TradingAgentsA/discussions)
 - 📚 [Docker官方文档](https://docs.docker.com/)
 
 ---

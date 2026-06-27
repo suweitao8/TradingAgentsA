@@ -40,9 +40,7 @@
 - 数据库初始化
 
 ### 📋 git/ - Git工具脚本
-- 上游同步
-- Fork环境设置
-- 贡献工作流
+- 分支管理
 
 ## 使用原则
 
@@ -63,7 +61,7 @@ python scripts/validation/verify_gitignore.py
 powershell -ExecutionPolicy Bypass -File scripts/maintenance/cleanup.ps1
 
 # Bash脚本
-bash scripts/git/upstream_git_workflow.sh
+bash scripts/maintenance/cleanup.sh
 ```
 
 ## 目录说明
@@ -73,10 +71,10 @@ bash scripts/git/upstream_git_workflow.sh
 | `setup/` | 环境配置和初始化 | setup_databases.py |
 | `validation/` | 验证和检查 | verify_gitignore.py |
 | `maintenance/` | 维护和管理 | branch_manager.py |
-| `development/` | 开发辅助 | prepare_upstream_contribution.py |
+| `development/` | 开发辅助 | download_finnhub_sample_data.py |
 | `deployment/` | 部署发布 | create_github_release.py |
 | `docker/` | 容器管理 | start_docker_services.bat |
-| `git/` | Git工具 | upstream_git_workflow.sh |
+| `git/` | Git工具 | branch_manager.py |
 
 ## 注意事项
 

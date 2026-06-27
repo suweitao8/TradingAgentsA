@@ -6,7 +6,7 @@
 ## 规则源与同步
 
 - **AGENTS.md 是唯一权威规则源**（所有会话工具都读，已纳入 git），只放**通用工作流**规则。
-- **项目特定领域知识放 `docs/` 下对应文档**（架构、部署、数据源、上游同步等），按任务路由表按需读取，不强制每次会话全读。
+- **项目特定领域知识放 `docs/` 下对应文档**（架构、部署、数据源等），按任务路由表按需读取，不强制每次会话全读。
 - **CLAUDE.md 是 AGENTS.md 的完整同步副本**（供 Claude Code 读取，本地保留、不进 git，在 `.gitignore` 中排除），由 `.githooks/post-commit` 自动同步，无需手动维护。
 - **`MEMORY.md` 是 AI 个人反思日志**（本地保留、不进 git），记录反复踩过的环境陷阱和浪费模式。每次新会话第一件事就是读它。
 - 本项目明确允许 CLAUDE.md 与 AGENTS.md 并存（覆盖 `/md` 默认的"禁止并存"判断）。
@@ -42,7 +42,6 @@
 | 改配置/Settings | — | `docs/configuration/`、`docs/SETTINGS_MERGE.md` | — |
 | 前端 Vue/样式 | — | `docs/frontend/` | — |
 | 部署/Docker | — | `docs/deployment/`、`docs/BUILD_GUIDE.md` | — |
-| 上游同步 | — | `docs/maintenance/upstream-sync.md`、`docs/maintenance/manual-upstream-absorption-checklist.md` | — |
 | 写测试/验证 | 验证与收尾 | `docs/development/DEVELOPMENT_SETUP.md` | `modern-python`（testing.md） |
 
 ### 工作流硬规则（最高优先级）

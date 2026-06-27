@@ -28,8 +28,7 @@ def create_scripts_structure():
             "description": "安装和配置脚本",
             "scripts": [
                 "setup_databases.py",
-                "init_database.py", 
-                "setup_fork_environment.sh",
+                "init_database.py",
                 "migrate_env_to_config.py"
             ]
         },
@@ -49,7 +48,6 @@ def create_scripts_structure():
         "development": {
             "description": "开发辅助脚本",
             "scripts": [
-                "prepare_upstream_contribution.py",
                 "download_finnhub_sample_data.py",
                 "fix_streamlit_watcher.py"
             ]
@@ -77,9 +75,7 @@ def create_scripts_structure():
         },
         "git": {
             "description": "Git相关脚本",
-            "scripts": [
-                "upstream_git_workflow.sh"
-            ]
+            "scripts": []
         }
     }
     
@@ -170,7 +166,6 @@ python scripts/{category}/script_name.py
 - 缓存清理
 - 数据备份
 - 依赖更新
-- 上游同步
 
 ### 🛠️ development/ - 开发辅助脚本
 - 代码分析
@@ -189,9 +184,7 @@ python scripts/{category}/script_name.py
 - 数据库初始化
 
 ### 📋 git/ - Git工具脚本
-- 上游同步
 - 分支管理
-- 贡献工作流
 
 ## 使用原则
 

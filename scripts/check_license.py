@@ -25,9 +25,9 @@ def check_license_file(file_path: Path, component_name: str) -> bool:
             print(f"⚠️  {component_name}: 缺少版权声明")
             return False
             
-        # 检查是否包含联系信息
-        if "hsliup@163.com" not in content:
-            print(f"⚠️  {component_name}: 缺少联系信息")
+        # 检查是否包含版权人信息
+        if "suweitao8" not in content:
+            print(f"⚠️  {component_name}: 缺少版权人信息")
             return False
             
         print(f"✅ {component_name}: 许可证文件正常")

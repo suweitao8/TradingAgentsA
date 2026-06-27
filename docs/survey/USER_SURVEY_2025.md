@@ -292,7 +292,7 @@ _________________________________________________________________
 感谢您抽出宝贵时间完成本次调查！您的反馈对我们非常重要。
 
 **问卷提交方式**：
-1. GitHub Issue: https://github.com/hsliuping/TradingAgents-CN/issues
+1. GitHub Issue: https://github.com/suweitao8/TradingAgentsA/issues
 2. 邮件: [项目邮箱]
 3. 在线问卷: [问卷链接]
 

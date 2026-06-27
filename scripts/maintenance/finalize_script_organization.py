@@ -30,8 +30,7 @@ def finalize_script_organization():
         "init_database.py": "setup/init_database.py",
         "migrate_env_to_config.py": "setup/migrate_env_to_config.py",
         
-        # 开发和贡献脚本 -> scripts/development/
-        "prepare_upstream_contribution.py": "development/prepare_upstream_contribution.py",
+        # 开发脚本 -> scripts/development/
         "download_finnhub_sample_data.py": "development/download_finnhub_sample_data.py",
         "fix_streamlit_watcher.py": "development/fix_streamlit_watcher.py",
         
@@ -55,8 +54,7 @@ def finalize_script_organization():
         "mongo-init.js": "docker/mongo-init.js",
         
         # Git工具 -> scripts/git/
-        "upstream_git_workflow.sh": "git/upstream_git_workflow.sh",
-        "setup_fork_environment.sh": "git/setup_fork_environment.sh",
+        # (fork/upstream 工作流脚本已移除)
     }
     
     # 创建必要的目录
@@ -120,11 +118,8 @@ def finalize_script_organization():
         },
         "git": {
             "title": "Git Tools",
-            "description": "Git工具和工作流脚本", 
-            "scripts": [
-                "upstream_git_workflow.sh - 上游Git工作流",
-                "setup_fork_environment.sh - 设置Fork环境"
-            ]
+            "description": "Git工具和工作流脚本",
+            "scripts": []
         }
     }
     
@@ -191,7 +186,6 @@ python scripts/{dir_name}/script_name.py
 - 缓存清理
 - 数据备份
 - 依赖更新
-- 上游同步
 - 分支管理
 
 ### 🛠️ development/ - 开发辅助脚本
@@ -212,9 +206,7 @@ python scripts/{dir_name}/script_name.py
 - 数据库初始化
 
 ### 📋 git/ - Git工具脚本
-- 上游同步
-- Fork环境设置
-- 贡献工作流
+- 分支管理
 
 ## 使用原则
 
@@ -235,7 +227,7 @@ python scripts/validation/verify_gitignore.py
 powershell -ExecutionPolicy Bypass -File scripts/maintenance/cleanup.ps1
 
 # Bash脚本
-bash scripts/git/upstream_git_workflow.sh
+bash scripts/maintenance/cleanup.sh
 ```
 
 ## 目录说明
@@ -245,10 +237,10 @@ bash scripts/git/upstream_git_workflow.sh
 | `setup/` | 环境配置和初始化 | setup_databases.py |
 | `validation/` | 验证和检查 | verify_gitignore.py |
 | `maintenance/` | 维护和管理 | branch_manager.py |
-| `development/` | 开发辅助 | prepare_upstream_contribution.py |
+| `development/` | 开发辅助 | download_finnhub_sample_data.py |
 | `deployment/` | 部署发布 | create_github_release.py |
 | `docker/` | 容器管理 | start_docker_services.bat |
-| `git/` | Git工具 | upstream_git_workflow.sh |
+| `git/` | Git工具 | branch_manager.py |
 
 ## 注意事项
 

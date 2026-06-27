@@ -416,7 +416,7 @@ mkdir TradingAgentsA-v0.1.7
 cd TradingAgentsA-v0.1.7
 
 # 克隆最新版本
-git clone https://github.com/hsliuping/TradingAgents-CN.git .
+git clone https://github.com/suweitao8/TradingAgentsA.git .
 
 # 恢复配置
 cp ../custom_config_backup.env .env
@@ -611,9 +611,9 @@ docker-compose up -d
 
 如果在升级过程中遇到问题，可以通过以下方式获取帮助：
 
-- 🐛 [GitHub Issues](https://github.com/hsliuping/TradingAgents-CN/issues)
-- 💬 [GitHub Discussions](https://github.com/hsliuping/TradingAgents-CN/discussions)
-- 📚 [完整文档](https://github.com/hsliuping/TradingAgents-CN/tree/main/docs)
+- 🐛 [GitHub Issues](https://github.com/suweitao8/TradingAgentsA/issues)
+- 💬 [GitHub Discussions](https://github.com/suweitao8/TradingAgentsA/discussions)
+- 📚 [完整文档](https://github.com/suweitao8/TradingAgentsA/tree/main/docs)
 
 ### 提交问题时请包含
 

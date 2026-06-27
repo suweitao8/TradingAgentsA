@@ -351,9 +351,8 @@ docker-compose -f docker-compose.v1.0.0.yml build --no-cache frontend
 
 如有问题，请联系：
 
-- **GitHub Issues**: https://github.com/hsliuping/TradingAgents-CN/issues
+- **GitHub Issues**: https://github.com/suweitao8/TradingAgentsA/issues
 - **QQ群**: 782124367
-- **邮箱**: hsliup@163.com
 
 ---
 

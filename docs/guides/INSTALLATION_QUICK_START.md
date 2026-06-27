@@ -43,8 +43,8 @@ TradingAgentsA v1.0.0-preview绿色版绿色版端口配置说明
 mkdir tradingagentsa && cd tradingagentsa
 
 # 3. 下载配置文件
-curl -O https://raw.githubusercontent.com/hsliuping/TradingAgentsA/main/docker-compose.yml
-curl -O https://raw.githubusercontent.com/hsliuping/TradingAgentsA/main/.env.example
+curl -O https://raw.githubusercontent.com/suweitao8/TradingAgentsA/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/suweitao8/TradingAgentsA/main/.env.example
 mv .env.example .env
 
 # 4. 编辑 .env 文件，配置 API 密钥
@@ -74,7 +74,7 @@ docker-compose logs -f
 # 1. 安装依赖: Python 3.10+, MongoDB 4.4+, Redis 6.2+
 
 # 2. 克隆代码
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 
 # 3. 创建虚拟环境
@@ -220,7 +220,7 @@ FRONTEND_PORT=5174
 
 ### 社区支持
 
-- **GitHub Issues**: [提交问题](https://github.com/hsliuping/TradingAgents-CN/issues)
+- **GitHub Issues**: [提交问题](https://github.com/suweitao8/TradingAgentsA/issues)
 - **微信公众号**: TradingAgentsA
 - **QQ 群**: 关注公众号获取群号
 

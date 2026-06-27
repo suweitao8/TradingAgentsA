@@ -217,9 +217,8 @@ const modelConfig = {
 
 For currency-related questions, please contact:
 
-- 📧 邮箱 / Email: hsliup@163.com
 - 💬 QQ群 / QQ Group: 782124367
-- 🌐 GitHub: https://github.com/hsliuping/TradingAgents-CN
+- 🌐 GitHub: https://github.com/suweitao8/TradingAgentsA
 
 ---
 

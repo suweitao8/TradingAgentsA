@@ -410,8 +410,8 @@ tar -czf exports_archive_$(date +%Y%m).tar.gz exports/
 
 如果在使用报告导出功能时遇到问题：
 
-- 🐛 [GitHub Issues](https://github.com/hsliuping/TradingAgents-CN/issues)
-- 💬 [GitHub Discussions](https://github.com/hsliuping/TradingAgents-CN/discussions)
+- 🐛 [GitHub Issues](https://github.com/suweitao8/TradingAgentsA/issues)
+- 💬 [GitHub Discussions](https://github.com/suweitao8/TradingAgentsA/discussions)
 - 📚 [Pandoc文档](https://pandoc.org/MANUAL.html)
 
 ---

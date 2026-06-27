@@ -59,7 +59,7 @@ TradingAgentsA 提供三种部署方式，请根据您的需求选择：
 
 访问以下任一渠道下载最新版本：
 
-- **GitHub Releases**: [https://github.com/hsliuping/TradingAgents-CN/releases](https://github.com/hsliuping/TradingAgents-CN/releases)
+- **GitHub Releases**: [https://github.com/suweitao8/TradingAgentsA/releases](https://github.com/suweitao8/TradingAgentsA/releases)
 - **百度网盘**: 关注公众号 "TradingAgentsA" 获取下载链接
 - **阿里云盘**: 关注公众号 "TradingAgentsA" 获取下载链接
 
@@ -256,7 +256,7 @@ docker-compose --version
 2. **下载 docker-compose.yml**：
    ```bash
    # 从 GitHub 下载
-   curl -O https://raw.githubusercontent.com/hsliuping/TradingAgentsA/main/docker-compose.yml
+   curl -O https://raw.githubusercontent.com/suweitao8/TradingAgentsA/main/docker-compose.yml
    
    # 或手动创建（见下方配置）
    ```
@@ -264,7 +264,7 @@ docker-compose --version
 3. **创建 .env 文件**：
    ```bash
    # 复制示例配置
-   curl -O https://raw.githubusercontent.com/hsliuping/TradingAgentsA/main/.env.example
+   curl -O https://raw.githubusercontent.com/suweitao8/TradingAgentsA/main/.env.example
    mv .env.example .env
    
    # 编辑配置
@@ -298,7 +298,7 @@ docker-compose --version
 
 1. **克隆代码**：
    ```bash
-   git clone https://github.com/hsliuping/TradingAgents-CN.git
+   git clone https://github.com/suweitao8/TradingAgentsA.git
    cd TradingAgentsA
    ```
 
@@ -472,7 +472,7 @@ sudo systemctl enable redis-server
 #### 1. 克隆代码
 
 ```bash
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 ```
 
@@ -684,7 +684,7 @@ docker-compose up -d
 如果遇到问题，可以通过以下方式获取帮助：
 
 1. **查看文档**: [docs/](../)
-2. **GitHub Issues**: [https://github.com/hsliuping/TradingAgents-CN/issues](https://github.com/hsliuping/TradingAgents-CN/issues)
+2. **GitHub Issues**: [https://github.com/suweitao8/TradingAgentsA/issues](https://github.com/suweitao8/TradingAgentsA/issues)
 3. **微信公众号**: TradingAgentsA
 4. **QQ 群**: 关注公众号获取群号
 

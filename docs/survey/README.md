@@ -338,7 +338,7 @@ df.to_excel('survey_data_cleaned.xlsx', index=False)
 ## 📞 联系方式
 
 如有问题或建议，请联系：
-- **GitHub**: https://github.com/hsliuping/TradingAgents-CN
+- **GitHub**: https://github.com/suweitao8/TradingAgentsA
 - **Email**: [项目邮箱]
 - **微信群**: [二维码]
 

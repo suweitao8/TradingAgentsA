@@ -10,7 +10,7 @@
 
 ```bash
 # 1. 克隆预览分支
-git clone -b feature/deepseek-v3-integration https://github.com/hsliuping/TradingAgents-CN.git
+git clone -b feature/deepseek-v3-integration https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 
 # 2. 创建虚拟环境
@@ -299,9 +299,9 @@ print('数据获取结果:', data[:200] if data else '获取失败')
 
 ## 📞 获取帮助
 
-- **GitHub Issues**：https://github.com/hsliuping/TradingAgents-CN/issues
+- **GitHub Issues**：https://github.com/suweitao8/TradingAgentsA/issues
 - **测试讨论**：GitHub Discussions
-- **实时反馈**：在Issue中@hsliuping
+- **实时反馈**：在Issue中@suweitao8
 
 ---
 

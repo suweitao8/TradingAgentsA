@@ -5,7 +5,7 @@
 
 ### 专有组件 / Proprietary Components
 
-**版权所有者 / Copyright Owner**: hsliuping  
+**版权所有者 / Copyright Owner**: suweitao8  
 **版权年份 / Copyright Year**: 2025  
 **适用组件 / Applicable Components**:
 - `app/` - FastAPI 后端应用 / FastAPI Backend Application
@@ -30,9 +30,8 @@
 
 ## 📞 联系信息 / Contact Information
 
-**版权所有者 / Copyright Owner**: hsliuping  
-**邮箱 / Email**: hsliup@163.com  
-**GitHub**: https://github.com/hsliuping/TradingAgents-CN  
+**版权所有者 / Copyright Owner**: suweitao8  
+**GitHub**: https://github.com/suweitao8/TradingAgentsA  
 **QQ群 / QQ Group**: 782124367  
 
 ## 💼 商业许可 / Commercial Licensing

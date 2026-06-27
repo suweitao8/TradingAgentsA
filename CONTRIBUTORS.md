@@ -37,11 +37,11 @@
 
 - **[@YifanHere](https://github.com/YifanHere)**
   - **主要贡献**：
-    - 🔧 **CLI代码质量改进** ([PR #158](https://github.com/hsliuping/TradingAgents-CN/pull/158))
+    - 🔧 **CLI代码质量改进** ([PR #158](https://github.com/suweitao8/TradingAgentsA/pull/158))
       - 优化命令行界面的用户体验和错误处理机制
       - 提升了命令行工具的稳定性和用户友好性
       - 贡献时间：2025年
-    - 🐛 **关键Bug修复** ([PR #173](https://github.com/hsliuping/TradingAgents-CN/pull/173))
+    - 🐛 **关键Bug修复** ([PR #173](https://github.com/suweitao8/TradingAgentsA/pull/173))
       - 发现并报告了关键的 `KeyError: 'volume'` 问题
       - 提供了详细的问题分析、根因定位和修复方案
       - 显著提升了Tushare数据源的系统稳定性，解决了缓存数据标准化问题
@@ -50,7 +50,7 @@
 
 - **[@BG8CFB](https://github.com/BG8CFB)**
   - **主要贡献**：
-    - 🐛 修复 GLM 模型无法调用新闻分析的问题 ([PR #457](https://github.com/hsliuping/TradingAgents-CN/pull/457))
+    - 🐛 修复 GLM 模型无法调用新闻分析的问题 ([PR #457](https://github.com/suweitao8/TradingAgentsA/pull/457))
       - 修正新闻分析模块与 GLM 模型的适配问题
       - 提升新闻分析功能在 GLM 模型下的可用性与稳定性
       - 贡献时间：2025年11月
@@ -136,9 +136,9 @@
 
 如果您想成为贡献者或有任何问题，请通过以下方式联系我们：
 
-- **GitHub Issues**: [提交问题或建议](https://github.com/hsliuping/TradingAgents-CN/issues)
-- **GitHub Discussions**: [参与社区讨论](https://github.com/hsliuping/TradingAgents-CN/discussions)
-- **Pull Requests**: [提交代码贡献](https://github.com/hsliuping/TradingAgents-CN/pulls)
+- **GitHub Issues**: [提交问题或建议](https://github.com/suweitao8/TradingAgentsA/issues)
+- **GitHub Discussions**: [参与社区讨论](https://github.com/suweitao8/TradingAgentsA/discussions)
+- **Pull Requests**: [提交代码贡献](https://github.com/suweitao8/TradingAgentsA/pulls)
 - 加入到ＱＱ群：782124367
 
 ## 🙏 致谢

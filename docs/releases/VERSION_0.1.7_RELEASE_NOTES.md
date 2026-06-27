@@ -310,9 +310,9 @@ docker-compose up -d --build
 
 ---
 
-**下载地址**: [GitHub Releases](https://github.com/hsliuping/TradingAgents-CN/releases/tag/cn-0.1.7)
+**下载地址**: [GitHub Releases](https://github.com/suweitao8/TradingAgentsA/releases/tag/cn-0.1.7)
 
-**问题反馈**: [GitHub Issues](https://github.com/hsliuping/TradingAgents-CN/issues)
+**问题反馈**: [GitHub Issues](https://github.com/suweitao8/TradingAgentsA/issues)
 
 **技术支持**: [项目文档](docs/)
 

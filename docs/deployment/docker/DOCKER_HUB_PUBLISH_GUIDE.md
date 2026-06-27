@@ -49,7 +49,7 @@
 
 # 完整示例
 .\scripts\publish-docker-images.ps1 `
-  -DockerHubUsername "hsliuping" `
+  -DockerHubUsername "suweitao8" `
   -Version "v1.0.0-preview" `
   -PushLatest
 ```
@@ -70,7 +70,7 @@ SKIP_BUILD=true ./scripts/publish-docker-images.sh your-username
 PUSH_LATEST=false ./scripts/publish-docker-images.sh your-username
 
 # 完整示例
-./scripts/publish-docker-images.sh hsliuping v1.0.0-preview
+./scripts/publish-docker-images.sh suweitao8 v1.0.0-preview
 ```
 
 ---
@@ -116,10 +116,10 @@ PUSH_LATEST=false ./scripts/publish-docker-images.sh your-username
 
 ```powershell
 # Windows
-.\scripts\publish-docker-images.ps1 -DockerHubUsername "hsliuping"
+.\scripts\publish-docker-images.ps1 -DockerHubUsername "suweitao8"
 
 # Linux/Mac
-./scripts/publish-docker-images.sh hsliuping
+./scripts/publish-docker-images.sh suweitao8
 ```
 
 ### 步骤 3: 验证发布
@@ -144,10 +144,10 @@ PUSH_LATEST=false ./scripts/publish-docker-images.sh your-username
 ```yaml
 services:
   tradingagents-backend:
-    image: hsliuping/tradingagents-backend:latest  # 替换为你的用户名
+    image: suweitao8/tradingagents-backend:latest  # 替换为你的用户名
     
   tradingagents-frontend:
-    image: hsliuping/tradingagents-frontend:latest  # 替换为你的用户名
+    image: suweitao8/tradingagents-frontend:latest  # 替换为你的用户名
 ```
 
 ---

@@ -115,8 +115,7 @@ $ExistingScripts = @(
     @{ Source = "C:\code\verify_gitignore.py"; Target = "scripts\validation\verify_gitignore.py" },
     @{ Source = "C:\code\check_dependencies.py"; Target = "scripts\validation\check_dependencies.py" },
     @{ Source = "C:\code\smart_config.py"; Target = "scripts\setup\smart_config.py" },
-    @{ Source = "C:\code\debug_integration.ps1"; Target = "scripts\development\debug_integration.ps1" },
-    @{ Source = "C:\code\remove_contribution_from_git.ps1"; Target = "scripts\maintenance\remove_contribution_from_git.ps1" }
+    @{ Source = "C:\code\debug_integration.ps1"; Target = "scripts\development\debug_integration.ps1" }
 )
 
 foreach ($script in $ExistingScripts) {
@@ -158,7 +157,6 @@ $MainReadmeContent = @"
 - 缓存清理
 - 数据备份
 - 依赖更新
-- 上游同步
 
 ### 🛠️ development/ - 开发辅助脚本
 - 代码分析

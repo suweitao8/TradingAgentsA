@@ -76,7 +76,6 @@
 - [代码结构](./development/code-structure.md) - 代码组织结构
 - [扩展开发](./development/extending.md) - 如何扩展框架
 - [测试指南](./development/testing.md) - 测试策略和方法
-- [上游同步策略](./maintenance/upstream-sync.md) - 人工选择性同步上游的流程与原则
 
 ### 📋 版本发布 (v0.1.7更新)
 - [更新日志](./releases/CHANGELOG.md) - 所有版本更新记录 ✨
@@ -130,7 +129,6 @@
 
 ## 联系我们
 
-- **GitHub Issues**: [提交问题和建议](https://github.com/hsliuping/TradingAgents-CN/issues)
-- **邮箱**: hsliup@163.com
+- **GitHub Issues**: [提交问题和建议](https://github.com/suweitao8/TradingAgentsA/issues)
 - 项目ＱＱ群：782124367
 - **原项目**: [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents)

@@ -39,14 +39,12 @@ def organize_root_scripts():
         "organize_scripts.py": "scripts/development/organize_scripts.py",
         
         # 设置脚本 -> scripts/setup/
-        "setup_fork_environment.ps1": "scripts/setup/setup_fork_environment.ps1",
-        
+        # (setup_fork_environment.ps1 已移除)
+
         # 维护脚本 -> scripts/maintenance/
-        "remove_contribution_from_git.ps1": "scripts/maintenance/remove_contribution_from_git.ps1",
         "analyze_differences.ps1": "scripts/maintenance/analyze_differences.ps1",
         "debug_integration.ps1": "scripts/maintenance/debug_integration.ps1",
         "integrate_cache_improvements.ps1": "scripts/maintenance/integrate_cache_improvements.ps1",
-        "migrate_first_contribution.ps1": "scripts/maintenance/migrate_first_contribution.ps1",
         "create_scripts_structure.ps1": "scripts/maintenance/create_scripts_structure.ps1",
     }
     

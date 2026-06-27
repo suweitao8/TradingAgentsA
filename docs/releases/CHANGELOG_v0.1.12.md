@@ -302,8 +302,7 @@ news_filter:
 
 如果您在使用过程中遇到任何问题或有改进建议，请通过以下方式联系我们：
 
-- **GitHub Issues**: [提交问题](https://github.com/hsliuping/TradingAgents-CN/issues)
-- **邮箱**: hsliup@163.com
+- **GitHub Issues**: [提交问题](https://github.com/suweitao8/TradingAgentsA/issues)
 - **QQ群**: 782124367
 
 ## 🙏 致谢

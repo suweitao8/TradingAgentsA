@@ -51,7 +51,7 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 
 # 2. 复制环境配置
@@ -72,7 +72,7 @@ docker-compose up -d
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 
 # 2. 创建虚拟环境
@@ -159,7 +159,7 @@ docker run hello-world
 
 ```bash
 # 克隆项目到本地
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 
 # 进入项目目录
 cd TradingAgentsA
@@ -245,7 +245,7 @@ sudo ln -sf /usr/bin/pip3 /usr/bin/pip
 
 ```bash
 # 克隆项目
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 ```
 
@@ -753,9 +753,9 @@ pip install -r requirements.txt
 ## 📞 获取帮助
 
 ### 官方资源
-- **项目主页**: https://github.com/hsliuping/TradingAgents-CN
+- **项目主页**: https://github.com/suweitao8/TradingAgentsA
 - **文档中心**: https://www.tradingagents.cn/
-- **问题反馈**: https://github.com/hsliuping/TradingAgents-CN/issues
+- **问题反馈**: https://github.com/suweitao8/TradingAgentsA/issues
 
 ### 社区支持
 - **微信群**: 扫描README中的二维码

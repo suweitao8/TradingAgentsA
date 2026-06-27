@@ -152,7 +152,7 @@ streamlit run web/app.py
 
 ```bash
 # 1. 全新安装 (推荐)
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 
 # 2. 迁移配置

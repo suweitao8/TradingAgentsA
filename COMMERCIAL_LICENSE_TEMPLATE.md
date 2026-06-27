@@ -4,7 +4,7 @@
 ## 商业软件许可协议
 ## Commercial Software License Agreement
 
-**许可方 / Licensor**: hsliuping
+**许可方 / Licensor**: suweitao8
 **被许可方 / Licensee**: [客户公司名称 / Client Company Name]
 **软件 / Software**: TradingAgentsA Web Application (app/ 和 frontend/ 目录)
 **协议日期 / Agreement Date**: [日期 / Date]
@@ -104,6 +104,5 @@
 ## 联系信息
 
 **商业许可咨询 / Commercial License Inquiries**:
-- 邮箱 / Email: hsliup@163.com
-- GitHub: https://github.com/hsliuping/TradingAgents-CN
+- GitHub: https://github.com/suweitao8/TradingAgentsA
 - QQ群 / QQ Group: 782124367

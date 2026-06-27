@@ -53,7 +53,7 @@ docker-compose --version
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 
 # 2. 配置环境变量
@@ -69,7 +69,7 @@ chmod +x scripts/docker-init.sh
 
 ```powershell
 # 1. 克隆仓库
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 
 # 2. 配置环境变量
@@ -84,7 +84,7 @@ notepad .env  # 编辑配置文件
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 
 # 2. 配置环境变量
@@ -438,9 +438,8 @@ command: redis-server --appendonly yes --save 60 1000
 
 ## 🤝 获取帮助
 
-- **GitHub Issues**: https://github.com/hsliuping/TradingAgents-CN/issues
+- **GitHub Issues**: https://github.com/suweitao8/TradingAgentsA/issues
 - **QQ群**: 782124367
-- **邮箱**: hsliup@163.com
 
 ---
 

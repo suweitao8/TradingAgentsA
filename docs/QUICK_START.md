@@ -10,7 +10,7 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 
 # 2. 配置API密钥
@@ -30,7 +30,7 @@ docker-compose up -d
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 
 # 2. 创建虚拟环境
@@ -171,7 +171,7 @@ tail -f logs/tradingagents.log
 ### Q: 如何获取更多帮助？
 **A**: 
 - 📖 **详细文档**: [docs/INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)
-- 🐛 **问题反馈**: https://github.com/hsliuping/TradingAgents-CN/issues
+- 🐛 **问题反馈**: https://github.com/suweitao8/TradingAgentsA/issues
 - 💬 **社区讨论**: 见项目主页的微信群二维码
 
 ## 🎉 开始使用

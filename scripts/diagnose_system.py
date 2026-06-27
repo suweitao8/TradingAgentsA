@@ -268,7 +268,7 @@ def main():
         print_info("运行一键安装脚本: python scripts/easy_install.py")
     
     print()
-    print_info("如需帮助，请访问: https://github.com/hsliuping/TradingAgents-CN/issues")
+    print_info("如需帮助，请访问: https://github.com/suweitao8/TradingAgentsA/issues")
 
 if __name__ == "__main__":
     try:

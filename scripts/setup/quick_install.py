@@ -252,7 +252,7 @@ def main():
     if success:
         print_colored("\n🎉 安装完成!", Colors.GREEN)
         print_colored("📖 详细文档: docs/INSTALLATION_GUIDE.md", Colors.BLUE)
-        print_colored("❓ 遇到问题: https://github.com/hsliuping/TradingAgents-CN/issues", Colors.BLUE)
+        print_colored("❓ 遇到问题: https://github.com/suweitao8/TradingAgentsA/issues", Colors.BLUE)
     else:
         print_colored("\n❌ 安装失败", Colors.RED)
         print_colored("📖 请查看详细安装指南: docs/INSTALLATION_GUIDE.md", Colors.YELLOW)

@@ -57,7 +57,7 @@ def create_llm_by_provider(provider: str, model: str, backend_url: str, temperat
 
     normalized_provider = normalize_provider_key(provider)
 
-    if normalized_provider in {"openai", "siliconflow", "openrouter", "aihubmix", "ollama", "deepseek", "qwen", "glm", "custom_openai", "qianfan"}:
+    if normalized_provider in {"openai", "siliconflow", "openrouter", "aihubmix", "ollama", "deepseek", "qwen", "glm", "custom_openai", "qianfan", "jdcloud"}:
         if not api_key:
             if normalized_provider == "siliconflow":
                 api_key = os.getenv('SILICONFLOW_API_KEY')
@@ -117,19 +117,19 @@ def create_llm_by_provider(provider: str, model: str, backend_url: str, temperat
         # 🔧 自定义厂家：使用 OpenAI 兼容模式
         logger.info(f"🔧 使用 OpenAI 兼容模式处理自定义厂家: {provider}")
 
-        # 尝试从环境变量获取 API Key（支持多种命名格式）
-        api_key_candidates = [
-            f"{provider.upper()}_API_KEY",  # 例如: KYX_API_KEY
-            f"{provider}_API_KEY",          # 例如: kyx_API_KEY
-            "CUSTOM_OPENAI_API_KEY"         # 通用环境变量
-        ]
-
-        custom_api_key = None
-        for env_var in api_key_candidates:
-            custom_api_key = os.getenv(env_var)
-            if custom_api_key:
-                logger.info(f"✅ 从环境变量 {env_var} 获取到 API Key")
-                break
+        # 优先使用传入的 API Key（来自数据库配置），其次从环境变量获取
+        custom_api_key = api_key
+        if not custom_api_key:
+            api_key_candidates = [
+                f"{provider.upper()}_API_KEY",  # 例如: KYX_API_KEY
+                f"{provider}_API_KEY",          # 例如: kyx_API_KEY
+                "CUSTOM_OPENAI_API_KEY"         # 通用环境变量
+            ]
+            for env_var in api_key_candidates:
+                custom_api_key = os.getenv(env_var)
+                if custom_api_key:
+                    logger.info(f"✅ 从环境变量 {env_var} 获取到 API Key")
+                    break
 
         if not custom_api_key:
             logger.warning(f"⚠️ 未找到自定义厂家 {provider} 的 API Key，尝试使用默认配置")
@@ -470,22 +470,24 @@ class TradingAgentsGraph:
         else:
             provider_name = self.config['llm_provider']
             logger.info(f"🔧 使用统一 llm_clients 路径处理自定义厂家: {provider_name}")
-            api_key_candidates = [
-                f"{provider_name.upper()}_API_KEY",  # 例如: KYX_API_KEY
-                f"{provider_name}_API_KEY",          # 例如: kyx_API_KEY
-                "CUSTOM_OPENAI_API_KEY"              # 通用环境变量
-            ]
 
-            custom_api_key = None
-            for env_var in api_key_candidates:
-                custom_api_key = os.getenv(env_var)
-                if custom_api_key:
-                    logger.info(f"✅ 从环境变量 {env_var} 获取到 API Key")
-                    break
+            # 🔥 优先使用数据库配置的 API Key，其次从环境变量获取
+            custom_api_key = self.config.get("quick_api_key") or self.config.get("deep_api_key")
+            if not custom_api_key:
+                api_key_candidates = [
+                    f"{provider_name.upper()}_API_KEY",  # 例如: KYX_API_KEY
+                    f"{provider_name}_API_KEY",          # 例如: kyx_API_KEY
+                    "CUSTOM_OPENAI_API_KEY"              # 通用环境变量
+                ]
+                for env_var in api_key_candidates:
+                    custom_api_key = os.getenv(env_var)
+                    if custom_api_key:
+                        logger.info(f"✅ 从环境变量 {env_var} 获取到 API Key")
+                        break
 
             if not custom_api_key:
                 raise ValueError(
-                    f"使用自定义厂家 {provider_name} 需要设置以下环境变量之一:\n"
+                    f"使用自定义厂家 {provider_name} 需要在数据库配置 API Key 或设置以下环境变量之一:\n"
                     f"  - {provider_name.upper()}_API_KEY\n"
                     f"  - CUSTOM_OPENAI_API_KEY"
                 )
@@ -515,7 +517,7 @@ class TradingAgentsGraph:
             logger.info(f"🔧 [{provider_name}-深度模型] max_tokens={deep_max_tokens}, temperature={deep_temperature}, timeout={deep_timeout}s")
 
             self.deep_thinking_llm, self.quick_thinking_llm = _create_provider_pair(
-                provider="custom_openai",
+                provider=normalized_provider,
                 config=self.config,
                 quick_temperature=quick_temperature,
                 quick_max_tokens=quick_max_tokens,

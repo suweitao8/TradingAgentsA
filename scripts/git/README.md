@@ -6,8 +6,7 @@ Git工具和工作流脚本
 
 ## 脚本列表
 
-- `upstream_git_workflow.sh - 上游Git工作流`
-- `setup_fork_environment.sh - 设置Fork环境`
+（Git 工具脚本按需添加）
 
 ## 使用方法
 

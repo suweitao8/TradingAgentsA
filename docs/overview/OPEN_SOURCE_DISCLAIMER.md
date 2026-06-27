@@ -158,7 +158,6 @@ TradingAgentsA/
 - 使用专有组件需获取商业许可证
 - 遵守商业许可证条款
 - 不得未经授权分发专有组件
-- 联系获取商业授权：hsliup@163.com
 
 ## 📋 许可证详细说明
 
@@ -208,7 +207,6 @@ TradingAgentsA/
 
 如需商业使用专有组件，需要获取商业许可证：
 
-📧 **联系方式**：hsliup@163.com
 💼 **商业许可包含**：
 - 商业使用权
 - 修改和定制权
@@ -332,7 +330,7 @@ TradingAgentsA/
 **版本**: v1.0.0-preview
 
 如有疑问，请访问：
-- GitHub: https://github.com/hsliuping/TradingAgents-CN
-- Issues: https://github.com/hsliuping/TradingAgents-CN/issues
+- GitHub: https://github.com/suweitao8/TradingAgentsA
+- Issues: https://github.com/suweitao8/TradingAgentsA/issues
 - QQ群: 782124367
 

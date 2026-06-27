@@ -90,7 +90,7 @@
 您的每一条建议都很重要！期待您的参与。
 
 如有任何问题，欢迎随时联系我们：
-• GitHub: https://github.com/hsliuping/TradingAgents-CN
+• GitHub: https://github.com/suweitao8/TradingAgentsA
 • Email: [项目邮箱]
 
 再次感谢您的支持！
@@ -193,9 +193,9 @@ TradingAgentsA 团队
 ---
 
 **相关链接**
-- 📖 [项目文档](https://github.com/hsliuping/TradingAgents-CN/wiki)
-- 💬 [讨论区](https://github.com/hsliuping/TradingAgents-CN/discussions)
-- 🐛 [问题反馈](https://github.com/hsliuping/TradingAgents-CN/issues)
+- 📖 [项目文档](https://github.com/suweitao8/TradingAgentsA/wiki)
+- 💬 [讨论区](https://github.com/suweitao8/TradingAgentsA/discussions)
+- 🐛 [问题反馈](https://github.com/suweitao8/TradingAgentsA/issues)
 ```
 
 ---

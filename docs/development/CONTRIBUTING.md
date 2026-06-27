@@ -49,7 +49,7 @@
 
 ### 1. 克隆仓库
 ```bash
-git clone https://github.com/hsliuping/TradingAgents-CN.git
+git clone https://github.com/suweitao8/TradingAgentsA.git
 cd TradingAgentsA
 ```
 
