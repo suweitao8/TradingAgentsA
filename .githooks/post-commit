@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Post-commit hook: AGENTS.md → CLAUDE.md 自动同步
+#
+# 仅当本次 commit 改动了 AGENTS.md 时，把 AGENTS.md 复制到 CLAUDE.md。
+# 用 python shutil.copyfile 而非 cp/copy——Windows git hook 环境下 cp 会静默失败。
+
+# 自动同步 AGENTS.md → CLAUDE.md
+if git diff-tree --no-commit-id --name-only -r HEAD | grep -qx "AGENTS.md"; then
+  if command -v python >/dev/null 2>&1; then
+    python -c "import shutil; shutil.copyfile('AGENTS.md', 'CLAUDE.md')" \
+      && echo "📋 AGENTS.md → CLAUDE.md 已自动同步" \
+      || echo "⚠️ AGENTS.md → CLAUDE.md 同步失败，请手动执行：python -c \"import shutil; shutil.copyfile('AGENTS.md', 'CLAUDE.md')\""
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 -c "import shutil; shutil.copyfile('AGENTS.md', 'CLAUDE.md')" \
+      && echo "📋 AGENTS.md → CLAUDE.md 已自动同步" \
+      || echo "⚠️ AGENTS.md → CLAUDE.md 同步失败"
+  fi
+fi
+
+# 后台刷新 CodeGraph 索引（若安装了 codegraph CLI）
+if command -v codegraph >/dev/null 2>&1; then
+  codegraph build >/dev/null 2>&1 &
+fi
