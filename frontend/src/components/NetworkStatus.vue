@@ -42,9 +42,14 @@ import { useAppStore } from '@/stores/app'
 const appStore = useAppStore()
 const retrying = ref(false)
 
-// 只在有网络问题时显示状态
+// 只在以下情况显示状态：
+// 1. 浏览器离线（立即显示）
+// 2. 首次API检查已完成 且 连接失败（避免初始化阶段误报）
 const showStatus = computed(() => {
-  return !appStore.isOnline || !appStore.apiConnected
+  if (!appStore.isOnline) return true
+  // 首次健康检查未完成前不显示"后端连接失败"，避免页面加载时误报
+  if (!appStore.apiCheckInitialized) return false
+  return !appStore.apiConnected
 })
 
 // 重试连接

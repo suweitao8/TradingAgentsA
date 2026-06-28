@@ -12,6 +12,8 @@ export interface AppState {
   // 网络状态
   isOnline: boolean
   apiConnected: boolean
+  // 首次健康检查是否完成（完成前不显示连接失败弹窗，避免初始化误报）
+  apiCheckInitialized: boolean
   lastApiCheck: number
 
   // 布局状态
@@ -55,6 +57,7 @@ export const useAppStore = defineStore('app', {
 
     isOnline: navigator.onLine,
     apiConnected: false,
+    apiCheckInitialized: false,
     lastApiCheck: 0,
 
     sidebarCollapsed: useStorage('sidebar-collapsed', false).value || false,
@@ -194,6 +197,7 @@ export const useAppStore = defineStore('app', {
     // 设置API连接状态
     setApiConnected(connected: boolean) {
       this.apiConnected = connected
+      this.apiCheckInitialized = true
       this.lastApiCheck = Date.now()
     },
 
