@@ -4,85 +4,16 @@
     <div class="page-header">
       <h1 class="page-title">
         <el-icon><Setting /></el-icon>
-        {{ pageTitle }}
+        设置中心
       </h1>
-      <p class="page-description">
-        {{ pageDescription }}
-      </p>
+      <p class="page-description">个性化配置、系统管理与运维工具</p>
     </div>
 
-    <el-row :gutter="24">
-      <!-- 左侧：设置菜单 -->
-      <el-col :span="6">
-        <el-card class="settings-menu" shadow="never">
-          <el-menu
-            :default-active="activeTab"
-            @select="handleMenuSelect"
-            class="settings-nav"
-          >
-            <!-- 个人设置菜单 -->
-            <template v-if="currentSection === 'personal'">
-              <el-menu-item index="general">
-                <el-icon><User /></el-icon>
-                <span>通用设置</span>
-              </el-menu-item>
-              <el-menu-item index="appearance">
-                <el-icon><Brush /></el-icon>
-                <span>外观设置</span>
-              </el-menu-item>
-              <el-menu-item index="analysis">
-                <el-icon><TrendCharts /></el-icon>
-                <span>分析偏好</span>
-              </el-menu-item>
-              <el-menu-item index="notifications">
-                <el-icon><Bell /></el-icon>
-                <span>通知设置</span>
-              </el-menu-item>
-            </template>
-
-            <!-- 系统配置菜单 -->
-            <template v-else-if="currentSection === 'config'">
-              <el-menu-item index="config">
-                <el-icon><Tools /></el-icon>
-                <span>配置管理</span>
-              </el-menu-item>
-              <el-menu-item index="usage">
-                <el-icon><DataAnalysis /></el-icon>
-                <span>使用统计</span>
-              </el-menu-item>
-              <el-menu-item index="cache">
-                <el-icon><Coin /></el-icon>
-                <span>缓存管理</span>
-              </el-menu-item>
-            </template>
-
-            <!-- 系统管理菜单 -->
-            <template v-else-if="currentSection === 'admin'">
-              <el-menu-item index="database">
-                <el-icon><Monitor /></el-icon>
-                <span>数据库管理</span>
-              </el-menu-item>
-              <el-menu-item index="logs">
-                <el-icon><Document /></el-icon>
-                <span>操作日志</span>
-              </el-menu-item>
-              <el-menu-item index="sync">
-                <el-icon><Refresh /></el-icon>
-                <span>多数据源同步</span>
-              </el-menu-item>
-            </template>
-          </el-menu>
-        </el-card>
-      </el-col>
-
-      <!-- 右侧：设置内容 -->
-      <el-col :span="18">
-        <!-- 通用设置 -->
-        <el-card v-show="activeTab === 'general'" class="settings-content" shadow="never">
-          <template #header>
-            <h3>通用设置</h3>
-          </template>
-          
+    <!-- 顶部 Tab 导航 -->
+    <el-tabs v-model="activeTab" class="settings-tabs" @tab-change="onTabChange">
+      <!-- ====== 个人设置 ====== -->
+      <el-tab-pane label="通用设置" name="general">
+        <el-card shadow="never" class="settings-content">
           <el-form :model="generalSettings" label-width="120px">
             <el-form-item label="语言">
               <el-select v-model="generalSettings.language">
@@ -90,7 +21,7 @@
                 <el-option label="English" value="en-US" />
               </el-select>
             </el-form-item>
-            
+
             <el-form-item label="时区">
               <el-select v-model="generalSettings.timezone">
                 <el-option label="北京时间 (UTC+8)" value="Asia/Shanghai" />
@@ -98,21 +29,16 @@
                 <el-option label="伦敦时间 (UTC+0)" value="Europe/London" />
               </el-select>
             </el-form-item>
-            
+
             <el-form-item>
-              <el-button type="primary" @click="saveGeneralSettings">
-                保存设置
-              </el-button>
+              <el-button type="primary" @click="saveGeneralSettings">保存设置</el-button>
             </el-form-item>
           </el-form>
         </el-card>
+      </el-tab-pane>
 
-        <!-- 外观设置 -->
-        <el-card v-show="activeTab === 'appearance'" class="settings-content" shadow="never">
-          <template #header>
-            <h3>外观设置</h3>
-          </template>
-          
+      <el-tab-pane label="外观设置" name="appearance">
+        <el-card shadow="never" class="settings-content">
           <el-form :model="appearanceSettings" label-width="120px">
             <el-form-item label="主题模式">
               <el-radio-group v-model="appearanceSettings.theme" @change="handleThemeChange">
@@ -122,30 +48,15 @@
               </el-radio-group>
             </el-form-item>
 
-            <el-form-item label="侧边栏宽度">
-              <el-slider
-                v-model="appearanceSettings.sidebarWidth"
-                :min="200"
-                :max="400"
-                :step="20"
-                show-input
-              />
-            </el-form-item>
-
             <el-form-item>
-              <el-button type="primary" @click="saveAppearanceSettings">
-                保存设置
-              </el-button>
+              <el-button type="primary" @click="saveAppearanceSettings">保存设置</el-button>
             </el-form-item>
           </el-form>
         </el-card>
+      </el-tab-pane>
 
-        <!-- 分析偏好 -->
-        <el-card v-show="activeTab === 'analysis'" class="settings-content" shadow="never">
-          <template #header>
-            <h3>分析偏好</h3>
-          </template>
-          
+      <el-tab-pane label="分析偏好" name="analysis">
+        <el-card shadow="never" class="settings-content">
           <el-form :model="analysisSettings" label-width="120px">
             <el-form-item label="默认市场">
               <el-select v-model="analysisSettings.defaultMarket">
@@ -154,7 +65,7 @@
                 <el-option label="港股" value="港股" />
               </el-select>
             </el-form-item>
-            
+
             <el-form-item label="默认分析深度">
               <el-select v-model="analysisSettings.defaultDepth">
                 <el-option label="1级 - 快速分析" value="1" />
@@ -170,17 +81,14 @@
                 <el-checkbox label="市场分析师">市场分析师</el-checkbox>
                 <el-checkbox label="基本面分析师">基本面分析师</el-checkbox>
                 <el-checkbox label="新闻分析师">新闻分析师</el-checkbox>
-                <el-checkbox label="社媒分析师">社媒分析师</el-checkbox>
               </el-checkbox-group>
             </el-form-item>
 
-
-            
             <el-form-item label="自动刷新">
               <el-switch v-model="analysisSettings.autoRefresh" />
               <span class="setting-description">自动刷新分析结果</span>
             </el-form-item>
-            
+
             <el-form-item label="刷新间隔">
               <el-input-number
                 v-model="analysisSettings.refreshInterval"
@@ -191,21 +99,16 @@
               />
               <span class="setting-description">秒</span>
             </el-form-item>
-            
+
             <el-form-item>
-              <el-button type="primary" @click="saveAnalysisSettings">
-                保存设置
-              </el-button>
+              <el-button type="primary" @click="saveAnalysisSettings">保存设置</el-button>
             </el-form-item>
           </el-form>
         </el-card>
+      </el-tab-pane>
 
-        <!-- 通知设置 -->
-        <el-card v-show="activeTab === 'notifications'" class="settings-content" shadow="never">
-          <template #header>
-            <h3>通知设置</h3>
-          </template>
-          
+      <el-tab-pane label="通知设置" name="notifications">
+        <el-card shadow="never" class="settings-content">
           <el-form :model="notificationSettings" label-width="120px">
             <el-form-item label="桌面通知">
               <el-switch v-model="notificationSettings.desktop" />
@@ -221,267 +124,124 @@
             </el-form-item>
 
             <el-form-item>
-              <el-button type="primary" @click="saveNotificationSettings">
-                保存设置
-              </el-button>
+              <el-button type="primary" @click="saveNotificationSettings">保存设置</el-button>
             </el-form-item>
           </el-form>
         </el-card>
+      </el-tab-pane>
 
+      <!-- ====== 系统配置 ====== -->
+      <el-tab-pane label="配置管理" name="config" lazy>
+        <ConfigManagement />
+      </el-tab-pane>
 
+      <el-tab-pane label="缓存管理" name="cache" lazy>
+        <CacheManagement />
+      </el-tab-pane>
 
-        <!-- 配置管理 -->
-        <el-card v-show="activeTab === 'config'" class="settings-content" shadow="never">
-          <template #header>
-            <h3>配置管理</h3>
-          </template>
+      <el-tab-pane label="使用统计" name="usage" lazy>
+        <UsageStatistics />
+      </el-tab-pane>
 
-          <div class="config-content">
-            <el-alert
-              title="配置管理"
-              type="info"
-              description="管理 LLM 配置、数据源配置和市场分类配置"
-              :closable="false"
-              style="margin-bottom: 20px;"
-            />
-            <el-button type="primary" @click="goToConfigManagement">
-              进入配置管理
-            </el-button>
-          </div>
-        </el-card>
+      <!-- ====== 系统管理 ====== -->
+      <el-tab-pane label="日志中心" name="logs" lazy>
+        <OperationLogs />
+      </el-tab-pane>
 
-        <!-- 使用统计 -->
-        <el-card v-show="activeTab === 'usage'" class="settings-content" shadow="never">
-          <template #header>
-            <h3>使用统计</h3>
-          </template>
+      <el-tab-pane label="数据库管理" name="database" lazy>
+        <DatabaseManagement />
+      </el-tab-pane>
 
-          <div class="cache-content">
-            <el-alert
-              title="使用统计与计费"
-              type="info"
-              description="查看模型使用情况、Token 消耗和成本统计"
-              :closable="false"
-              style="margin-bottom: 20px;"
-            />
-            <el-button type="primary" @click="goToUsageStatistics">
-              查看使用统计
-            </el-button>
-          </div>
-        </el-card>
+      <el-tab-pane label="数据源同步" name="sync" lazy>
+        <MultiSourceSync />
+      </el-tab-pane>
 
-        <!-- 缓存管理 -->
-        <el-card v-show="activeTab === 'cache'" class="settings-content" shadow="never">
-          <template #header>
-            <h3>缓存管理</h3>
-          </template>
-
-          <div class="settings-section">
-            <el-alert
-              title="缓存管理"
-              type="info"
-              description="管理系统缓存，清理过期数据"
-              :closable="false"
-              style="margin-bottom: 20px;"
-            />
-            <el-button type="primary" @click="goToCacheManagement">
-              进入缓存管理
-            </el-button>
-          </div>
-        </el-card>
-
-        <!-- 数据库管理 -->
-        <el-card v-show="activeTab === 'database'" class="settings-content" shadow="never">
-          <template #header>
-            <h3>数据库管理</h3>
-          </template>
-
-          <div class="database-content">
-            <el-alert
-              title="数据库管理"
-              type="info"
-              description="管理数据库连接、备份和恢复"
-              :closable="false"
-              style="margin-bottom: 20px;"
-            />
-            <el-button type="primary" @click="goToDatabaseManagement">
-              进入数据库管理
-            </el-button>
-          </div>
-        </el-card>
-
-        <!-- 操作日志 -->
-        <el-card v-show="activeTab === 'logs'" class="settings-content" shadow="never">
-          <template #header>
-            <h3>操作日志</h3>
-          </template>
-
-          <div class="logs-content">
-            <el-alert
-              title="操作日志"
-              type="info"
-              description="查看系统操作日志和审计记录"
-              :closable="false"
-              style="margin-bottom: 20px;"
-            />
-            <el-button type="primary" @click="goToOperationLogs">
-              查看操作日志
-            </el-button>
-          </div>
-        </el-card>
-
-        <!-- 多数据源同步 -->
-        <el-card v-show="activeTab === 'sync'" class="settings-content" shadow="never">
-          <template #header>
-            <h3>多数据源同步</h3>
-          </template>
-
-          <div class="sync-content">
-            <el-alert
-              title="多数据源同步"
-              type="info"
-              description="管理多个数据源的同步配置和状态"
-              :closable="false"
-              style="margin-bottom: 20px;"
-            />
-            <el-button type="primary" @click="goToMultiSourceSync">
-              进入同步管理
-            </el-button>
-          </div>
-        </el-card>
-
-
-      </el-col>
-    </el-row>
+      <el-tab-pane label="定时任务" name="scheduler" lazy>
+        <SchedulerManagement />
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAppStore } from '@/stores/app'
-import { useAuthStore } from '@/stores/auth'
-import type { UserPreferences } from '@/types/auth'
-import {
-  Setting,
-  User,
-  Brush,
-  TrendCharts,
-  Bell,
-  Tools,
-  Monitor,
-  Coin,
-  Document,
-  Refresh,
-  DataAnalysis
-} from '@element-plus/icons-vue'
+import type { UserPreferences } from '@/types/preferences'
+import { Setting } from '@element-plus/icons-vue'
+// 系统管理组件（懒加载由 el-tabs lazy 控制）
+import ConfigManagement from './ConfigManagement.vue'
+import CacheManagement from './CacheManagement.vue'
+import UsageStatistics from './UsageStatistics.vue'
+import OperationLogs from '@/views/System/OperationLogs.vue'
+import DatabaseManagement from '@/views/System/DatabaseManagement.vue'
+import MultiSourceSync from '@/views/System/MultiSourceSync.vue'
+import SchedulerManagement from '@/views/System/SchedulerManagement.vue'
 
-const router = useRouter()
 const route = useRoute()
+const router = useRouter()
 const appStore = useAppStore()
-const authStore = useAuthStore()
 
-// 当前分组：personal（个人设置）、config（系统配置）、admin（系统管理）
-const currentSection = ref('personal')
+// 合法的 tab 名称集合
+const validTabs = [
+  'general', 'appearance', 'analysis', 'notifications',
+  'config', 'cache', 'usage', 'logs', 'database', 'sync', 'scheduler'
+]
 
-// 页面标题和描述
-const pageTitle = computed(() => {
-  switch (currentSection.value) {
-    case 'personal':
-      return '个人设置'
-    case 'config':
-      return '系统配置'
-    case 'admin':
-      return '系统管理'
-    default:
-      return '设置'
-  }
-})
-
-const pageDescription = computed(() => {
-  switch (currentSection.value) {
-    case 'personal':
-      return '个性化配置和偏好设置'
-    case 'config':
-      return 'LLM、数据源、使用统计和缓存配置'
-    case 'admin':
-      return '数据库、日志和同步管理'
-    default:
-      return '个性化配置和系统管理'
-  }
-})
-
-// 响应式数据
+// 当前激活的标签
 const activeTab = ref('general')
 
-// 根据路由路径和 query 参数确定当前分组和默认激活的标签
-const updateSectionFromRoute = () => {
-  const path = route.path
+// 从路由 query 确定激活 tab
+const updateTabFromRoute = () => {
   const tab = route.query.tab as string
-
-  if (path === '/settings') {
-    // 个人设置页面
-    currentSection.value = 'personal'
-    // 根据 tab 参数切换标签
-    if (tab) {
-      activeTab.value = tab
-    } else {
-      activeTab.value = 'general'
-    }
-  } else if (path === '/settings/config') {
-    currentSection.value = 'config'
-    activeTab.value = 'config'
-  } else if (path === '/settings/usage') {
-    currentSection.value = 'config'
-    activeTab.value = 'usage'
-  } else if (path === '/settings/cache') {
-    currentSection.value = 'config'
-    activeTab.value = 'cache'
-  } else if (path === '/settings/database') {
-    currentSection.value = 'admin'
-    activeTab.value = 'database'
-  } else if (path === '/settings/logs') {
-    currentSection.value = 'admin'
-    activeTab.value = 'logs'
-  } else if (path === '/settings/sync') {
-    currentSection.value = 'admin'
-    activeTab.value = 'sync'
+  if (tab && validTabs.includes(tab)) {
+    activeTab.value = tab
+  } else {
+    activeTab.value = 'general'
   }
 }
 
-// 监听路由变化（包括 query 参数）
-watch(() => [route.path, route.query.tab], updateSectionFromRoute, { immediate: true })
+// tab 切换时同步到 URL query
+const onTabChange = (name: string | number) => {
+  const tab = String(name)
+  if (tab === 'general') {
+    router.replace({ path: '/settings', query: {} })
+  } else {
+    router.replace({ path: '/settings', query: { tab } })
+  }
+}
 
-// 从 authStore 获取用户偏好（使用 computed 实现响应式）
+watch(() => [route.path, route.query.tab], updateTabFromRoute, { immediate: true })
+
+// ---- 设置数据 ----
 const generalSettings = ref({
-  language: authStore.user?.preferences?.language || 'zh-CN',
+  language: appStore.serverPreferences?.language || 'zh-CN',
   timezone: 'Asia/Shanghai'
 })
 
 const appearanceSettings = ref({
-  theme: authStore.user?.preferences?.ui_theme || 'light',
-  sidebarWidth: authStore.user?.preferences?.sidebar_width || 240
+  theme: appStore.serverPreferences?.ui_theme || 'light'
 })
 
 const analysisSettings = ref({
-  defaultMarket: authStore.user?.preferences?.default_market || 'A股',
-  defaultDepth: authStore.user?.preferences?.default_depth || '3',
-  defaultAnalysts: authStore.user?.preferences?.default_analysts || ['市场分析师', '基本面分析师'],
-  autoRefresh: authStore.user?.preferences?.auto_refresh ?? true,
-  refreshInterval: authStore.user?.preferences?.refresh_interval || 30
+  defaultMarket: appStore.serverPreferences?.default_market || 'A股',
+  defaultDepth: appStore.serverPreferences?.default_depth || '3',
+  defaultAnalysts: appStore.serverPreferences?.default_analysts || ['市场分析师', '基本面分析师'],
+  autoRefresh: appStore.serverPreferences?.auto_refresh ?? true,
+  refreshInterval: appStore.serverPreferences?.refresh_interval || 30
 })
 
 const notificationSettings = ref({
-  desktop: authStore.user?.preferences?.desktop_notifications ?? true,
-  analysisComplete: authStore.user?.preferences?.analysis_complete_notification ?? true,
-  systemMaintenance: authStore.user?.preferences?.system_maintenance_notification ?? true
+  desktop: appStore.serverPreferences?.desktop_notifications ?? true,
+  analysisComplete: appStore.serverPreferences?.analysis_complete_notification ?? true,
+  systemMaintenance: appStore.serverPreferences?.system_maintenance_notification ?? true
 })
 
 const buildPreferencesPayload = (
   partial: Partial<UserPreferences>
 ): UserPreferences => {
-  const current = authStore.user?.preferences
+  const current = appStore.serverPreferences
   return {
     default_market: current?.default_market || 'A股',
     default_depth: current?.default_depth || '3',
@@ -500,35 +260,23 @@ const buildPreferencesPayload = (
   }
 }
 
-// 监听用户偏好变化，同步更新设置
-watch(() => authStore.user, (newUser) => {
-  if (newUser) {
-    // 更新通用设置
-    generalSettings.value.language = newUser.preferences?.language || 'zh-CN'
-
-    // 更新外观设置
-    appearanceSettings.value.theme = newUser.preferences?.ui_theme || 'light'
-    appearanceSettings.value.sidebarWidth = newUser.preferences?.sidebar_width || 240
-
-    // 更新分析偏好
-    analysisSettings.value.defaultMarket = newUser.preferences?.default_market || 'A股'
-    analysisSettings.value.defaultDepth = newUser.preferences?.default_depth || '3'
-    analysisSettings.value.defaultAnalysts = newUser.preferences?.default_analysts || ['市场分析师', '基本面分析师']
-    analysisSettings.value.autoRefresh = newUser.preferences?.auto_refresh ?? true
-    analysisSettings.value.refreshInterval = newUser.preferences?.refresh_interval || 30
-
-    // 更新通知设置
-    notificationSettings.value.desktop = newUser.preferences?.desktop_notifications ?? true
-    notificationSettings.value.analysisComplete = newUser.preferences?.analysis_complete_notification ?? true
-    notificationSettings.value.systemMaintenance = newUser.preferences?.system_maintenance_notification ?? true
+// 监听服务端偏好变化
+watch(() => appStore.serverPreferences, (prefs) => {
+  if (prefs) {
+    generalSettings.value.language = prefs.language || 'zh-CN'
+    appearanceSettings.value.theme = prefs.ui_theme || 'light'
+    analysisSettings.value.defaultMarket = prefs.default_market || 'A股'
+    analysisSettings.value.defaultDepth = prefs.default_depth || '3'
+    analysisSettings.value.defaultAnalysts = prefs.default_analysts || ['市场分析师', '基本面分析师']
+    analysisSettings.value.autoRefresh = prefs.auto_refresh ?? true
+    analysisSettings.value.refreshInterval = prefs.refresh_interval || 30
+    notificationSettings.value.desktop = prefs.desktop_notifications ?? true
+    notificationSettings.value.analysisComplete = prefs.analysis_complete_notification ?? true
+    notificationSettings.value.systemMaintenance = prefs.system_maintenance_notification ?? true
   }
 }, { deep: true })
 
-// 方法
-const handleMenuSelect = (index: string) => {
-  activeTab.value = index
-}
-
+// ---- 保存方法 ----
 const handleThemeChange = (theme: string | number | boolean | undefined) => {
   if (typeof theme === 'string') {
     appStore.setTheme(theme as any)
@@ -537,19 +285,11 @@ const handleThemeChange = (theme: string | number | boolean | undefined) => {
 
 const saveGeneralSettings = async () => {
   try {
-    // 更新本地 store（立即生效）
     appStore.setLanguage(generalSettings.value.language as any)
-
-    // 保存到后端
-    const success = await authStore.updatePreferences(
-      buildPreferencesPayload({
-        language: generalSettings.value.language
-      })
+    const success = await appStore.savePreferences(
+      buildPreferencesPayload({ language: generalSettings.value.language })
     )
-
-    if (success) {
-      ElMessage.success('通用设置已保存')
-    }
+    if (success) ElMessage.success('通用设置已保存')
   } catch (error) {
     console.error('保存通用设置失败:', error)
     ElMessage.error('保存通用设置失败')
@@ -558,21 +298,11 @@ const saveGeneralSettings = async () => {
 
 const saveAppearanceSettings = async () => {
   try {
-    // 更新本地 store（立即生效）
-    appStore.setSidebarWidth(appearanceSettings.value.sidebarWidth)
     appStore.setTheme(appearanceSettings.value.theme as any)
-
-    // 保存到后端
-    const success = await authStore.updatePreferences(
-      buildPreferencesPayload({
-        ui_theme: appearanceSettings.value.theme,
-        sidebar_width: appearanceSettings.value.sidebarWidth
-      })
+    const success = await appStore.savePreferences(
+      buildPreferencesPayload({ ui_theme: appearanceSettings.value.theme })
     )
-
-    if (success) {
-      ElMessage.success('外观设置已保存')
-    }
+    if (success) ElMessage.success('外观设置已保存')
   } catch (error) {
     console.error('保存外观设置失败:', error)
     ElMessage.error('保存外观设置失败')
@@ -581,16 +311,13 @@ const saveAppearanceSettings = async () => {
 
 const saveAnalysisSettings = async () => {
   try {
-    // 更新本地 store（立即生效）
     appStore.updatePreferences({
       defaultMarket: analysisSettings.value.defaultMarket as any,
       defaultDepth: analysisSettings.value.defaultDepth as any,
       autoRefresh: analysisSettings.value.autoRefresh,
       refreshInterval: analysisSettings.value.refreshInterval
     })
-
-    // 保存到后端
-    const success = await authStore.updatePreferences(
+    const success = await appStore.savePreferences(
       buildPreferencesPayload({
         default_market: analysisSettings.value.defaultMarket,
         default_depth: analysisSettings.value.defaultDepth,
@@ -599,10 +326,7 @@ const saveAnalysisSettings = async () => {
         refresh_interval: analysisSettings.value.refreshInterval
       })
     )
-
-    if (success) {
-      ElMessage.success('分析偏好已保存')
-    }
+    if (success) ElMessage.success('分析偏好已保存')
   } catch (error) {
     console.error('保存分析偏好失败:', error)
     ElMessage.error('保存分析偏好失败')
@@ -611,8 +335,7 @@ const saveAnalysisSettings = async () => {
 
 const saveNotificationSettings = async () => {
   try {
-    // 保存到后端
-    const success = await authStore.updatePreferences(
+    const success = await appStore.savePreferences(
       buildPreferencesPayload({
         desktop_notifications: notificationSettings.value.desktop,
         analysis_complete_notification: notificationSettings.value.analysisComplete,
@@ -620,54 +343,12 @@ const saveNotificationSettings = async () => {
         notifications_enabled: notificationSettings.value.desktop || notificationSettings.value.analysisComplete || notificationSettings.value.systemMaintenance
       })
     )
-
-    if (success) {
-      ElMessage.success('通知设置已保存')
-    }
+    if (success) ElMessage.success('通知设置已保存')
   } catch (error) {
     console.error('保存通知设置失败:', error)
     ElMessage.error('保存通知设置失败')
   }
 }
-
-// 导航函数
-const goToConfigManagement = () => {
-  router.push('/settings/config')
-}
-
-const goToUsageStatistics = () => {
-  router.push('/settings/usage')
-}
-
-const goToCacheManagement = () => {
-  router.push('/settings/cache')
-}
-
-const goToDatabaseManagement = () => {
-  router.push('/settings/database')
-}
-
-const goToOperationLogs = () => {
-  router.push('/settings/logs')
-}
-
-const goToMultiSourceSync = () => {
-  router.push('/settings/sync')
-}
-
-
-
-// 生命周期
-onMounted(() => {
-  // 从store加载设置
-  appearanceSettings.value.theme = appStore.theme
-  appearanceSettings.value.sidebarWidth = appStore.sidebarWidth
-  
-  analysisSettings.value.defaultMarket = appStore.preferences.defaultMarket
-  analysisSettings.value.defaultDepth = appStore.preferences.defaultDepth
-  analysisSettings.value.autoRefresh = appStore.preferences.autoRefresh
-  analysisSettings.value.refreshInterval = appStore.preferences.refreshInterval
-})
 </script>
 
 <style lang="scss" scoped>
@@ -691,44 +372,24 @@ onMounted(() => {
     }
   }
 
-  .settings-menu {
-    .settings-nav {
-      border: none;
+  .settings-tabs {
+    :deep(.el-tabs__header) {
+      margin-bottom: 20px;
+    }
+
+    // 懒加载的系统管理组件自带 page-header，适当收窄间距
+    :deep(.page-header) {
+      margin-bottom: 16px;
     }
   }
 
   .settings-content {
-    min-height: 500px;
+    min-height: 400px;
 
     .setting-description {
       margin-left: 8px;
       font-size: 12px;
       color: var(--el-text-color-placeholder);
-    }
-
-    .about-content {
-      .system-info,
-      .system-status,
-      .links {
-        margin-bottom: 32px;
-
-        h4 {
-          margin: 0 0 16px 0;
-          color: var(--el-text-color-primary);
-        }
-
-        p {
-          margin: 8px 0;
-          color: var(--el-text-color-regular);
-        }
-      }
-
-      .links {
-        .el-link {
-          margin-right: 16px;
-          margin-bottom: 8px;
-        }
-      }
     }
   }
 }
