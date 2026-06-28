@@ -7,6 +7,7 @@ from datetime import datetime, date, timedelta
 import pandas as pd
 import asyncio
 import logging
+import time
 
 from ..base_provider import BaseStockDataProvider
 from tradingagents.config.providers_config import get_provider_config
@@ -33,6 +34,12 @@ class TushareProvider(BaseStockDataProvider):
         self.api = None
         self.config = get_provider_config("tushare")
         self.token_source = None  # 记录 Token 来源: 'database' 或 'env'
+        # 连接探测缓存：低积分账号 trade_cal 等测试接口限频 1次/分钟，
+        # 启动时 connect 可能被多个调用方重复触发，缓存探测结果避免反复打限频接口
+        self._connect_tested = False  # 是否已执行过一次真实连通性探测
+        self._connect_last_result: Optional[bool] = None  # 上次探测结果
+        self._connect_tested_at: float = 0.0  # 探测时间戳
+        self._connect_cache_ttl: int = 300  # 缓存有效期（秒），5 分钟内不重复探测
 
         if not TUSHARE_AVAILABLE:
             self.logger.error("❌ Tushare库未安装，请运行: pip install tushare")
@@ -91,8 +98,18 @@ class TushareProvider(BaseStockDataProvider):
             self.logger.error("❌ Tushare库不可用")
             return False
 
+        # 🔥 连接探测缓存：已连接直接返回；缓存期内不重复探测，避免启动期多次 connect 撞限频
+        if self.connected and self.api is not None:
+            return True
+        now = time.time()
+        if self._connect_tested and self._connect_last_result is not None:
+            if now - self._connect_tested_at < self._connect_cache_ttl:
+                self.logger.info(f"⏭️ [缓存] 连接探测缓存命中（{int(now - self._connect_tested_at)}秒前探测过，结果={self._connect_last_result}），跳过重复探测")
+                return self._connect_last_result
+
         # 测试连接超时时间（秒）- 只是测试连通性，不需要很长时间
         test_timeout = 10
+        result: bool = False
 
         try:
             # 🔥 优先从数据库读取 Token
@@ -130,14 +147,14 @@ class TushareProvider(BaseStockDataProvider):
                         self.connected = True
                         self.token_source = 'database'
                         self.logger.info(f"✅ [步骤3.2] Tushare连接成功 (Token来源: 数据库)")
-                        return True
+                        result = True
                     else:
                         self.logger.warning("⚠️ [步骤3.2] 数据库 Token 测试失败，尝试降级到 .env 配置...")
                 except Exception as e:
                     self.logger.warning(f"⚠️ [步骤3] 数据库 Token 连接失败: {e}，尝试降级到 .env 配置...")
 
             # 降级到环境变量 Token
-            if env_token:
+            if not result and env_token:
                 try:
                     self.logger.info(f"🔄 [步骤4] 尝试使用 .env 中的 Tushare Token (超时: {test_timeout}秒)...")
                     ts.set_token(env_token)
@@ -150,27 +167,32 @@ class TushareProvider(BaseStockDataProvider):
                         self.logger.info(f"✅ [步骤4.1] API 调用成功，返回数据: {len(test_data) if test_data is not None else 0} 条")
                     except Exception as e:
                         self.logger.error(f"❌ [步骤4.1] .env Token 测试失败: {e}")
-                        return False
-
-                    if test_data is not None and not test_data.empty:
-                        self.connected = True
-                        self.token_source = 'env'
-                        self.logger.info(f"✅ [步骤4.2] Tushare连接成功 (Token来源: .env 环境变量)")
-                        return True
+                        result = False
                     else:
-                        self.logger.error("❌ [步骤4.2] .env Token 测试失败")
-                        return False
+                        if test_data is not None and not test_data.empty:
+                            self.connected = True
+                            self.token_source = 'env'
+                            self.logger.info(f"✅ [步骤4.2] Tushare连接成功 (Token来源: .env 环境变量)")
+                            result = True
+                        else:
+                            self.logger.error("❌ [步骤4.2] .env Token 测试失败")
+                            result = False
                 except Exception as e:
                     self.logger.error(f"❌ [步骤4] .env Token 连接失败: {e}")
-                    return False
+                    result = False
 
-            # 两个都没有
-            self.logger.error("❌ [步骤5] Tushare token未配置，请在 Web 后台或 .env 文件中配置 TUSHARE_TOKEN")
-            return False
+            if not result and not db_token and not env_token:
+                self.logger.error("❌ [步骤5] Tushare token未配置，请在 Web 后台或 .env 文件中配置 TUSHARE_TOKEN")
 
         except Exception as e:
             self.logger.error(f"❌ Tushare连接失败: {e}")
-            return False
+            result = False
+
+        # 记录探测结果到缓存
+        self._connect_tested = True
+        self._connect_last_result = result
+        self._connect_tested_at = time.time()
+        return result
 
     async def connect(self) -> bool:
         """异步连接到Tushare"""
@@ -178,8 +200,18 @@ class TushareProvider(BaseStockDataProvider):
             self.logger.error("❌ Tushare库不可用")
             return False
 
+        # 🔥 连接探测缓存：已连接直接返回；缓存期内不重复探测，避免启动期多次 connect 撞限频
+        if self.connected and self.api is not None:
+            return True
+        now = time.time()
+        if self._connect_tested and self._connect_last_result is not None:
+            if now - self._connect_tested_at < self._connect_cache_ttl:
+                self.logger.info(f"⏭️ [缓存] 连接探测缓存命中（{int(now - self._connect_tested_at)}秒前探测过，结果={self._connect_last_result}），跳过重复探测")
+                return self._connect_last_result
+
         # 测试连接超时时间（秒）- 只是测试连通性，不需要很长时间
         test_timeout = 10
+        result: bool = False
 
         try:
             # 🔥 优先从数据库读取 Token
@@ -207,18 +239,21 @@ class TushareProvider(BaseStockDataProvider):
                     except asyncio.TimeoutError:
                         self.logger.warning(f"⚠️ 数据库 Token 测试超时 ({test_timeout}秒)，尝试降级到 .env 配置...")
                         test_data = None
+                    except Exception as e:
+                        self.logger.warning(f"⚠️ 数据库 Token 测试失败: {e}，尝试降级到 .env 配置...")
+                        test_data = None
 
                     if test_data is not None and not test_data.empty:
                         self.connected = True
                         self.logger.info(f"✅ Tushare连接成功 (Token来源: 数据库)")
-                        return True
+                        result = True
                     else:
                         self.logger.warning("⚠️ 数据库 Token 测试失败，尝试降级到 .env 配置...")
                 except Exception as e:
                     self.logger.warning(f"⚠️ 数据库 Token 连接失败: {e}，尝试降级到 .env 配置...")
 
             # 降级到环境变量 Token
-            if env_token:
+            if not result and env_token:
                 try:
                     self.logger.info(f"🔄 尝试使用 .env 中的 Tushare Token (超时: {test_timeout}秒)...")
                     ts.set_token(env_token)
@@ -237,26 +272,34 @@ class TushareProvider(BaseStockDataProvider):
                         )
                     except asyncio.TimeoutError:
                         self.logger.error(f"❌ .env Token 测试超时 ({test_timeout}秒)")
-                        return False
+                        test_data = None
+                    except Exception as e:
+                        self.logger.error(f"❌ .env Token 测试失败: {e}")
+                        test_data = None
 
                     if test_data is not None and not test_data.empty:
                         self.connected = True
                         self.logger.info(f"✅ Tushare连接成功 (Token来源: .env 环境变量)")
-                        return True
+                        result = True
                     else:
                         self.logger.error("❌ .env Token 测试失败")
-                        return False
+                        result = False
                 except Exception as e:
                     self.logger.error(f"❌ .env Token 连接失败: {e}")
-                    return False
+                    result = False
 
-            # 两个都没有
-            self.logger.error("❌ Tushare token未配置，请在 Web 后台或 .env 文件中配置 TUSHARE_TOKEN")
-            return False
+            if not result and not db_token and not env_token:
+                self.logger.error("❌ Tushare token未配置，请在 Web 后台或 .env 文件中配置 TUSHARE_TOKEN")
 
         except Exception as e:
             self.logger.error(f"❌ Tushare连接失败: {e}")
-            return False
+            result = False
+
+        # 记录探测结果到缓存
+        self._connect_tested = True
+        self._connect_last_result = result
+        self._connect_tested_at = time.time()
+        return result
     
     def is_available(self) -> bool:
         """检查Tushare是否可用"""
