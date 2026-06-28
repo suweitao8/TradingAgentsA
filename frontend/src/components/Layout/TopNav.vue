@@ -248,10 +248,11 @@ onUnmounted(() => {
   position: sticky;
   top: 0;
   z-index: 999;
-  background-color: var(--el-bg-color);
-  border-bottom: 1px solid var(--el-border-color-light);
-  backdrop-filter: blur(8px) saturate(1.2);
-  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  background: var(--glass-bg-nav);
+  border-bottom: 1px solid var(--glass-stroke-soft);
+  backdrop-filter: blur(var(--glass-blur-nav)) saturate(1.6);
+  -webkit-backdrop-filter: blur(var(--glass-blur-nav)) saturate(1.6);
+  box-shadow: var(--glass-shadow-nav);
 }
 
 .nav-inner {
@@ -286,7 +287,10 @@ onUnmounted(() => {
   .brand-text {
     font-size: 18px;
     font-weight: 700;
-    color: var(--el-text-color-primary);
+    background: var(--glass-brand-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
     white-space: nowrap;
   }
 
@@ -296,11 +300,13 @@ onUnmounted(() => {
     gap: 4px;
     padding: 2px 10px;
     border-radius: 999px;
-    border: 1px solid var(--el-border-color);
-    background-color: var(--el-fill-color-light);
+    border: 1px solid var(--glass-stroke-soft);
+    background: var(--glass-bg-surface);
+    backdrop-filter: blur(var(--glass-blur-sm));
+    -webkit-backdrop-filter: blur(var(--glass-blur-sm));
     font-size: 11px;
     font-weight: 600;
-    color: var(--el-text-color-secondary);
+    color: var(--glass-text-secondary);
     white-space: nowrap;
 
     .el-icon {
@@ -323,10 +329,10 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: var(--glass-radius-sm);
   font-size: 14px;
   font-weight: 500;
-  color: var(--el-text-color-regular);
+  color: var(--glass-text-secondary);
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
@@ -338,12 +344,12 @@ onUnmounted(() => {
 
   &:hover {
     color: var(--el-color-primary);
-    background-color: var(--el-fill-color-light);
+    background: var(--glass-bg-surface);
   }
 
   &.active {
     color: var(--el-color-primary);
-    background-color: var(--el-color-primary-light-9);
+    background: var(--el-color-primary-light-9);
   }
 
   &.dropdown-trigger {
@@ -368,7 +374,7 @@ onUnmounted(() => {
   border-radius: 50%;
   border: none;
   background: transparent;
-  color: var(--el-text-color-regular);
+  color: var(--glass-text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -380,7 +386,7 @@ onUnmounted(() => {
   }
 
   &:hover {
-    background-color: var(--el-fill-color-light);
+    background: var(--glass-bg-surface);
     color: var(--el-color-primary);
   }
 }
@@ -404,22 +410,31 @@ onUnmounted(() => {
 }
 .notif-item {
   padding: 10px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--glass-radius-sm);
+  border: 1px solid var(--glass-stroke-soft);
+  background: var(--glass-bg-surface);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--glass-stroke-base);
+    box-shadow: var(--glass-shadow-sm);
+  }
 }
 .notif-item.unread {
-  background: var(--el-fill-color-light);
+  background: var(--el-color-primary-light-9);
+  border-color: var(--el-color-primary-light-7);
 }
 .notif-item .row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  color: var(--el-text-color-secondary);
+  color: var(--glass-text-tertiary);
   margin-bottom: 4px;
 }
 .notif-item .title {
   font-weight: 600;
+  color: var(--glass-text-primary);
   cursor: pointer;
   margin-bottom: 4px;
 }
@@ -428,7 +443,7 @@ onUnmounted(() => {
 }
 .notif-item .content {
   font-size: 12px;
-  color: var(--el-text-color-regular);
+  color: var(--glass-text-secondary);
 }
 .notif-item .ops {
   display: flex;

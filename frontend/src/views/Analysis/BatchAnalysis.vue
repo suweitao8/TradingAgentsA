@@ -295,8 +295,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Files, TrendCharts, Check, Close } from '@element-plus/icons-vue'
 import { ANALYSTS, DEFAULT_ANALYSTS, convertAnalystNamesToIds } from '@/constants/analysts'
 import { configApi } from '@/api/config'
+import { useAppStore } from '@/stores/app'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 import ModelConfig from '@/components/ModelConfig.vue'
 import { getMarketByStockCode } from '@/utils/market'
 import { validateStockCode } from '@/utils/stockValidator'
@@ -410,9 +410,9 @@ const initializeModelSettings = async () => {
 onMounted(async () => {
   await initializeModelSettings()
 
-  // 🆕 从用户偏好加载默认设置
-  const authStore = useAuthStore()
-  const userPrefs = authStore.user?.preferences
+  // 从服务端偏好加载默认设置
+  const appStore = useAppStore()
+  const userPrefs = appStore.serverPreferences
 
   if (userPrefs) {
     // 加载默认分析深度
@@ -424,11 +424,6 @@ onMounted(async () => {
     if (userPrefs.default_analysts && userPrefs.default_analysts.length > 0) {
       batchForm.analysts = [...userPrefs.default_analysts]
     }
-
-    console.log('✅ 批量分析已加载用户偏好设置:', {
-      depth: batchForm.depth,
-      analysts: batchForm.analysts
-    })
   }
 
   // 读取路由查询参数以便从筛选页预填充（路由参数优先级最高）
@@ -616,7 +611,7 @@ const submitBatchAnalysis = async () => {
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 
       :deep(.el-card__header) {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--glass-brand-gradient);
         color: white;
         border-radius: 16px 16px 0 0;
         padding: 20px 24px;

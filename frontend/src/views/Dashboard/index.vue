@@ -582,14 +582,25 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .dashboard {
   .welcome-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px;
+    background: var(--glass-brand-gradient);
+    border-radius: var(--glass-radius-lg);
     padding: 40px;
     color: white;
     margin-bottom: 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: var(--glass-shadow-lg);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(600px 300px at 80% -20%, rgba(255,255,255,0.18), transparent 60%);
+      pointer-events: none;
+    }
 
     .welcome-content {
       .welcome-title {
@@ -624,8 +635,8 @@ onMounted(async () => {
 
   .learning-highlight-card {
     margin-bottom: 24px;
-    border: 2px solid var(--el-color-primary);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    border: 1px solid var(--glass-stroke-base);
+    box-shadow: var(--glass-shadow-sm);
 
     .learning-highlight {
       display: flex;
@@ -637,12 +648,13 @@ onMounted(async () => {
         flex-shrink: 0;
         width: 80px;
         height: 80px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: var(--glass-radius-md);
+        background: var(--glass-brand-gradient);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
+        box-shadow: var(--glass-shadow-md);
       }
 
       .learning-content {

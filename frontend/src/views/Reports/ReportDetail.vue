@@ -661,7 +661,7 @@ const applyToTrading = async () => {
           ]),
           h('p', [
             h('strong', '预计金额：'),
-            h('span', { style: 'color: #409EFF; font-weight: bold;' }, `${estimatedAmount.value}元`)
+            h('span', { style: 'color: #2f7bff; font-weight: bold;' }, `${estimatedAmount.value}元`)
           ]),
           h('p', [
             h('strong', '模型置信度：'),
@@ -769,7 +769,6 @@ const formatAnalysts = (analysts: string[]) => {
     'market': '市场分析师',
     'fundamentals': '基本面分析师',
     'news': '新闻分析师',
-    'social': '社媒分析师',
     'sentiment': '情绪分析师',
     'technical': '技术分析师'
   }
@@ -827,9 +826,8 @@ const getModelDescription = (modelInfo: string) => {
 const getModuleDisplayName = (moduleName: string) => {
   // 统一与单股分析的中文标签映射（完整的13个报告）
   const nameMap: Record<string, string> = {
-    // 分析师团队 (4个)
+    // 分析师团队 (3个)
     market_report: '📈 市场技术分析',
-    sentiment_report: '💭 市场情绪分析',
     news_report: '📰 新闻事件分析',
     fundamentals_report: '💰 基本面分析',
 
@@ -882,7 +880,7 @@ const normalizeConfidenceScore = (score: number) => {
 
 const getConfidenceColor = (score: number) => {
   if (score >= 80) return '#67C23A' // 较高 - 绿色
-  if (score >= 60) return '#409EFF' // 中上 - 蓝色
+  if (score >= 60) return '#2f7bff' // 中上 - 蓝色
   if (score >= 40) return '#E6A23C' // 中等 - 橙色
   return '#F56C6C' // 较低 - 红色
 }

@@ -662,7 +662,6 @@ import { analysisApi, type SingleAnalysisRequest } from '@/api/analysis'
 import { paperApi } from '@/api/paper'
 import { stocksApi } from '@/api/stocks'
 import { useAppStore } from '@/stores/app'
-import { useAuthStore } from '@/stores/auth'
 import { configApi } from '@/api/config'
 import DeepModelSelector from '@/components/DeepModelSelector.vue'
 import { ANALYSTS, convertAnalystNamesToIds } from '@/constants/analysts'
@@ -1520,7 +1519,7 @@ const goSimOrder = async () => {
           ]),
           h('p', [
             h('strong', '预计金额：'),
-            h('span', { style: 'color: #409EFF; font-weight: bold;' }, `${estimatedAmount.value}元`)
+            h('span', { style: 'color: #2f7bff; font-weight: bold;' }, `${estimatedAmount.value}元`)
           ]),
           h('p', [
             h('strong', '置信度：'),
@@ -1965,12 +1964,10 @@ watch([() => modelSettings.value.quickAnalysisModel, () => modelSettings.value.d
 onMounted(async () => {
   initializeModelSettings()
 
-  // 🆕 从用户偏好加载默认设置
-  const authStore = useAuthStore()
+  // 从服务端偏好加载默认设置，降级到 appStore.preferences
   const appStore = useAppStore()
+  const userPrefs = appStore.serverPreferences
 
-  // 优先从 authStore.user.preferences 读取，其次从 appStore.preferences 读取
-  const userPrefs = authStore.user?.preferences
   if (userPrefs) {
     // 加载默认市场
     if (userPrefs.default_market) {
@@ -1987,8 +1984,8 @@ onMounted(async () => {
       analysisForm.selectedAnalysts = [...userPrefs.default_analysts]
     }
 
-  } else {
-    // 降级到 appStore.preferences
+  } else if (appStore.preferences) {
+    // 降级到 appStore.preferences（本地缓存）
     if (appStore.preferences.defaultMarket) {
       analysisForm.market = appStore.preferences.defaultMarket as MarketType
     }
@@ -2069,7 +2066,7 @@ onMounted(async () => {
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 
       :deep(.el-card__header) {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--glass-brand-gradient);
         color: white;
         border-radius: 16px 16px 0 0;
         padding: 20px 24px;
@@ -3009,10 +3006,10 @@ onMounted(async () => {
     }
 
     &.is-active {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      background: var(--glass-brand-gradient) !important;
       color: white !important;
-      border-color: #667eea !important;
-      box-shadow: 0 6px 20px rgba(102,126,234,0.4) !important;
+      border-color: var(--el-color-primary) !important;
+      box-shadow: 0 6px 20px rgba(47,123,255,0.4) !important;
       transform: translateY(-3px) scale(1.05) !important;
 
       &::before {
@@ -3050,7 +3047,7 @@ onMounted(async () => {
   padding: 20px;
   background: var(--el-fill-color-light);
   border-radius: 15px;
-  border-left: 5px solid #667eea;
+  border-left: 5px solid var(--el-color-primary);
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 
   .report-title {

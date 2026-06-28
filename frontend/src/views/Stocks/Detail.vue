@@ -274,8 +274,6 @@
           <template #header><div class="card-hd">快捷操作</div></template>
           <div class="quick-actions">
             <el-button type="primary" @click="onAnalyze" :icon="TrendCharts" plain>发起分析</el-button>
-            <el-button @click="onToggleFavorite" :icon="Star">{{ isFav ? '移出自选' : '加入自选' }}</el-button>
-            <el-button type="success" :icon="CreditCard" @click="goPaperTrading">模拟交易</el-button>
           </div>
         </el-card>
       </el-col>
@@ -1118,9 +1116,8 @@ function formatNewsTime(dateStr: string | null | undefined): string {
 function formatReportName(key: string): string {
   // 完整的13个报告映射
   const nameMap: Record<string, string> = {
-    // 分析师团队 (4个)
+    // 分析师团队 (3个)
     'market_report': '📈 市场技术分析',
-    'sentiment_report': '💭 市场情绪分析',
     'news_report': '📰 新闻事件分析',
     'fundamentals_report': '💰 基本面分析',
 
@@ -1442,16 +1439,16 @@ function exportReport() {
 
 /* 投资建议盒子 - 重点突出 */
 .recommendation-box {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--glass-brand-gradient);
   border-radius: 12px;
   padding: 20px 24px;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.25);
+  box-shadow: 0 4px 16px rgba(47, 123, 255, 0.25);
   transition: all 0.3s ease;
   margin: 16px 0;
 }
 
 .recommendation-box:hover {
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+  box-shadow: 0 6px 20px rgba(47, 123, 255, 0.35);
   transform: translateY(-2px);
 }
 

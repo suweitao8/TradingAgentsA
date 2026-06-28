@@ -181,7 +181,7 @@ const openArticle = (articleId: string) => {
     text-align: center;
     margin-bottom: 48px;
     padding: 40px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--glass-brand-gradient);
     border-radius: 16px;
     color: white;
 

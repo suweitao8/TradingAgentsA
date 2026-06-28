@@ -13,6 +13,7 @@ import App from './App.vue'
 import router from './router'
 import { setupGlobalComponents } from './components'
 import { useAppStore } from '@/stores/app'
+import './styles/tokens.scss'
 import './styles/index.scss'
 import './styles/dark-theme.scss'
 
@@ -61,7 +62,6 @@ app.config.warnHandler = (msg, _vm, trace) => {
 // 初始化应用
 const initApp = async () => {
   try {
-    const authStore = useAuthStore()
     const appStore = useAppStore()
 
     // 应用主题
@@ -82,7 +82,7 @@ const initApp = async () => {
     await appStore.checkApiConnection()
 
     // 加载偏好设置
-    await authStore.fetchPreferences()
+    await appStore.fetchPreferences()
   } catch (error) {
     const err = error as { code?: string; message?: string }
     console.warn('[App] 初始化失败，应用仍将继续启动:', err.message || err)

@@ -132,16 +132,6 @@ const handleWizardComplete = async (data: any) => {
       }
     }
 
-    // 3. 数据库配置（MongoDB 和 Redis）
-    // 注意：数据库配置通常在 .env 文件中，这里只是记录用户的选择
-    // 实际的数据库连接需要在后端 .env 文件中配置
-    if (data.mongodb || data.redis) {
-      console.log('数据库配置（需要在 .env 文件中设置）:', {
-        mongodb: data.mongodb,
-        redis: data.redis
-      })
-    }
-
     // 标记配置向导已完成
     localStorage.setItem('config_wizard_completed', 'true')
 
@@ -165,8 +155,9 @@ onMounted(() => {
 <style lang="scss">
 .app-container {
   min-height: 100vh;
-  background-color: var(--el-bg-color-page);
-  transition: background-color 0.3s ease;
+  background: var(--glass-page-bg);
+  background-attachment: fixed;
+  transition: background 0.3s ease;
 }
 
 .global-loading {
@@ -175,49 +166,8 @@ onMounted(() => {
   left: 0;
   right: 0;
   z-index: 9999;
-  background: linear-gradient(90deg, #409EFF 0%, #67C23A 100%);
+  background: var(--glass-brand-gradient);
   height: 2px;
-}
-
-// 路由过渡动画
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-left-enter-active,
-.slide-left-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-left-enter-from {
-  transform: translateX(30px);
-  opacity: 0;
-}
-
-.slide-left-leave-to {
-  transform: translateX(-30px);
-  opacity: 0;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  transform: translateY(30px);
-  opacity: 0;
-}
-
-.slide-up-leave-to {
-  transform: translateY(-30px);
-  opacity: 0;
 }
 
 // 响应式设计
