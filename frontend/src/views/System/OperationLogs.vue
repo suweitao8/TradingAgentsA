@@ -4,13 +4,15 @@
     <div class="page-header">
       <h1 class="page-title">
         <el-icon><Document /></el-icon>
-        操作日志
+        日志中心
       </h1>
       <p class="page-description">
-        系统操作日志查看、过滤和分析
+        系统操作日志与日志文件管理
       </p>
     </div>
 
+    <el-tabs v-model="activeLogTab" class="log-tabs">
+      <el-tab-pane label="操作日志" name="operation">
     <!-- 筛选控制面板 -->
     <el-card class="filter-panel" shadow="never">
       <el-form :model="filterForm" :inline="true" @submit.prevent="loadLogs">
@@ -303,6 +305,12 @@
         </div>
       </template>
     </el-empty>
+      </el-tab-pane>
+
+      <el-tab-pane label="日志文件" name="files" lazy>
+        <LogManagement />
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
@@ -317,6 +325,7 @@ import {
   Delete
 } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
+import LogManagement from './LogManagement.vue'
 import {
   OperationLogsApi,
   type OperationLog,
@@ -325,6 +334,9 @@ import {
   getActionTypeTagColor,
   formatDateTime
 } from '@/api/operationLogs'
+
+// 当前激活的日志标签页
+const activeLogTab = ref('operation')
 
 type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
 

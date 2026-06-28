@@ -26,13 +26,6 @@
       </el-badge>
     </el-tooltip>
 
-    <!-- 帮助 -->
-    <el-tooltip content="帮助" placement="bottom">
-      <el-button type="text" @click="showHelp" class="action-btn">
-        <el-icon><QuestionFilled /></el-icon>
-      </el-button>
-    </el-tooltip>
-
     <!-- 通知抽屉（方案B） -->
     <el-drawer v-model="drawerVisible" direction="rtl" size="360px" :with-header="true" title="消息中心">
       <div class="notif-toolbar">
@@ -70,8 +63,7 @@ import {
   Sunny,
   Moon,
   FullScreen,
-  Bell,
-  QuestionFilled
+  Bell
 } from '@element-plus/icons-vue'
 
 const appStore = useAppStore()
@@ -129,10 +121,6 @@ onUnmounted(() => {
   // 🔥 断开所有连接（WebSocket 和 SSE）
   notifStore.disconnect()
 })
-
-function showHelp() {
-  window.open('https://mp.weixin.qq.com/s/ppsYiBncynxlsfKFG8uEbw', '_blank')
-}
 </script>
 
 <style lang="scss" scoped>

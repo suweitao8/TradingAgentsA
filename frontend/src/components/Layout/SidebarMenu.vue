@@ -23,7 +23,6 @@
       </template>
       <el-menu-item index="/analysis/single">单股分析</el-menu-item>
       <el-menu-item index="/analysis/batch">批量分析</el-menu-item>
-      <!-- 新增：将分析报告作为股票分析的子菜单 -->
       <el-menu-item index="/reports">分析报告</el-menu-item>
     </el-sub-menu>
 
@@ -47,15 +46,6 @@
       <template #title>模拟交易</template>
     </el-menu-item>
 
-
-    <!-- 分析报告已移至“股票分析”子菜单，保留注释便于追踪 -->
-    <!--
-    <el-menu-item index="/reports">
-      <el-icon><Document /></el-icon>
-      <template #title>分析报告</template>
-    </el-menu-item>
-    -->
-
     <el-sub-menu index="/settings">
       <template #title>
         <el-icon><Setting /></el-icon>
@@ -63,32 +53,21 @@
       </template>
 
       <!-- 个人设置 -->
-      <el-sub-menu index="/settings-personal">
-        <template #title>个人设置</template>
-        <el-menu-item index="/settings">通用设置</el-menu-item>
-        <el-menu-item index="/settings?tab=appearance">外观设置</el-menu-item>
-        <el-menu-item index="/settings?tab=analysis">分析偏好</el-menu-item>
-        <el-menu-item index="/settings?tab=notifications">通知设置</el-menu-item>
-        <el-menu-item index="/settings?tab=security">安全设置</el-menu-item>
-      </el-sub-menu>
+      <el-menu-item index="/settings">通用设置</el-menu-item>
+      <el-menu-item index="/settings?tab=appearance">外观设置</el-menu-item>
+      <el-menu-item index="/settings?tab=analysis">分析偏好</el-menu-item>
+      <el-menu-item index="/settings?tab=notifications">通知设置</el-menu-item>
 
       <!-- 系统配置 -->
-      <el-sub-menu index="/settings-config">
-        <template #title>系统配置</template>
-        <el-menu-item index="/settings/config">配置管理</el-menu-item>
-        <el-menu-item index="/settings/cache">缓存管理</el-menu-item>
-      </el-sub-menu>
+      <el-menu-item index="/settings/config">配置管理</el-menu-item>
+      <el-menu-item index="/settings/cache">缓存管理</el-menu-item>
 
       <!-- 系统管理 -->
-      <el-sub-menu index="/settings-admin">
-        <template #title>系统管理</template>
-        <el-menu-item index="/settings/database">数据库管理</el-menu-item>
-        <el-menu-item index="/settings/logs">操作日志</el-menu-item>
-        <el-menu-item index="/settings/system-logs">系统日志</el-menu-item>
-        <el-menu-item index="/settings/sync">多数据源同步</el-menu-item>
-        <el-menu-item index="/settings/scheduler">定时任务</el-menu-item>
-        <el-menu-item index="/settings/usage">使用统计</el-menu-item>
-      </el-sub-menu>
+      <el-menu-item index="/settings/database">数据库管理</el-menu-item>
+      <el-menu-item index="/settings/logs">日志中心</el-menu-item>
+      <el-menu-item index="/settings/sync">多数据源同步</el-menu-item>
+      <el-menu-item index="/settings/scheduler">定时任务</el-menu-item>
+      <el-menu-item index="/settings/usage">使用统计</el-menu-item>
     </el-sub-menu>
 
     <el-menu-item index="/about">
@@ -109,7 +88,6 @@ import {
   Search,
   Star,
   List,
-  /* Document 移除：不再使用顶级分析报告菜单图标 */
   Setting,
   InfoFilled,
   CreditCard

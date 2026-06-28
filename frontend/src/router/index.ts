@@ -36,7 +36,6 @@ const routes: RouteRecordRaw[] = [
       title: '仪表板',
       icon: 'Dashboard',
       requiresAuth: true,
-      transition: 'fade'
     },
     children: [
       {
@@ -77,7 +76,6 @@ const routes: RouteRecordRaw[] = [
       title: '股票筛选',
       icon: 'Search',
       requiresAuth: true,
-      transition: 'slide-up'
     },
     children: [
       {
@@ -100,7 +98,6 @@ const routes: RouteRecordRaw[] = [
       title: '我的自选股',
       icon: 'Star',
       requiresAuth: true,
-      transition: 'slide-up'
     },
     children: [
       {
@@ -122,7 +119,6 @@ const routes: RouteRecordRaw[] = [
       title: '学习中心',
       icon: 'Reading',
       requiresAuth: false,
-      transition: 'fade'
     },
     children: [
       {
@@ -163,7 +159,6 @@ const routes: RouteRecordRaw[] = [
       icon: 'TrendCharts',
       requiresAuth: true,
       hideInMenu: true,
-      transition: 'fade'
     },
     children: [
       {
@@ -174,7 +169,6 @@ const routes: RouteRecordRaw[] = [
           title: '股票详情',
           requiresAuth: true,
           hideInMenu: true,
-          transition: 'fade'
         }
       }
     ]
@@ -189,7 +183,6 @@ const routes: RouteRecordRaw[] = [
       title: '任务中心',
       icon: 'List',
       requiresAuth: true,
-      transition: 'slide-up'
     },
     children: [
       {
@@ -210,7 +203,6 @@ const routes: RouteRecordRaw[] = [
       title: '分析报告',
       icon: 'Document',
       requiresAuth: true,
-      transition: 'fade'
     },
     children: [
       {
@@ -250,7 +242,6 @@ const routes: RouteRecordRaw[] = [
       title: '设置',
       icon: 'Setting',
       requiresAuth: true,
-      transition: 'slide-left'
     },
     children: [
       {
@@ -285,18 +276,13 @@ const routes: RouteRecordRaw[] = [
         name: 'OperationLogs',
         component: () => import('@/views/System/OperationLogs.vue'),
         meta: {
-          title: '操作日志',
+          title: '日志中心',
           requiresAuth: true
         }
       },
       {
         path: 'system-logs',
-        name: 'LogManagement',
-        component: () => import('@/views/System/LogManagement.vue'),
-        meta: {
-          title: '系统日志',
-          requiresAuth: true
-        }
+        redirect: '/settings/logs'
       },
       {
         path: 'sync',
@@ -344,7 +330,6 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: '登录',
       hideInMenu: true,
-      transition: 'fade'
     }
   },
 
@@ -356,7 +341,6 @@ const routes: RouteRecordRaw[] = [
       title: '关于',
       icon: 'InfoFilled',
       requiresAuth: false, // 关于页面不需要认证
-      transition: 'fade'
     }
   },
   {
@@ -367,7 +351,6 @@ const routes: RouteRecordRaw[] = [
       title: '模拟交易',
       icon: 'CreditCard',
       requiresAuth: true,
-      transition: 'slide-up'
     },
     children: [
       {
