@@ -123,14 +123,6 @@ const routes: RouteRecordRaw[] = [
         }
       },
       {
-        path: ':category',
-        name: 'LearningCategory',
-        component: () => import('@/views/Learning/Category.vue'),
-        meta: {
-          title: '学习分类',
-        }
-      },
-      {
         path: 'article/:id',
         name: 'LearningArticle',
         component: () => import('@/views/Learning/Article.vue'),
