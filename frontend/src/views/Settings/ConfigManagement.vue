@@ -36,10 +36,6 @@
               <el-icon><OfficeBuilding /></el-icon>
               <span>厂家管理</span>
             </el-menu-item>
-            <el-menu-item index="model-catalog">
-              <el-icon><Collection /></el-icon>
-              <span>模型目录</span>
-            </el-menu-item>
             <el-menu-item index="llm">
               <el-icon><Cpu /></el-icon>
               <span>大模型配置</span>
@@ -73,11 +69,6 @@
         <!-- 配置验证 -->
         <div v-show="activeTab === 'validation'">
           <ConfigValidator />
-        </div>
-
-        <!-- 模型目录管理 -->
-        <div v-show="activeTab === 'model-catalog'">
-          <ModelCatalogManagement />
         </div>
 
         <!-- 厂家管理 -->
@@ -557,7 +548,7 @@
                   </div>
                 </el-option>
               </el-select>
-              <div class="setting-description">用于市场分析、新闻分析、基本面分析、研究员等，响应速度快（推荐：qwen-turbo）</div>
+              <div class="setting-description">用于市场分析、新闻分析、基本面分析、研究员等，响应速度快</div>
             </el-form-item>
 
             <el-form-item label="深度决策模型">
@@ -579,7 +570,7 @@
                   </div>
                 </el-option>
               </el-select>
-              <div class="setting-description">用于研究管理者综合决策、风险管理者最终评估，推理能力强（推荐：qwen-max）</div>
+              <div class="setting-description">用于研究管理者综合决策、风险管理者最终评估，推理能力强</div>
             </el-form-item>
 
             <el-form-item label="启用成本跟踪">
@@ -1100,8 +1091,7 @@ import {
   Refresh,
   Key,
   OfficeBuilding,
-  CircleCheck,
-  Collection
+  CircleCheck
 } from '@element-plus/icons-vue'
 
 import {
@@ -1117,7 +1107,6 @@ import {
 import ConfigValidator from '@/components/ConfigValidator.vue'
 import LLMConfigDialog from './components/LLMConfigDialog.vue'
 import ProviderDialog from './components/ProviderDialog.vue'
-import ModelCatalogManagement from './components/ModelCatalogManagement.vue'
 import DataSourceConfigDialog from './components/DataSourceConfigDialog.vue'
 import MarketCategoryManagement from './components/MarketCategoryManagement.vue'
 import DataSourceGroupingDialog from './components/DataSourceGroupingDialog.vue'
@@ -1485,8 +1474,8 @@ const loadSystemSettings = async () => {
     ])
     // 确保有默认值
     systemSettings.value = {
-      quick_analysis_model: 'qwen-turbo',
-      deep_analysis_model: 'qwen-max',
+      quick_analysis_model: 'Kimi-K2.5',
+      deep_analysis_model: 'Kimi-K2.5',
       default_analysis_timeout: 300,
       enable_cache: true,
       cache_ttl: 3600,
