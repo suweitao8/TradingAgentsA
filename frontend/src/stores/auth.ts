@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { apiClient } from '@/api/request'
+import { ApiClient } from '@/api/request'
 import type { User } from '@/types/auth'
 
 export interface AuthState {
@@ -49,7 +49,7 @@ export const useAuthStore = defineStore('auth', {
      */
     async fetchPreferences() {
       try {
-        const res = await apiClient.get('/api/settings/preferences')
+        const res = await ApiClient.get('/api/settings/preferences')
         if (res.success && res.data) {
           // 将偏好存入 user.preferences，兼容现有组件读取
           if (this.user) {
@@ -67,7 +67,7 @@ export const useAuthStore = defineStore('auth', {
      */
     async updatePreferences(prefs: Record<string, any>) {
       try {
-        const res = await apiClient.put('/api/settings/preferences', prefs)
+        const res = await ApiClient.put('/api/settings/preferences', prefs)
         if (res.success && res.data) {
           this.syncPreferencesToAppStore(res.data)
           return true
