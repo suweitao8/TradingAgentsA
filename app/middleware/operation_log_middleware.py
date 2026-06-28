@@ -48,9 +48,6 @@ class OperationLogMiddleware(BaseHTTPMiddleware):
             "/api/screening/": ActionType.SCREENING,
             "/api/config/": ActionType.CONFIG_MANAGEMENT,
             "/api/system/database/": ActionType.DATABASE_OPERATION,
-            "/api/auth/login": ActionType.USER_LOGIN,
-            "/api/auth/logout": ActionType.USER_LOGOUT,
-            "/api/auth/change-password": ActionType.USER_MANAGEMENT,  # 🔧 添加修改密码操作类型
             "/api/reports/": ActionType.REPORT_GENERATION,
         }
 
@@ -136,35 +133,14 @@ class OperationLogMiddleware(BaseHTTPMiddleware):
         return "unknown"
 
     async def _get_user_info(self, request: Request) -> Optional[Dict[str, Any]]:
-        """获取用户信息"""
-        try:
-            # 从请求状态中获取用户信息（由认证中间件设置）
-            if hasattr(request.state, "user"):
-                return request.state.user
-
-            # 尝试从Authorization头解析用户信息
-            auth_header = request.headers.get("authorization")
-            if auth_header and auth_header.startswith("Bearer "):
-                token = auth_header.split(" ", 1)[1]
-
-                # 使用AuthService验证token
-                from app.services.auth_service import AuthService
-                token_data = AuthService.verify_token(token)
-
-                if token_data:
-                    # 返回用户信息（开源版只有admin用户）
-                    return {
-                        "id": "admin",
-                        "username": "admin",
-                        "name": "管理员",
-                        "is_admin": True,
-                        "roles": ["admin"]
-                    }
-
-            return None
-        except Exception as e:
-            logger.debug(f"获取用户信息失败: {e}")
-            return None
+        """获取用户信息（单用户本地部署模式：直接返回固定管理员身份）"""
+        return {
+            "id": "admin",
+            "username": "admin",
+            "name": "管理员",
+            "is_admin": True,
+            "roles": ["admin"]
+        }
 
     def _get_action_type(self, path: str) -> str:
         """根据路径获取操作类型"""
@@ -213,16 +189,6 @@ class OperationLogMiddleware(BaseHTTPMiddleware):
                 return f"{action_verb}数据库清理"
             else:
                 return f"{action_verb}数据库操作"
-
-        elif "/auth/" in path:
-            if "login" in path:
-                return "用户登录"
-            elif "logout" in path:
-                return "用户登出"
-            elif "change-password" in path:
-                return "修改密码"
-            else:
-                return f"{action_verb}认证操作"
 
         else:
             return f"{action_verb} {path}"

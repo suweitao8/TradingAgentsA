@@ -7,8 +7,7 @@ from typing import List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from app.routers.auth_db import get_current_user
-from app.models.user import User
+from app.core.auth import get_current_user
 from app.models.config import (
     SystemConfigResponse, LLMConfigRequest, DataSourceConfigRequest,
     DatabaseConfigRequest, ConfigTestRequest, ConfigTestResponse,
@@ -209,7 +208,7 @@ class FetchProviderModelsRequest(BaseModel):
 
 @router.get("/system", response_model=dict)
 async def get_system_config(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """获取系统配置"""
     try:
@@ -245,7 +244,7 @@ async def get_system_config(
 
 @router.get("/llm/providers", response_model=dict)
 async def get_llm_providers(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """获取所有大模型厂家"""
     try:
@@ -317,7 +316,7 @@ async def get_llm_providers(
 @router.post("/llm/providers", response_model=dict)
 async def add_llm_provider(
     request: LLMProviderRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """添加大模型厂家"""
     try:
@@ -364,7 +363,7 @@ async def add_llm_provider(
 async def update_llm_provider(
     provider_id: str,
     request: LLMProviderRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """更新大模型厂家"""
     try:
@@ -423,7 +422,7 @@ async def update_llm_provider(
 @router.delete("/llm/providers/{provider_id}", response_model=dict)
 async def delete_llm_provider(
     provider_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """删除大模型厂家"""
     try:
@@ -461,7 +460,7 @@ async def delete_llm_provider(
 async def toggle_llm_provider(
     provider_id: str,
     request: dict,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """切换大模型厂家状态"""
     try:
@@ -500,7 +499,7 @@ async def toggle_llm_provider(
 async def fetch_provider_models(
     provider_id: str,
     request: FetchProviderModelsRequest | None = None,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """从厂家 API 获取模型列表"""
     try:
@@ -534,7 +533,7 @@ async def fetch_provider_models(
 
 @router.post("/llm/providers/migrate-env", response_model=dict)
 async def migrate_env_to_providers(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """将环境变量配置迁移到厂家管理"""
     try:
@@ -574,7 +573,7 @@ async def migrate_env_to_providers(
 
 @router.post("/llm/providers/init-aggregators", response_model=dict)
 async def init_aggregator_providers(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """初始化聚合渠道厂家配置（302.AI、OpenRouter等）"""
     try:
@@ -617,7 +616,7 @@ async def init_aggregator_providers(
 @router.post("/llm/providers/{provider_id}/test", response_model=dict)
 async def test_provider_api(
     provider_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """测试厂家API密钥"""
     try:
@@ -638,7 +637,7 @@ async def test_provider_api(
 @router.post("/llm", response_model=dict)
 async def add_llm_config(
     request: LLMConfigRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """添加或更新大模型配置"""
     try:
@@ -747,7 +746,7 @@ async def add_llm_config(
 @router.post("/datasource", response_model=dict)
 async def add_data_source_config(
     request: DataSourceConfigRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """添加数据源配置"""
     try:
@@ -850,7 +849,7 @@ async def add_data_source_config(
 @router.post("/database", response_model=dict)
 async def add_database_config(
     request: DatabaseConfigRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """添加数据库配置"""
     try:
@@ -902,7 +901,7 @@ async def add_database_config(
 @router.post("/test", response_model=dict)
 async def test_config(
     request: ConfigTestRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """测试配置连接"""
     try:
@@ -984,7 +983,7 @@ async def test_saved_database_config(
 
 @router.get("/llm", response_model=dict)
 async def get_llm_configs(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """获取所有大模型配置"""
     try:
@@ -1030,7 +1029,7 @@ async def get_llm_configs(
 async def delete_llm_config(
     provider: str,
     model_name: str,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """删除大模型配置"""
     try:
@@ -1080,7 +1079,7 @@ async def delete_llm_config(
 @router.post("/llm/set-default")
 async def set_default_llm(
     request: SetDefaultRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """设置默认大模型"""
     try:
@@ -1115,7 +1114,7 @@ async def set_default_llm(
 
 @router.get("/datasource", response_model=dict)
 async def get_data_source_configs(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """获取所有数据源配置"""
     try:
@@ -1134,7 +1133,7 @@ async def get_data_source_configs(
 async def update_data_source_config(
     name: str,
     request: DataSourceConfigRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """更新数据源配置"""
     try:
@@ -1343,7 +1342,7 @@ async def update_data_source_config(
 @router.delete("/datasource/{name}", response_model=dict)
 async def delete_data_source_config(
     name: str,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """删除数据源配置"""
     try:
@@ -1398,7 +1397,7 @@ async def delete_data_source_config(
 
 @router.get("/market-categories", response_model=dict)
 async def get_market_categories(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """获取所有市场分类"""
     try:
@@ -1414,7 +1413,7 @@ async def get_market_categories(
 @router.post("/market-categories", response_model=dict)
 async def add_market_category(
     request: MarketCategoryRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """添加市场分类"""
     try:
@@ -1453,7 +1452,7 @@ async def add_market_category(
 async def update_market_category(
     category_id: str,
     request: Dict[str, Any],
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """更新市场分类"""
     try:
@@ -1490,7 +1489,7 @@ async def update_market_category(
 @router.delete("/market-categories/{category_id}", response_model=dict)
 async def delete_market_category(
     category_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """删除市场分类"""
     try:
@@ -1528,7 +1527,7 @@ async def delete_market_category(
 
 @router.get("/datasource-groupings", response_model=dict)
 async def get_datasource_groupings(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """获取所有数据源分组关系"""
     try:
@@ -1544,7 +1543,7 @@ async def get_datasource_groupings(
 @router.post("/datasource-groupings", response_model=dict)
 async def add_datasource_to_category(
     request: DataSourceGroupingRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """将数据源添加到分类"""
     try:
@@ -1583,7 +1582,7 @@ async def add_datasource_to_category(
 async def remove_datasource_from_category(
     data_source_name: str,
     category_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """从分类中移除数据源"""
     try:
@@ -1622,7 +1621,7 @@ async def update_datasource_grouping(
     data_source_name: str,
     category_id: str,
     request: Dict[str, Any],
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """更新数据源分组关系"""
     try:
@@ -1660,7 +1659,7 @@ async def update_datasource_grouping(
 async def update_category_datasource_order(
     category_id: str,
     request: DataSourceOrderRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """更新分类中数据源的排序"""
     try:
@@ -1697,7 +1696,7 @@ async def update_category_datasource_order(
 @router.post("/datasource/set-default")
 async def set_default_data_source(
     request: SetDefaultRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """设置默认数据源"""
     try:
@@ -1732,7 +1731,7 @@ async def set_default_data_source(
 
 @router.get("/settings", response_model=dict)
 async def get_system_settings(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """获取系统设置"""
     try:
@@ -1747,7 +1746,7 @@ async def get_system_settings(
 
 @router.get("/settings/meta", response_model=dict)
 async def get_system_settings_meta(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """获取系统设置的元数据（敏感性、可编辑性、来源、是否有值）。
     返回结构：{success, data: {items: [{key,sensitive,editable,source,has_value}]}, message}
@@ -1768,7 +1767,7 @@ async def get_system_settings_meta(
 @router.put("/settings", response_model=dict)
 async def update_system_settings(
     settings: Dict[str, Any],
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """更新系统设置"""
     try:
@@ -1832,7 +1831,7 @@ async def update_system_settings(
 
 @router.post("/export", response_model=dict)
 async def export_config(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """导出配置"""
     try:
@@ -1867,7 +1866,7 @@ async def export_config(
 @router.post("/import", response_model=dict)
 async def import_config(
     config_data: Dict[str, Any],
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """导入配置"""
     try:
@@ -1902,7 +1901,7 @@ async def import_config(
 
 @router.post("/migrate-legacy", response_model=dict)
 async def migrate_legacy_config(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """迁移传统配置"""
     try:
@@ -1938,7 +1937,7 @@ async def migrate_legacy_config(
 @router.post("/default/llm", response_model=dict)
 async def set_default_llm(
     request: SetDefaultRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """设置默认大模型"""
     try:
@@ -1976,7 +1975,7 @@ async def set_default_llm(
 @router.post("/default/datasource", response_model=dict)
 async def set_default_data_source(
     request: SetDefaultRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """设置默认数据源"""
     try:
@@ -2013,7 +2012,7 @@ async def set_default_data_source(
 
 @router.get("/models", response_model=dict)
 async def get_available_models(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """获取可用的模型列表"""
     try:
@@ -2030,7 +2029,7 @@ async def get_available_models(
 
 @router.get("/model-catalog", response_model=dict)
 async def get_model_catalog(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """获取所有模型目录"""
     try:
@@ -2049,7 +2048,7 @@ async def get_model_catalog(
 @router.get("/model-catalog/{provider}", response_model=dict)
 async def get_provider_model_catalog(
     provider: str,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """获取指定厂家的模型目录"""
     try:
@@ -2079,7 +2078,7 @@ class ModelCatalogRequest(BaseModel):
 @router.post("/model-catalog", response_model=dict)
 async def save_model_catalog(
     request: ModelCatalogRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """保存或更新模型目录"""
     try:
@@ -2129,7 +2128,7 @@ async def save_model_catalog(
 @router.delete("/model-catalog/{provider}", response_model=dict)
 async def delete_model_catalog(
     provider: str,
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """删除模型目录"""
     try:
@@ -2161,7 +2160,7 @@ async def delete_model_catalog(
 
 @router.post("/model-catalog/init", response_model=dict)
 async def init_model_catalog(
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """初始化默认模型目录"""
     try:

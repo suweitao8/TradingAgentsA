@@ -8,7 +8,7 @@ from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field, ConfigDict, field_serializer
 from enum import Enum
 from bson import ObjectId
-from .user import PyObjectId
+from .common import PyObjectId
 
 
 class ModelProvider(str, Enum):

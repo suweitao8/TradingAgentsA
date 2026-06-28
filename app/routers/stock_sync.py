@@ -7,7 +7,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
 
-from app.routers.auth_db import get_current_user
+from app.core.auth import get_current_user
 from app.core.response import ok
 from app.core.database import get_mongo_db
 from app.worker.tushare_sync_service import get_tushare_sync_service

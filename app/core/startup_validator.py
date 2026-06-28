@@ -80,13 +80,6 @@ class StartupValidator:
             example="6379",
             validator=lambda v: v.isdigit() and 1 <= int(v) <= 65535
         ),
-        ConfigItem(
-            key="JWT_SECRET",
-            level=ConfigLevel.REQUIRED,
-            description="JWT密钥（用于生成认证令牌）",
-            example="your-super-secret-jwt-key-change-in-production",
-            validator=lambda v: len(v) >= 16
-        ),
     ]
     
     # 推荐配置项
@@ -214,20 +207,6 @@ class StartupValidator:
     
     def _check_security_configs(self):
         """检查安全配置"""
-        # 检查JWT密钥是否使用默认值
-        jwt_secret = os.getenv("JWT_SECRET", "")
-        if jwt_secret in ["change-me-in-production", "your-super-secret-jwt-key-change-in-production"]:
-            self.result.warnings.append(
-                "⚠️  JWT_SECRET 使用默认值，生产环境请务必修改！"
-            )
-        
-        # 检查CSRF密钥是否使用默认值
-        csrf_secret = os.getenv("CSRF_SECRET", "")
-        if csrf_secret in ["change-me-csrf-secret", "your-csrf-secret-key-change-in-production"]:
-            self.result.warnings.append(
-                "⚠️  CSRF_SECRET 使用默认值，生产环境请务必修改！"
-            )
-        
         # 检查是否在生产环境使用DEBUG模式
         debug = os.getenv("DEBUG", "true").lower() in ("true", "1", "yes", "on")
         if not debug:

@@ -12,7 +12,7 @@ import time
 import uuid
 import asyncio
 
-from app.routers.auth_db import get_current_user
+from app.core.auth import get_current_user
 from app.services.queue_service import get_queue_service, QueueService
 from app.services.analysis_service import get_analysis_service
 from app.services.simple_analysis_service import get_simple_analysis_service
@@ -1120,9 +1120,7 @@ async def get_zombie_tasks(
 
     僵尸任务：长时间处于 processing/running/pending 状态的任务
     """
-    # 检查管理员权限
-    if user.get("username") != "admin":
-        raise HTTPException(status_code=403, detail="仅管理员可访问")
+    # 单用户本地部署模式：恒为管理员，无需鉴权
 
     try:
         svc = get_simple_analysis_service()
@@ -1148,9 +1146,7 @@ async def cleanup_zombie_tasks(
 
     将长时间处于 processing/running/pending 状态的任务标记为失败
     """
-    # 检查管理员权限
-    if user.get("username") != "admin":
-        raise HTTPException(status_code=403, detail="仅管理员可访问")
+    # 单用户本地部署模式：恒为管理员，无需鉴权
 
     try:
         svc = get_simple_analysis_service()

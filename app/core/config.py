@@ -119,12 +119,6 @@ class Settings(BaseSettings):
         else:
             return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
 
-    # JWT配置
-    JWT_SECRET: str = Field(default="change-me-in-production")
-    JWT_ALGORITHM: str = Field(default="HS256")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=60)
-    REFRESH_TOKEN_EXPIRE_DAYS: int = Field(default=30)
-
     # 队列配置
     QUEUE_MAX_SIZE: int = Field(default=10000)
     QUEUE_VISIBILITY_TIMEOUT: int = Field(default=300)  # 5分钟
@@ -168,11 +162,6 @@ class Settings(BaseSettings):
     # 缓存配置
     CACHE_TTL: int = Field(default=3600)  # 1小时
     SCREENING_CACHE_TTL: int = Field(default=1800)  # 30分钟
-
-    # 安全配置
-    BCRYPT_ROUNDS: int = Field(default=12)
-    SESSION_EXPIRE_HOURS: int = Field(default=24)
-    CSRF_SECRET: str = Field(default="change-me-csrf-secret")
 
     # 外部服务配置
     STOCK_DATA_API_URL: str = Field(default="")

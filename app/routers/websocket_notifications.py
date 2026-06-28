@@ -106,13 +106,12 @@ manager = ConnectionManager()
 
 @router.websocket("/ws/notifications")
 async def websocket_notifications_endpoint(
-    websocket: WebSocket,
-    token: str = Query(default="", description="JWT token（单用户模式下已跳过校验）")
+    websocket: WebSocket
 ):
     """
     WebSocket 通知端点
-    
-    客户端连接: ws://localhost:8000/api/ws/notifications?token=<jwt_token>
+
+    客户端连接: ws://localhost:8000/api/ws/notifications
 
     消息格式:
     {
@@ -129,8 +128,7 @@ async def websocket_notifications_endpoint(
         }
     }
     """
-    # 单用户本地部署模式：跳过 token 校验，直接使用管理员身份
-    # （与 auth_db.get_current_user 保持一致）
+    # 单用户本地部署模式：直接使用管理员身份
     user_id = "admin"
 
     # 连接 WebSocket
@@ -194,13 +192,12 @@ async def websocket_notifications_endpoint(
 @router.websocket("/ws/tasks/{task_id}")
 async def websocket_task_progress_endpoint(
     websocket: WebSocket,
-    task_id: str,
-    token: str = Query(default="", description="JWT token（单用户模式下已跳过校验）")
+    task_id: str
 ):
     """
     WebSocket 任务进度端点
-    
-    客户端连接: ws://localhost:8000/api/ws/tasks/<task_id>?token=<jwt_token>
+
+    客户端连接: ws://localhost:8000/api/ws/tasks/<task_id>
 
     消息格式:
     {
@@ -215,8 +212,7 @@ async def websocket_task_progress_endpoint(
         }
     }
     """
-    # 单用户本地部署模式：跳过 token 校验，直接使用管理员身份
-    # （与 auth_db.get_current_user 保持一致）
+    # 单用户本地部署模式：直接使用管理员身份
     user_id = "admin"
     channel = f"task_progress:{task_id}"
     

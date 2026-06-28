@@ -7,7 +7,7 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict, field_serializer
 from enum import Enum
 from bson import ObjectId
-from .user import PyObjectId
+from .common import PyObjectId
 from app.utils.timezone import now_tz
 
 

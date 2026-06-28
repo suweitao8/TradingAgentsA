@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from app.routers.auth_db import get_current_user
+from app.core.auth import get_current_user
 from app.services.log_export_service import get_log_export_service
 
 router = APIRouter(prefix="/system-logs", tags=["系统日志"])

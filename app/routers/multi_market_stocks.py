@@ -13,7 +13,7 @@ from typing import Optional, Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 import logging
 
-from app.routers.auth_db import get_current_user
+from app.core.auth import get_current_user
 from app.core.database import get_mongo_db
 from app.core.response import ok
 from app.services.unified_stock_service import UnifiedStockService

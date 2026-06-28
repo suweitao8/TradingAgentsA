@@ -27,7 +27,7 @@ from app.models.analysis import (
     AnalysisParameters, AnalysisResult, AnalysisTask, AnalysisBatch,
     AnalysisStatus, BatchStatus, SingleAnalysisRequest, BatchAnalysisRequest
 )
-from app.models.user import PyObjectId
+from app.models.common import PyObjectId
 from bson import ObjectId
 from app.core.database import get_mongo_db
 from app.core.redis_client import get_redis_service, RedisKeys

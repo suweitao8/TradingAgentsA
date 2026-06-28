@@ -125,7 +125,6 @@ def main():
     logger.info("🔧 关键配置信息:")
     logger.info(f"  📊 MongoDB: {settings.MONGODB_HOST}:{settings.MONGODB_PORT}/{settings.MONGODB_DATABASE}")
     logger.info(f"  🔴 Redis: {settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}")
-    logger.info(f"  🔐 JWT Secret: {'已配置' if settings.JWT_SECRET != 'change-me-in-production' else '⚠️ 使用默认值'}")
     logger.info(f"  📝 日志级别: {settings.LOG_LEVEL}")
     
     # 检查环境变量加载状态
@@ -136,7 +135,6 @@ def main():
         ('MONGODB_DATABASE', settings.MONGODB_DATABASE, 'tradingagents'),
         ('REDIS_HOST', settings.REDIS_HOST, 'localhost'),
         ('REDIS_PORT', str(settings.REDIS_PORT), '6379'),
-        ('JWT_SECRET', '***' if settings.JWT_SECRET != 'change-me-in-production' else settings.JWT_SECRET, 'change-me-in-production')
     ]
     
     for env_name, current_value, default_value in env_vars_to_check:

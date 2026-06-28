@@ -4,7 +4,7 @@ import re
 import logging
 
 from app.core.config import settings
-from app.routers.auth_db import get_current_user
+from app.core.auth import get_current_user
 
 router = APIRouter()
 logger = logging.getLogger("webapi")
@@ -12,10 +12,7 @@ logger = logging.getLogger("webapi")
 SENSITIVE_KEYS = {
     "MONGODB_PASSWORD",
     "REDIS_PASSWORD",
-    "JWT_SECRET",
-    "CSRF_SECRET",
     "STOCK_DATA_API_KEY",
-    "REFRESH_TOKEN_EXPIRE_DAYS",  # not sensitive itself, but keep for completeness
 }
 
 MASK = "***"
