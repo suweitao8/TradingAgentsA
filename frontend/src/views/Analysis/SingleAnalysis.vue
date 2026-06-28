@@ -127,8 +127,7 @@
                     :key="analyst.id"
                     class="analyst-card"
                     :class="{ 
-                      active: analysisForm.selectedAnalysts.includes(analyst.name),
-                      disabled: analyst.name === '社媒分析师' && analysisForm.market === 'A股'
+                      active: analysisForm.selectedAnalysts.includes(analyst.name)
                     }"
                     @click="toggleAnalyst(analyst.name)"
                   >
@@ -148,18 +147,7 @@
                     </div>
                   </div>
                 </div>
-                
-                <!-- A股提示 -->
-                <el-alert
-                  v-if="analysisForm.market === 'A股'"
-                  title="A股市场暂不支持社媒分析（国内数据源限制）"
-                  type="info"
-                  :closable="false"
-                  style="margin-top: 12px"
-                />
               </div>
-
-
 
               <!-- 操作按钮 -->
               <div class="form-section">
@@ -303,41 +291,6 @@
                         {{ progressInfo.currentStepDescription || progressInfo.message || 'AI正在根据您的要求重点分析相关内容' }}
                       </div>
                     </div>
-
-                    <!-- 分析步骤显示 - 已隐藏 -->
-                    <!--
-                    <div v-if="analysisSteps.length > 0" class="analysis-steps">
-                      <h5 class="steps-title">📋 分析步骤</h5>
-                      <div class="steps-container">
-                        <div
-                          v-for="(step, index) in analysisSteps"
-                          :key="index"
-                          class="step-item"
-                          :class="{
-                            'step-completed': step.status === 'completed',
-                            'step-current': step.status === 'current',
-                            'step-pending': step.status === 'pending'
-                          }"
-                        >
-                          <div class="step-icon">
-                            <el-icon v-if="step.status === 'completed'" class="completed-icon">
-                              <Check />
-                            </el-icon>
-                            <el-icon v-else-if="step.status === 'current'" class="current-icon rotating-icon">
-                              <Loading />
-                            </el-icon>
-                            <el-icon v-else class="pending-icon">
-                              <Clock />
-                            </el-icon>
-                          </div>
-                          <div class="step-content">
-                            <div class="step-title">{{ step.title }}</div>
-                            <div class="step-description">{{ step.description }}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    -->
                   </div>
                 </el-card>
               </div>
@@ -741,7 +694,6 @@ interface AnalysisForm {
 }
 
 // 使用store
-const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 
@@ -764,27 +716,10 @@ const progressInfo = ref({
 })
 const pollingTimer = ref<any>(null)
 
-// 分析步骤定义（动态生成）
-const analysisSteps = ref<any[]>([])
-
-// 从后端步骤数据生成前端步骤
-const generateStepsFromBackend = (backendSteps: any[]) => {
-  if (!backendSteps || !Array.isArray(backendSteps)) {
-    return []
-  }
-
-  return backendSteps.map((step: any, index: number) => ({
-    key: `step_${index}`,
-    title: step.name || `步骤 ${index + 1}`,
-    description: step.description || '处理中...',
-    status: 'pending'
-  }))
-}
-
 // 模型设置
 const modelSettings = ref({
-  quickAnalysisModel: 'qwen-turbo',
-  deepAnalysisModel: 'qwen-max'
+  quickAnalysisModel: 'Kimi-K2.5',
+  deepAnalysisModel: 'Kimi-K2.5'
 })
 
 // 可用的模型列表（从配置中获取）
@@ -880,22 +815,10 @@ const validateStockCodeInput = () => {
       analysisForm.stockCode = validation.normalizedCode
     }
   }
-
-  // 获取股票信息
-  fetchStockInfo()
-}
-
-// 获取股票信息
-const fetchStockInfo = () => {
-  // TODO: 实现股票信息获取
 }
 
 // 切换分析师
 const toggleAnalyst = (analystName: string) => {
-  if (analystName === '社媒分析师' && analysisForm.market === 'A股') {
-    return
-  }
-
   const index = analysisForm.selectedAnalysts.indexOf(analystName)
   if (index > -1) {
     analysisForm.selectedAnalysts.splice(index, 1)
@@ -954,10 +877,6 @@ const submitAnalysis = async () => {
 
     const response = await analysisApi.startSingleAnalysis(request)
 
-    console.log('🔍 分析响应数据:', response)
-    console.log('🔍 响应数据结构:', response.data)
-    console.log('🔍 任务ID:', response.data?.task_id)
-
     ElMessage.success('分析任务已提交，正在处理中...')
 
     // 响应拦截器已返回 response.data，所以直接访问 response.data.task_id
@@ -968,8 +887,6 @@ const submitAnalysis = async () => {
       ElMessage.error('任务ID获取失败，请重试')
       return
     }
-
-    console.log('✅ 任务ID设置成功:', currentTaskId.value)
 
     // 保存任务状态到缓存
     saveTaskToCache(currentTaskId.value, {
@@ -989,9 +906,6 @@ const submitAnalysis = async () => {
       totalTime: 0
     }
 
-    // 初始化空的步骤列表，等待后端数据
-    analysisSteps.value = []
-
     // 开始轮询任务状态
     startPollingTaskStatus()
 
@@ -1000,11 +914,8 @@ const submitAnalysis = async () => {
       try {
         const response = await analysisApi.getTaskStatus(currentTaskId.value)
         const status = response.data // 响应拦截器已返回 response.data
-        console.log('🔄 立即查询状态:', status)
-        console.log('🔄 当前 analysisStatus:', analysisStatus.value)
         if (status.status === 'running') {
           analysisStatus.value = 'running'
-          console.log('✅ 设置 analysisStatus 为 running')
           updateProgressInfo(status)
         }
       } catch (error) {
@@ -1031,8 +942,6 @@ const startPollingTaskStatus = () => {
     return
   }
 
-  console.log('🔄 开始轮询任务状态:', currentTaskId.value)
-
   pollingTimer.value = setInterval(async () => {
     try {
       if (!currentTaskId.value) {
@@ -1043,17 +952,11 @@ const startPollingTaskStatus = () => {
         return
       }
 
-      console.log('🔄 开始查询任务状态:', currentTaskId.value)
       const response = await analysisApi.getTaskStatus(currentTaskId.value)
       const status = response.data // 响应拦截器已返回 response.data
 
-      console.log('🔍 任务状态响应:', response)
-      console.log('🔍 任务状态数据:', status)
-      console.log('🔍 当前状态:', status.status, '进度:', status.progress)
-
       if (status.status === 'completed') {
         // 分析完成，调用专门的结果API获取完整数据
-        console.log('🎉 分析完成，正在获取完整结果...')
 
         try {
           const resultResponse = await fetch(`/api/analysis/tasks/${currentTaskId.value}/result`, {
@@ -1066,17 +969,8 @@ const startPollingTaskStatus = () => {
             const resultData = await resultResponse.json()
             if (resultData.success) {
               analysisResults.value = resultData.data
-              console.log('✅ 获取完整分析结果成功:', resultData.data)
 
               // 添加调试信息
-              console.log('🔍 完整结果数据结构:', {
-                hasDecision: !!resultData.data?.decision,
-                hasState: !!resultData.data?.state,
-                hasReports: !!resultData.data?.reports,
-                hasSummary: !!resultData.data?.summary,
-                hasRecommendation: !!resultData.data?.recommendation,
-                keys: Object.keys(resultData.data || {})
-              })
             } else {
               console.error('❌ 获取分析结果失败:', resultData.message)
               analysisResults.value = status.result_data // 回退到状态中的数据
@@ -1134,7 +1028,6 @@ const startPollingTaskStatus = () => {
 
       } else if (status.status === 'running') {
         // 分析进行中，更新进度
-        console.log('🔄 轮询中设置 analysisStatus 为 running')
         analysisStatus.value = 'running'
         updateProgressInfo(status)
       }
@@ -1148,27 +1041,21 @@ const startPollingTaskStatus = () => {
 
 // 更新进度信息
 const updateProgressInfo = (status: any) => {
-  console.log('🔄 更新进度信息:', status)
-  console.log('🔄 当前进度信息:', progressInfo.value)
 
   // 使用后端返回的实际进度数据
   if (status.progress !== undefined) {
-    console.log('📊 更新进度:', status.progress)
     progressInfo.value.progress = status.progress
   }
 
   if (status.current_step_name) {
-    console.log('📋 更新步骤:', status.current_step_name)
     progressInfo.value.currentStep = status.current_step_name
   }
 
   if (status.current_step_description) {
-    console.log('📝 更新步骤描述:', status.current_step_description)
     progressInfo.value.currentStepDescription = status.current_step_description
   }
 
   if (status.message) {
-    console.log('💬 更新消息:', status.message)
     progressInfo.value.message = status.message
   }
 
@@ -1184,20 +1071,6 @@ const updateProgressInfo = (status: any) => {
   if (status.estimated_total_time !== undefined) {
     progressInfo.value.totalTime = status.estimated_total_time
   }
-
-  // 如果后端提供了步骤数据，更新步骤列表
-  if (status.steps && Array.isArray(status.steps)) {
-    if (analysisSteps.value.length === 0) {
-      // 首次生成步骤列表
-      analysisSteps.value = generateStepsFromBackend(status.steps)
-      console.log('📋 从后端生成步骤列表:', analysisSteps.value.length, '个步骤')
-    }
-  }
-
-  console.log('🔄 更新后进度信息:', progressInfo.value)
-
-  // 更新分析步骤状态
-  updateAnalysisSteps(status)
 
   // 前端不进行估算，只展示后端返回的数据
   progressInfo.value.message = status.message || '分析正在进行中...'
@@ -1228,7 +1101,6 @@ const restartAnalysis = () => {
   }
 }
 
-
 // 获取操作标签类型
 const getActionTagType = (action: string): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
   const actionTypes: Record<string, 'primary' | 'success' | 'warning' | 'info' | 'danger'> = {
@@ -1242,27 +1114,22 @@ const getActionTagType = (action: string): 'primary' | 'success' | 'warning' | '
 
 // 获取分析报告
 const getAnalysisReports = (data: any) => {
-  console.log('📊 getAnalysisReports 输入数据:', data)
   const reports: Array<{title: string, content: any}> = []
 
   // 优先从 reports 字段获取数据（新的API格式）
   let reportsData = data
   if (data && data.reports && typeof data.reports === 'object') {
     reportsData = data.reports
-    console.log('📊 使用 data.reports:', reportsData)
   } else if (data && data.state && typeof data.state === 'object') {
     reportsData = data.state
-    console.log('📊 使用 data.state:', reportsData)
   } else {
-    console.log('📊 没有找到有效的报告数据')
     return reports
   }
 
   // 定义报告映射（按照完整的分析流程顺序）
   const reportMappings = [
-    // 分析师团队 (4个)
+    // 分析师团队 (3个)
     { key: 'market_report', title: '📈 市场技术分析', category: '分析师团队' },
-    { key: 'sentiment_report', title: '💭 市场情绪分析', category: '分析师团队' },
     { key: 'news_report', title: '📰 新闻事件分析', category: '分析师团队' },
     { key: 'fundamentals_report', title: '💰 基本面分析', category: '分析师团队' },
 
@@ -1293,15 +1160,12 @@ const getAnalysisReports = (data: any) => {
   reportMappings.forEach(mapping => {
     const content = reportsData[mapping.key]
     if (content) {
-      console.log(`📊 找到报告: ${mapping.key} -> ${mapping.title}`)
       reports.push({
         title: mapping.title,
         content: content
       })
     }
   })
-
-  console.log(`📊 总共找到 ${reports.length} 个报告`)
 
   // 设置第一个报告为默认激活标签页
   if (reports.length > 0 && !activeReportTab.value) {
@@ -1350,15 +1214,9 @@ const getReportDescription = (title: string) => {
 
 // 格式化报告内容
 const formatReportContent = (content: any) => {
-  console.log('🎨 [DEBUG] formatReportContent 被调用:', {
-    content: content,
-    type: typeof content,
-    length: typeof content === 'string' ? content.length : 'N/A'
-  })
 
   // 确保content是字符串类型
   if (!content) {
-    console.log('⚠️ [DEBUG] content为空，返回空字符串')
     return ''
   }
 
@@ -1366,27 +1224,20 @@ const formatReportContent = (content: any) => {
   let stringContent = ''
   if (typeof content === 'string') {
     stringContent = content
-    console.log('✅ [DEBUG] content是字符串，长度:', stringContent.length)
   } else if (typeof content === 'object') {
     // 如果是对象，尝试提取有用信息
     if (content.judge_decision) {
       stringContent = content.judge_decision
-      console.log('📝 [DEBUG] 从对象中提取judge_decision')
     } else {
       stringContent = JSON.stringify(content, null, 2)
-      console.log('📝 [DEBUG] 将对象转换为JSON字符串')
     }
   } else {
     stringContent = String(content)
-    console.log('📝 [DEBUG] 将内容转换为字符串')
   }
 
   try {
     // 使用marked库将Markdown转换为HTML
     const htmlContent = marked.parse(stringContent) as string
-
-    console.log('🎨 [DEBUG] Marked转换完成，HTML长度:', htmlContent.length)
-    console.log('🎨 [DEBUG] HTML前200字符:', htmlContent.substring(0, 200))
 
     return htmlContent
   } catch (error) {
@@ -1762,16 +1613,13 @@ onUnmounted(() => {
 // 页面可见性变化时的处理
 const handleVisibilityChange = () => {
   if (document.hidden) {
-    console.log('📱 页面隐藏，暂停轮询')
   } else {
-    console.log('📱 页面显示，恢复轮询')
     // 页面重新可见时，立即查询一次状态
     if (currentTaskId.value && analysisStatus.value === 'running') {
       setTimeout(async () => {
         try {
           const response = await analysisApi.getTaskStatus(currentTaskId.value)
           const status = response.data // 响应拦截器已返回 response.data
-          console.log('🔄 页面恢复查询状态:', status)
           if (status.status === 'running') {
             analysisStatus.value = 'running'
             updateProgressInfo(status)
@@ -1824,55 +1672,6 @@ const formatTime = (seconds: number) => {
   }
 }
 
-// 更新分析步骤状态
-const updateAnalysisSteps = (status: any) => {
-  console.log('📋 步骤更新输入:', status)
-
-  if (analysisSteps.value.length === 0) {
-    console.log('📋 没有步骤定义，跳过更新')
-    return
-  }
-
-  // 优先使用后端提供的详细步骤信息
-  let currentStepIndex = 0
-
-  if (status.current_step !== undefined) {
-    // 后端提供了精确的步骤索引
-    currentStepIndex = status.current_step
-    console.log('📋 使用后端步骤索引:', currentStepIndex)
-  } else {
-    // 兜底方案：使用进度百分比估算
-    const progress = status.progress_percentage || status.progress || 0
-    if (progress > 0) {
-      const progressRatio = progress / 100
-      currentStepIndex = Math.floor(progressRatio * (analysisSteps.value.length - 1))
-      if (progress > 0 && currentStepIndex === 0) {
-        currentStepIndex = 1
-      }
-    }
-    console.log('📋 使用进度估算步骤索引:', currentStepIndex, '进度:', progress)
-  }
-
-  // 确保索引在有效范围内
-  currentStepIndex = Math.max(0, Math.min(currentStepIndex, analysisSteps.value.length - 1))
-
-  console.log('📋 最终步骤索引:', currentStepIndex, '/', analysisSteps.value.length)
-
-  // 更新所有步骤状态
-  analysisSteps.value.forEach((step, index) => {
-    if (index < currentStepIndex) {
-      step.status = 'completed'
-    } else if (index === currentStepIndex) {
-      step.status = 'current'
-    } else {
-      step.status = 'pending'
-    }
-  })
-
-  const statusSummary = analysisSteps.value.map((s, i) => `${i}:${s.status}`).join(', ')
-  console.log('📋 步骤状态更新完成:', statusSummary)
-}
-
 // 初始化模型设置
 const initializeModelSettings = async () => {
   try {
@@ -1897,20 +1696,10 @@ const initializeModelSettings = async () => {
       llmConfigs.filter((config: any) => config.enabled)
     )
 
-    console.log('✅ 加载模型配置成功:', {
-      quick: modelSettings.value.quickAnalysisModel,
-      deep: modelSettings.value.deepAnalysisModel,
-      available: availableModels.value.length
-    })
-    console.log('🔍 可用模型详细信息:', availableModels.value.map(m => ({
-      model_name: m.model_name,
-      model_display_name: m.model_display_name,
-      provider: m.provider
-    })))
   } catch (error) {
     console.error('加载默认模型配置失败:', error)
-    modelSettings.value.quickAnalysisModel = 'qwen-turbo'
-    modelSettings.value.deepAnalysisModel = 'qwen-max'
+    modelSettings.value.quickAnalysisModel = 'Kimi-K2.5'
+    modelSettings.value.deepAnalysisModel = 'Kimi-K2.5'
   }
 }
 
@@ -1926,7 +1715,6 @@ const saveTaskToCache = (taskId: string, taskData: any) => {
     timestamp: Date.now()
   }
   localStorage.setItem(TASK_CACHE_KEY, JSON.stringify(cacheData))
-  console.log('💾 任务状态已缓存:', taskId)
 }
 
 // 从缓存获取任务状态
@@ -1941,11 +1729,9 @@ const getTaskFromCache = () => {
     // 检查是否过期（30分钟）
     if (now - cacheData.timestamp > TASK_CACHE_DURATION) {
       localStorage.removeItem(TASK_CACHE_KEY)
-      console.log('🗑️ 缓存已过期，已清理')
       return null
     }
 
-    console.log('📦 从缓存恢复任务:', cacheData.taskId)
     return cacheData
   } catch (error) {
     console.error('❌ 读取缓存失败:', error)
@@ -1957,7 +1743,6 @@ const getTaskFromCache = () => {
 // 清除任务缓存
 const clearTaskCache = () => {
   localStorage.removeItem(TASK_CACHE_KEY)
-  console.log('🗑️ 任务缓存已清除')
 }
 
 // 恢复任务状态
@@ -1966,13 +1751,10 @@ const restoreTaskFromCache = async () => {
   if (!cached) return false
 
   try {
-    console.log('🔄 尝试恢复任务状态:', cached.taskId)
 
     // 查询任务当前状态
     const response = await analysisApi.getTaskStatus(cached.taskId)
     const status = response.data // 响应拦截器已返回 response.data
-
-    console.log('📊 恢复的任务状态:', status)
 
     if (status.status === 'completed') {
       // 任务已完成，显示结果
@@ -1989,7 +1771,6 @@ const restoreTaskFromCache = async () => {
         Object.assign(analysisForm, cached.taskData.parameters)
       }
 
-      console.log('✅ 任务已完成，显示结果')
       return true
 
     } else if (status.status === 'running') {
@@ -2007,7 +1788,6 @@ const restoreTaskFromCache = async () => {
       // 启动轮询
       startPollingTaskStatus()
 
-      console.log('🔄 任务仍在运行，恢复进度显示')
       return true
 
     } else if (status.status === 'failed') {
@@ -2019,13 +1799,11 @@ const restoreTaskFromCache = async () => {
       // 清除缓存
       clearTaskCache()
 
-      console.log('❌ 任务失败')
       return true
 
     } else {
       // 其他状态，清除缓存
       clearTaskCache()
-      console.log('🤔 未知任务状态，清除缓存')
       return false
     }
 
@@ -2209,11 +1987,6 @@ onMounted(async () => {
       analysisForm.selectedAnalysts = [...userPrefs.default_analysts]
     }
 
-    console.log('✅ 已加载用户偏好设置:', {
-      market: analysisForm.market,
-      depth: analysisForm.researchDepth,
-      analysts: analysisForm.selectedAnalysts
-    })
   } else {
     // 降级到 appStore.preferences
     if (appStore.preferences.defaultMarket) {
@@ -2222,7 +1995,6 @@ onMounted(async () => {
     if (appStore.preferences.defaultDepth) {
       analysisForm.researchDepth = parseInt(appStore.preferences.defaultDepth)
     }
-    console.log('✅ 已加载应用偏好设置（降级）')
   }
 
   // 接收一次路由参数（从筛选页带入）- 路由参数优先级最高
@@ -2232,13 +2004,11 @@ onMounted(async () => {
     analysisForm.stockCode = String(q.stock)
     // 🔥 关键修复：如果有新的股票代码，清除旧任务缓存
     clearTaskCache()
-    console.log('🔄 检测到新股票代码，已清除旧任务缓存:', q.stock)
 
     // 🆕 自动识别市场类型（如果URL中没有明确指定market参数）
     if (!q?.market) {
       const detectedMarket = getMarketByStockCode(analysisForm.stockCode)
       analysisForm.market = detectedMarket as MarketType
-      console.log('🔍 自动识别市场类型:', analysisForm.stockCode, '->', detectedMarket)
     }
   }
   if (q?.market) analysisForm.market = normalizeMarketForAnalysis(q.market) as MarketType
