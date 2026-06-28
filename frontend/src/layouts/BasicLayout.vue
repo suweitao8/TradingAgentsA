@@ -61,13 +61,7 @@
             keep-alive 暂时禁用：组件未声明 name，:include 无法匹配，留空即可。
           -->
           <router-view v-slot="{ Component, route }">
-            <transition
-              :name="route.meta.transition || 'fade'"
-              mode="out-in"
-              appear
-            >
-              <component :is="Component" :key="route.path" />
-            </transition>
+            <component :is="Component" :key="route.path" />
           </router-view>
         </div>
       </main>
@@ -84,7 +78,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useWindowSize } from '@vueuse/core'
 import { useAppStore } from '@/stores/app'
 import SidebarMenu from '@/components/Layout/SidebarMenu.vue'
 import UserProfile from '@/components/Layout/UserProfile.vue'
@@ -272,29 +268,4 @@ watch(() => route.fullPath, () => {
   }
 }
 
-// 路由过渡动画
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-left-enter-active,
-.slide-left-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-left-enter-from {
-  transform: translateX(30px);
-  opacity: 0;
-}
-
-.slide-left-leave-to {
-  transform: translateX(-30px);
-  opacity: 0;
-}
 </style>

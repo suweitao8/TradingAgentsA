@@ -102,7 +102,7 @@ export const useNotificationStore = defineStore('notifications', () => {
         wsReconnectAttempts = 0
       }
 
-      socket.onclose = (event) => {
+      socket.onclose = () => {
         wsConnected.value = false
         ws.value = null
 

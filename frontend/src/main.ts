@@ -61,7 +61,6 @@ app.config.warnHandler = (msg, _vm, trace) => {
 // 初始化应用
 const initApp = async () => {
   try {
-    const authStore = useAuthStore()
     const appStore = useAppStore()
 
     // 应用主题
