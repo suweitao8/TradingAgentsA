@@ -547,7 +547,7 @@ def clear_bridged_config():
     ]
 
     # 清除所有可能的 API 密钥
-    providers = ['OPENAI', 'ANTHROPIC', 'GOOGLE', 'DEEPSEEK', 'DASHSCOPE', 'QIANFAN']
+    providers = ['OPENAI', 'ANTHROPIC', 'GOOGLE', 'DEEPSEEK', 'DASHSCOPE', 'QIANFAN', 'JDCLOUD']
     for provider in providers:
         keys_to_clear.append(f'{provider}_API_KEY')
 

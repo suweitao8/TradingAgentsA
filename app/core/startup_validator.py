@@ -83,21 +83,11 @@ class StartupValidator:
     ]
     
     # 推荐配置项
+    # 注意：LLM API 密钥不再硬编码为推荐项。
+    # 单用户本地部署模式下，用户通过 Web 后台配置任意一个 LLM 厂商即可，
+    # 系统会在 validate() 中动态检查 MongoDB llm_providers 集合是否有已启用的厂商。
+    # 这里只保留数据源类的推荐配置。
     RECOMMENDED_CONFIGS = [
-        ConfigItem(
-            key="DEEPSEEK_API_KEY",
-            level=ConfigLevel.RECOMMENDED,
-            description="DeepSeek API密钥（推荐，性价比高）",
-            example="sk-xxx",
-            help_url="https://platform.deepseek.com/"
-        ),
-        ConfigItem(
-            key="DASHSCOPE_API_KEY",
-            level=ConfigLevel.RECOMMENDED,
-            description="阿里百炼API密钥（推荐，国产稳定）",
-            example="sk-xxx",
-            help_url="https://dashscope.aliyun.com/"
-        ),
         ConfigItem(
             key="TUSHARE_TOKEN",
             level=ConfigLevel.RECOMMENDED,
@@ -165,6 +155,9 @@ class StartupValidator:
         # 验证推荐配置
         self._validate_recommended_configs()
         
+        # 动态检查 LLM 厂商配置（MongoDB llm_providers 集合）
+        self._validate_llm_providers()
+        
         # 检查安全配置
         self._check_security_configs()
         
@@ -204,6 +197,45 @@ class StartupValidator:
                 logger.warning(f"⚠️  {config.key} 配置为占位符，视为未配置")
             else:
                 logger.debug(f"✅ {config.key}: 已配置")
+    
+    def _validate_llm_providers(self):
+        """
+        动态检查 LLM 厂商配置
+
+        单用户本地部署模式下，用户通过 Web 后台配置 LLM 厂商（存储在 MongoDB
+        llm_providers 集合）。只要至少有一个已启用且配置了有效 API Key 的厂商，
+        AI 分析功能即可正常使用。如果完全没有可用厂商，则添加推荐配置警告。
+        """
+        try:
+            from pymongo import MongoClient
+            from app.core.config import settings
+
+            client = MongoClient(settings.MONGO_URI, serverSelectionTimeoutMS=3000)
+            db = client[settings.MONGO_DB]
+
+            active_providers = list(db.llm_providers.find({"is_active": True}))
+            client.close()
+
+            valid_count = 0
+            for provider in active_providers:
+                api_key = provider.get("api_key", "")
+                if api_key and not api_key.startswith("your_") and not api_key.startswith("your-") and len(api_key) > 10:
+                    valid_count += 1
+                    logger.debug(f"✅ LLM 厂商 {provider.get('name')} 已配置有效 API Key")
+
+            if valid_count == 0:
+                # 没有任何已配置的 LLM 厂商，添加推荐警告
+                self.result.missing_recommended.append(ConfigItem(
+                    key="LLM_PROVIDER",
+                    level=ConfigLevel.RECOMMENDED,
+                    description="至少配置一个 LLM 厂商的 API 密钥（在「模型配置」页面设置）",
+                ))
+                logger.warning("⚠️  未检测到已配置的 LLM 厂商，请在 Web 后台「模型配置」页面添加")
+            else:
+                logger.info(f"✅ 检测到 {valid_count} 个已配置的 LLM 厂商")
+
+        except Exception as e:
+            logger.debug(f"⚠️  无法检查 LLM 厂商配置: {e}")
     
     def _check_security_configs(self):
         """检查安全配置"""

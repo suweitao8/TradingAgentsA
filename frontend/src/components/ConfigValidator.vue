@@ -404,12 +404,10 @@ const updateConfigItems = () => {
     }
   })
 
-  // 更新推荐配置
+  // 更新推荐配置 —— 完全由后端返回的 missing_recommended 驱动，不再硬编码具体厂商
   const recommendedKeys = [
-    { key: 'AIHUBMIX_API_KEY', name: 'AIHubMix API', description: 'AIHubMix API 密钥', help: '用于 AI 分析功能' },
-    { key: 'DEEPSEEK_API_KEY', name: 'DeepSeek API', description: 'DeepSeek 大模型 API 密钥', help: '用于 AI 分析功能' },
-    { key: 'DASHSCOPE_API_KEY', name: '通义千问 API', description: '阿里云通义千问 API 密钥', help: '用于 AI 分析功能' },
-    { key: 'TUSHARE_TOKEN', name: 'Tushare Token', description: 'Tushare 数据源 Token', help: '用于获取专业A股数据' }
+    { key: 'TUSHARE_TOKEN', name: 'Tushare Token', description: 'Tushare 数据源 Token', help: '用于获取专业A股数据' },
+    { key: 'LLM_PROVIDER', name: 'LLM 厂商', description: '至少配置一个 LLM 厂商的 API 密钥', help: '在「模型配置」页面添加' },
   ]
 
   recommendedConfigs.value = recommendedKeys.map(item => {
@@ -420,6 +418,18 @@ const updateConfigItems = () => {
       valid: !missing
     }
   })
+  // 后端可能返回不在上面列表中的推荐项，追加展示
+  const knownKeys = new Set(recommendedKeys.map(k => k.key))
+  const extra = (envValidation.value?.missing_recommended || []).filter(m => !knownKeys.has(m.key))
+  for (const m of extra) {
+    recommendedConfigs.value.push({
+      key: m.key,
+      name: m.key,
+      description: m.description || '',
+      help: '',
+      valid: false
+    })
+  }
 }
 
 // 生命周期
