@@ -117,10 +117,10 @@ class TushareProvider(BaseStockDataProvider):
                     ts.set_token(db_token)
                     self.api = ts.pro_api()
 
-                    # 测试连接 - 直接调用同步方法（不使用 asyncio.run）
+                    # 测试连接 - 用 trade_cal（轻量级且限频宽松），避免 stock_basic 在低积分账号 1次/小时限频导致连接测试误判
                     try:
-                        self.logger.info("🔄 [步骤3.1] 调用 stock_basic API 测试连接...")
-                        test_data = self.api.stock_basic(list_status='L', limit=1)
+                        self.logger.info(f"🔄 [步骤3.1] 调用 trade_cal API 测试连接...")
+                        test_data = self.api.trade_cal(exchange='SSE', start_date='20240101', end_date='20240105')
                         self.logger.info(f"✅ [步骤3.1] API 调用成功，返回数据: {len(test_data) if test_data is not None else 0} 条")
                     except Exception as e:
                         self.logger.warning(f"⚠️ [步骤3.1] 数据库 Token 测试失败: {e}，尝试降级到 .env 配置...")
@@ -143,10 +143,10 @@ class TushareProvider(BaseStockDataProvider):
                     ts.set_token(env_token)
                     self.api = ts.pro_api()
 
-                    # 测试连接 - 直接调用同步方法（不使用 asyncio.run）
+                    # 测试连接 - 用 trade_cal（轻量级且限频宽松），与上方数据库 Token 测试保持一致
                     try:
-                        self.logger.info("🔄 [步骤4.1] 调用 stock_basic API 测试连接...")
-                        test_data = self.api.stock_basic(list_status='L', limit=1)
+                        self.logger.info(f"🔄 [步骤4.1] 调用 trade_cal API 测试连接...")
+                        test_data = self.api.trade_cal(exchange='SSE', start_date='20240101', end_date='20240105')
                         self.logger.info(f"✅ [步骤4.1] API 调用成功，返回数据: {len(test_data) if test_data is not None else 0} 条")
                     except Exception as e:
                         self.logger.error(f"❌ [步骤4.1] .env Token 测试失败: {e}")
@@ -193,13 +193,14 @@ class TushareProvider(BaseStockDataProvider):
                     ts.set_token(db_token)
                     self.api = ts.pro_api()
 
-                    # 测试连接（异步）- 使用超时
+                    # 测试连接（异步）- 用 trade_cal（轻量级且限频宽松），避免 stock_basic 限频导致误判
                     try:
                         test_data = await asyncio.wait_for(
                             asyncio.to_thread(
-                                self.api.stock_basic,
-                                list_status='L',
-                                limit=1
+                                self.api.trade_cal,
+                                exchange='SSE',
+                                start_date='20240101',
+                                end_date='20240105'
                             ),
                             timeout=test_timeout
                         )
@@ -223,13 +224,14 @@ class TushareProvider(BaseStockDataProvider):
                     ts.set_token(env_token)
                     self.api = ts.pro_api()
 
-                    # 测试连接（异步）- 使用超时
+                    # 测试连接（异步）- 用 trade_cal，与上方数据库 Token 测试保持一致
                     try:
                         test_data = await asyncio.wait_for(
                             asyncio.to_thread(
-                                self.api.stock_basic,
-                                list_status='L',
-                                limit=1
+                                self.api.trade_cal,
+                                exchange='SSE',
+                                start_date='20240101',
+                                end_date='20240105'
                             ),
                             timeout=test_timeout
                         )
