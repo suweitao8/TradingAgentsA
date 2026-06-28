@@ -1,7 +1,6 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
-import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
 
 // API响应接口
@@ -16,8 +15,6 @@ export interface ApiResponse<T = any> {
 
 // 请求配置接口
 export interface RequestConfig extends AxiosRequestConfig {
-  skipAuth?: boolean
-  skipAuthError?: boolean  // 跳过 401 错误的自动处理（用于登录等接口）
   skipErrorHandler?: boolean
   showLoading?: boolean
   loadingText?: string
@@ -53,13 +50,6 @@ const showErrorMessage = (message: string) => {
   ElMessage.error(message)
 }
 
-// 处理 401 错误（单用户本地部署模式：仅记录日志，不跳转登录页）
-const handle401Error = (_authStore: any, _message: string = '登录已过期，请重新登录') => {
-  // 单用户模式：后端已关闭认证校验，正常不会出现 401。
-  // 若出现，仅记录日志，不清除登录态、不跳转。
-  console.warn('[API] 收到 401，单用户模式已忽略')
-}
-
 // 创建axios实例
 const createAxiosInstance = (): AxiosInstance => {
   const instance = axios.create({
@@ -75,17 +65,7 @@ const createAxiosInstance = (): AxiosInstance => {
   // 请求拦截器
   instance.interceptors.request.use(
     (config: any) => {
-      const authStore = useAuthStore()
       const appStore = useAppStore()
-
-      // 添加认证头（总是覆盖为最新Token；支持localStorage兜底，避免早期请求丢Token）
-      if (!config.skipAuth) {
-        const token = authStore.token || localStorage.getItem('auth-token')
-        if (token) {
-          config.headers = config.headers || {}
-          config.headers.Authorization = `Bearer ${token}`
-        }
-      }
 
       // 添加请求ID
       config.headers['X-Request-ID'] = generateRequestId()
@@ -133,7 +113,6 @@ const createAxiosInstance = (): AxiosInstance => {
   instance.interceptors.response.use(
     (response: AxiosResponse) => {
       const appStore = useAppStore()
-      const authStore = useAuthStore()
       const config = response.config as RequestConfig
 
       // 隐藏加载状态
@@ -145,16 +124,6 @@ const createAxiosInstance = (): AxiosInstance => {
       const data = response.data as ApiResponse
       if (data && typeof data === 'object' && 'success' in data) {
         if (!data.success) {
-          // 检查是否是认证错误（优先处理，不依赖 skipErrorHandler）
-          const code = data.code
-          if (code === 401 || code === 40101 || code === 40102 || code === 40103) {
-            // 如果请求标记为跳过认证错误处理（如登录请求），不自动处理
-            if (!config.skipAuthError) {
-              handle401Error(authStore, data.message || '登录已过期，请重新登录')
-            }
-            return Promise.reject(new Error(data.message || '认证失败'))
-          }
-
           // 其他业务错误
           if (!config.skipErrorHandler) {
             handleBusinessError(data)
@@ -168,7 +137,6 @@ const createAxiosInstance = (): AxiosInstance => {
     },
     async (error) => {
       const appStore = useAppStore()
-      const authStore = useAuthStore()
       const config = error.config as RequestConfig
 
       // 隐藏加载状态
@@ -181,35 +149,6 @@ const createAxiosInstance = (): AxiosInstance => {
         const { status, data } = error.response
 
         switch (status) {
-          case 401:
-            // 如果请求标记为跳过认证错误处理（如登录请求），直接返回错误
-            if (config?.skipAuthError) {
-              break
-            }
-
-            // 如果是refresh请求本身失败，不要再次尝试刷新（避免无限循环）
-            if (config?.url?.includes('/auth/refresh')) {
-              handle401Error(authStore, '登录已过期，请重新登录')
-              break
-            }
-
-            // 未授权，尝试刷新token
-            if (!config?.skipAuth && authStore.refreshToken) {
-              try {
-                const success = await authStore.refreshAccessToken()
-                if (success) {
-                  // 重新发送原请求
-                  return instance.request(config)
-                }
-              } catch (refreshError) {
-                console.error('[API] Token刷新异常:', refreshError)
-              }
-            }
-
-            // 清除认证信息并跳转到登录页
-            handle401Error(authStore, '登录已过期，请重新登录')
-            break
-
           case 403:
             showErrorMessage('权限不足，无法访问该资源')
             break
@@ -281,15 +220,8 @@ const createAxiosInstance = (): AxiosInstance => {
 // 处理业务错误
 const handleBusinessError = (data: ApiResponse) => {
   const { code, message } = data
-  const authStore = useAuthStore()
 
   switch (code) {
-    case 401:
-    case 40101:  // 未授权
-    case 40102:  // Token 无效
-    case 40103:  // Token 过期
-      handle401Error(authStore, message || '登录已过期，请重新登录')
-      break
     case 40001:
       showErrorMessage('参数错误')
       break

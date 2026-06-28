@@ -338,17 +338,6 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
-    path: '/login',
-    name: 'Login',
-    component: () => import('@/views/Auth/Login.vue'),
-    meta: {
-      title: '登录',
-      hideInMenu: true,
-      transition: 'fade'
-    }
-  },
-
-  {
     path: '/about',
     name: 'About',
     component: () => import('@/views/About/index.vue'),
@@ -421,11 +410,6 @@ router.beforeEach(async (to, _from, next) => {
   }
 
   // 单用户本地部署模式：无需认证，直接放行所有路由
-  // 若误访问 /login，重定向到仪表板
-  if (to.name === 'Login') {
-    next('/dashboard')
-    return
-  }
 
   // 更新当前路由信息
   appStore.setCurrentRoute(to)

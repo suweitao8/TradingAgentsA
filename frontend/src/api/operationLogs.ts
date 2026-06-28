@@ -3,7 +3,6 @@
  */
 
 import { ApiClient, type ApiResponse } from './request'
-import { useAuthStore } from '@/stores/auth'
 
 const unwrapResponse = <T>(promise: Promise<ApiResponse<T>>): Promise<T> =>
   promise.then((res) => res.data)
@@ -168,10 +167,7 @@ export class OperationLogsApi {
     if (params.action_type) queryParams.append('action_type', params.action_type)
     
     const url = `/api/system/logs/export/csv${queryParams.toString() ? '?' + queryParams.toString() : ''}`
-    const token = useAuthStore().token
-    return fetch(url, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined
-    }).then(async (response) => {
+    return fetch(url).then(async (response) => {
       if (!response.ok) {
         throw new Error(`导出操作日志失败: HTTP ${response.status}`)
       }

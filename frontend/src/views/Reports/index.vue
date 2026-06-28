@@ -194,7 +194,6 @@ import {
   Refresh,
   ArrowDown
 } from '@element-plus/icons-vue'
-import { useAuthStore } from '@/stores/auth'
 
 type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
 
@@ -211,9 +210,8 @@ type ReportListItem = {
   analysis_date?: string
 }
 
-// 使用路由和认证store
+// 使用路由
 const router = useRouter()
-const authStore = useAuthStore()
 
 // 响应式数据
 const loading = ref(false)
@@ -255,7 +253,6 @@ const fetchReports = async () => {
 
     const response = await fetch(`/api/reports/list?${params}`, {
       headers: {
-        'Authorization': `Bearer ${authStore.token}`,
         'Content-Type': 'application/json'
       }
     })
@@ -316,7 +313,6 @@ const downloadReport = async (report: ReportListItem, format: string = 'markdown
 
     const response = await fetch(`/api/reports/${report.id}/download?format=${format}`, {
       headers: {
-        'Authorization': `Bearer ${authStore.token}`
       }
     })
 
@@ -396,7 +392,6 @@ const deleteReport = async (report: ReportListItem) => {
     const response = await fetch(`/api/reports/${report.id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${authStore.token}`,
         'Content-Type': 'application/json'
       }
     })

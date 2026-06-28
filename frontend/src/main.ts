@@ -81,12 +81,12 @@ const initApp = async () => {
     // 检查API连接状态
     await appStore.checkApiConnection()
 
-    // 单用户本地部署模式：无需认证状态检查与 token 刷新
+    // 加载偏好设置
+    await authStore.fetchPreferences()
   } catch (error) {
     const err = error as { code?: string; message?: string }
     console.warn('[App] 初始化失败，应用仍将继续启动:', err.message || err)
   } finally {
-    // 无论认证状态如何，都挂载应用
     app.mount('#app')
   }
 }

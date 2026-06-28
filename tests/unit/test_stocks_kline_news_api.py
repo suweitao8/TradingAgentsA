@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 # Build a minimal app that mounts only the stocks router to avoid triggering app.main lifespan
 from app.routers import stocks as stocks_router
-from app.routers.auth import get_current_user
+from app.core.auth import get_current_user
 
 
 def create_test_app():

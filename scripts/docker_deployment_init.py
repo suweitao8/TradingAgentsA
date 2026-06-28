@@ -158,9 +158,6 @@ async def insert_basic_data(db):
     logger.info("📝 插入基础数据...")
     
     try:
-        # 创建默认管理员用户
-        await create_default_admin_user(db)
-        
         # 创建系统配置
         await create_system_config(db)
         
@@ -171,45 +168,6 @@ async def insert_basic_data(db):
         
     except Exception as e:
         logger.error(f"❌ 插入基础数据失败: {e}")
-
-async def create_default_admin_user(db):
-    """创建默认管理员用户"""
-    logger.info("👤 创建默认管理员用户...")
-
-    try:
-        # 使用新的用户服务创建管理员
-        from app.services.user_service import user_service
-
-        # 读取当前管理员密码配置
-        admin_password = "admin123"  # 默认密码
-        config_file = project_root / "config" / "admin_password.json"
-
-        if config_file.exists():
-            try:
-                with open(config_file, "r", encoding="utf-8") as f:
-                    config = json.load(f)
-                    admin_password = config.get("password", "admin123")
-                logger.info(f"✓ 从配置文件读取管理员密码")
-            except Exception as e:
-                logger.warning(f"⚠️ 读取密码配置失败，使用默认密码: {e}")
-
-        # 使用用户服务创建管理员用户
-        admin_user = await user_service.create_admin_user(
-            username="admin",
-            password=admin_password,
-            email="admin@tradingagents.cn"
-        )
-
-        if admin_user:
-            logger.info("✅ 创建管理员用户成功")
-            logger.info(f"   用户名: admin")
-            logger.info(f"   密码: {admin_password}")
-            logger.info("   ⚠️  请在首次登录后立即修改密码！")
-        else:
-            logger.info("✓ 管理员用户已存在")
-
-    except Exception as e:
-        logger.error(f"❌ 创建管理员用户失败: {e}")
 
 async def create_system_config(db):
     """创建系统配置"""

@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { notificationsApi, type NotificationItem } from '@/api/notifications'
-import { useAuthStore } from '@/stores/auth'
 
 export const useNotificationStore = defineStore('notifications', () => {
   const items = ref<NotificationItem[]>([])
@@ -82,17 +81,10 @@ export const useNotificationStore = defineStore('notifications', () => {
       }
       if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null }
 
-      const authStore = useAuthStore()
-      const token = authStore.token || localStorage.getItem('auth-token') || ''
-      if (!token) {
-        return
-      }
-
-      // WebSocket 连接地址
-      // 统一使用当前访问的服务器地址（开发环境通过 Vite 代理，生产环境通过 Nginx 代理）
+      // WebSocket 连接地址（单用户模式：无需 token）
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
       const host = window.location.host
-      const wsUrl = `${wsProtocol}//${host}/api/ws/notifications?token=${encodeURIComponent(token)}`
+      const wsUrl = `${wsProtocol}//${host}/api/ws/notifications`
 
       const socket = new WebSocket(wsUrl)
       ws.value = socket

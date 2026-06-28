@@ -30,11 +30,6 @@ db = db.getSiblingDB('tradingagents');
 
 print('\n创建集合...');
 
-// 用户相关
-db.createCollection('users');
-db.createCollection('user_sessions');
-db.createCollection('user_activities');
-
 // 股票数据
 db.createCollection('stock_basic_info');
 db.createCollection('stock_financial_data');
@@ -65,20 +60,6 @@ print('✓ 集合创建完成');
 // ===== 创建索引 =====
 
 print('\n创建索引...');
-
-// 用户索引
-db.users.createIndex({ "username": 1 }, { unique: true });
-db.users.createIndex({ "email": 1 }, { unique: true, sparse: true });
-db.users.createIndex({ "created_at": 1 });
-
-// 用户会话索引
-db.user_sessions.createIndex({ "session_id": 1 }, { unique: true });
-db.user_sessions.createIndex({ "user_id": 1 });
-db.user_sessions.createIndex({ "created_at": 1 }, { expireAfterSeconds: 86400 }); // 24小时过期
-
-// 用户活动索引
-db.user_activities.createIndex({ "user_id": 1, "timestamp": -1 });
-db.user_activities.createIndex({ "action_type": 1, "timestamp": -1 });
 
 // 股票基础信息索引
 // 🔥 联合唯一索引：(code, source) - 允许同一股票有多个数据源

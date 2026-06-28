@@ -3,7 +3,6 @@
  */
 
 import { ApiClient } from './request'
-import { useAuthStore } from '@/stores/auth'
 
 // 数据库状态接口
 export interface DatabaseStatus {
@@ -155,12 +154,10 @@ export const databaseApi = {
     format?: string
     sanitize?: boolean  // 是否脱敏（清空敏感字段，用于演示系统）
   }): Promise<Blob> {
-    const token = useAuthStore().token
     return fetch('/api/system/database/export', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(options)
     }).then(async (response) => {

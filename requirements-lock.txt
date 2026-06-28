@@ -31,7 +31,6 @@ attrs==25.3.0
 backoff==2.2.1
 backports.asyncio.runner==1.2.0
 baostock==0.8.9
-bcrypt==4.3.0
 beautifulsoup4==4.13.5
 bidict==0.23.1
 billiard==4.2.2
@@ -225,7 +224,6 @@ pydantic-settings==2.10.1
 pydantic_core==2.33.2
 pydeck==0.9.1
 Pygments==2.19.2
-PyJWT==2.10.1
 pymongo==4.15.1
 pypandoc==1.15
 pyparsing==3.2.5

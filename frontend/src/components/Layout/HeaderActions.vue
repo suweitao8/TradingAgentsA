@@ -64,7 +64,6 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useNotificationStore } from '@/stores/notifications'
-import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 import {
   Sunny,
@@ -75,7 +74,6 @@ import {
 } from '@element-plus/icons-vue'
 
 const appStore = useAppStore()
-const authStore = useAuthStore()
 const notifStore = useNotificationStore()
 const { unreadCount, items } = storeToRefs(notifStore)
 const drawerVisible = ref(false)
@@ -116,11 +114,6 @@ onMounted(() => {
     }
   }, { immediate: true })
   watch(filter, () => { if (drawerVisible.value) notifStore.loadList(filter.value) })
-
-  // token 变化时重连
-  watch(() => authStore.token, () => {
-    notifStore.connect()
-  })
 })
 
 onUnmounted(() => {

@@ -16,73 +16,11 @@ sys.path.insert(0, str(project_root))
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.database import get_mongo_db
-from app.models.user import User, UserRole
-from app.utils.security import get_password_hash
 from app.utils.timezone import now_tz
 import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-async def create_default_users(db):
-    """创建默认用户"""
-    logger.info("创建默认用户...")
-    
-    users_collection = db["users"]
-    
-    # 检查是否已存在管理员用户
-    existing_admin = await users_collection.find_one({"username": "admin"})
-    if existing_admin:
-        logger.info("✓ 管理员用户已存在，跳过创建")
-        return
-    
-    # 创建默认管理员用户
-    admin_user = {
-        "username": "admin",
-        "email": "admin@tradingagents.cn",
-        "hashed_password": get_password_hash("admin123"),
-        "full_name": "系统管理员",
-        "role": UserRole.ADMIN.value,
-        "is_active": True,
-        "is_superuser": True,
-        "created_at": now_tz(),
-        "updated_at": now_tz(),
-        "settings": {
-            "default_research_depth": 2,
-            "enable_notifications": True,
-            "theme": "light"
-        }
-    }
-    
-    await users_collection.insert_one(admin_user)
-    logger.info("✓ 创建管理员用户成功")
-    logger.info("  用户名: admin")
-    logger.info("  密码: admin123")
-    logger.info("  ⚠️  请在首次登录后立即修改密码！")
-    
-    # 创建默认测试用户
-    test_user = {
-        "username": "test",
-        "email": "test@tradingagents.cn",
-        "hashed_password": get_password_hash("test123"),
-        "full_name": "测试用户",
-        "role": UserRole.USER.value,
-        "is_active": True,
-        "is_superuser": False,
-        "created_at": now_tz(),
-        "updated_at": now_tz(),
-        "settings": {
-            "default_research_depth": 2,
-            "enable_notifications": True,
-            "theme": "light"
-        }
-    }
-    
-    await users_collection.insert_one(test_user)
-    logger.info("✓ 创建测试用户成功")
-    logger.info("  用户名: test")
-    logger.info("  密码: test123")
 
 
 async def create_system_config(db):
@@ -306,10 +244,7 @@ async def main():
     try:
         # 获取数据库连接
         db = get_mongo_db()
-        
-        # 创建默认用户
-        await create_default_users(db.client[db.database_name])
-        
+
         # 创建系统配置
         await create_system_config(db.client[db.database_name])
         
@@ -325,9 +260,7 @@ async def main():
         logger.info("\n下一步:")
         logger.info("1. 启动后端服务: python -m uvicorn app.main:app --reload")
         logger.info("2. 启动前端服务: cd frontend && npm run dev")
-        logger.info("3. 访问应用: http://localhost:5173")
-        logger.info("4. 使用管理员账号登录: admin / admin123")
-        logger.info("\n⚠️  重要: 请在首次登录后立即修改管理员密码！")
+        logger.info("3. 访问应用: http://localhost:3000")
         
     except Exception as e:
         logger.error(f"❌ 初始化失败: {e}")

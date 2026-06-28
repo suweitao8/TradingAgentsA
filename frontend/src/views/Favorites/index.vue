@@ -516,7 +516,6 @@ import { normalizeMarketForAnalysis } from '@/utils/market'
 import { ApiClient } from '@/api/request'
 
 import type { FavoriteItem } from '@/api/favorites'
-import { useAuthStore } from '@/stores/auth'
 
 
 // 颜色可选项（20种预设颜色）
@@ -1188,11 +1187,8 @@ const formatDate = (dateStr: string) => {
 
 // 生命周期
 onMounted(() => {
-  const auth = useAuthStore()
-  if (auth.isAuthenticated) {
-    loadFavorites()
-    loadUserTags()
-  }
+  loadFavorites()
+  loadUserTags()
 })
 </script>
 

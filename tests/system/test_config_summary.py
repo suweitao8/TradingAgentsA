@@ -4,24 +4,19 @@ import logging
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.services.auth_service import AuthService
 
 
-def _auth_headers() -> dict:
-    token = AuthService.create_access_token(sub="admin")
-    return {"Authorization": f"Bearer {token}"}
-
-
-def test_config_summary_requires_auth():
+def test_config_summary_accessible():
+    """单用户本地部署模式，无需认证即可访问配置摘要"""
     client = TestClient(app)
     resp = client.get("/api/system/config/summary")
-    assert resp.status_code == 401
+    assert resp.status_code == 200
 
 
-def test_config_summary_masks_sensitive_fields_with_auth():
+def test_config_summary_masks_sensitive_fields():
     client = TestClient(app)
 
-    resp = client.get("/api/system/config/summary", headers=_auth_headers())
+    resp = client.get("/api/system/config/summary")
     assert resp.status_code == 200
     data = resp.json()
 
@@ -32,8 +27,6 @@ def test_config_summary_masks_sensitive_fields_with_auth():
     for key in [
         "MONGODB_PASSWORD",
         "REDIS_PASSWORD",
-        "JWT_SECRET",
-        "CSRF_SECRET",
         "STOCK_DATA_API_KEY",
     ]:
         assert key in s
@@ -55,4 +48,3 @@ def test_config_summary_masks_sensitive_fields_with_auth():
     # A few non-sensitive keys should be present for sanity
     for key in ["DEBUG", "HOST", "PORT", "MONGODB_HOST", "REDIS_HOST"]:
         assert key in s
-

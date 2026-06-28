@@ -285,7 +285,6 @@ import {
   QuestionFilled,
   ArrowDown
 } from '@element-plus/icons-vue'
-import { useAuthStore } from '@/stores/auth'
 import { marked } from 'marked'
 import { getMarketByStockCode } from '@/utils/market'
 import type { CurrencyAmount } from '@/api/paper'
@@ -310,10 +309,9 @@ type ReportDetailData = {
   reports: Record<string, ReportModuleContent>
 }
 
-// 路由和认证
+// 路由
 const route = useRoute()
 const router = useRouter()
-const authStore = useAuthStore()
 
 // 配置 marked 以获得更完整的 Markdown 支持
 marked.setOptions({ breaks: true, gfm: true })
@@ -343,7 +341,6 @@ const fetchReportDetail = async () => {
 
     const response = await fetch(`/api/reports/${reportId}/detail`, {
       headers: {
-        'Authorization': `Bearer ${authStore.token}`,
         'Content-Type': 'application/json'
       }
     })
@@ -389,7 +386,6 @@ const downloadReport = async (format: string = 'markdown') => {
 
     const response = await fetch(`/api/reports/${currentReport.id}/download?format=${format}`, {
       headers: {
-        'Authorization': `Bearer ${authStore.token}`
       }
     })
 

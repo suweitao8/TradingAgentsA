@@ -1058,7 +1058,6 @@ const startPollingTaskStatus = () => {
         try {
           const resultResponse = await fetch(`/api/analysis/tasks/${currentTaskId.value}/result`, {
             headers: {
-              'Authorization': `Bearer ${authStore.token}`,
               'Content-Type': 'application/json'
             }
           })
@@ -1415,7 +1414,6 @@ const downloadReport = async (format: string = 'markdown') => {
     const reportId = (analysisResults.value?.id as any) || currentTaskId.value
     const res = await fetch(`/api/reports/${reportId}/download?format=${format}`, {
       headers: {
-        'Authorization': `Bearer ${authStore.token}`
       }
     })
 

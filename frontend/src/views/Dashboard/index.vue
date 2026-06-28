@@ -301,7 +301,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 import {
   TrendCharts,
   Search,
@@ -321,7 +320,6 @@ import { newsApi } from '@/api/news'
 import { paperApi, type PaperAccountSummary } from '@/api/paper'
 
 const router = useRouter()
-const authStore = useAuthStore()
 
 // 响应式数据
 const userStats = ref({
@@ -398,7 +396,6 @@ const downloadReport = async (analysis: AnalysisTask) => {
     const reportId = analysis.task_id
     const res = await fetch(`/api/reports/${reportId}/download?format=markdown`, {
       headers: {
-        'Authorization': `Bearer ${authStore.token}`
       }
     })
     if (!res.ok) {

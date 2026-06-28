@@ -38,10 +38,6 @@
                 <el-icon><Bell /></el-icon>
                 <span>通知设置</span>
               </el-menu-item>
-              <el-menu-item index="security">
-                <el-icon><Lock /></el-icon>
-                <span>安全设置</span>
-              </el-menu-item>
             </template>
 
             <!-- 系统配置菜单 -->
@@ -88,14 +84,6 @@
           </template>
           
           <el-form :model="generalSettings" label-width="120px">
-            <el-form-item label="用户名">
-              <el-input v-model="generalSettings.username" disabled />
-            </el-form-item>
-            
-            <el-form-item label="邮箱">
-              <el-input v-model="generalSettings.email" />
-            </el-form-item>
-            
             <el-form-item label="语言">
               <el-select v-model="generalSettings.language">
                 <el-option label="简体中文" value="zh-CN" />
@@ -240,21 +228,6 @@
           </el-form>
         </el-card>
 
-        <!-- 安全设置 -->
-        <el-card v-show="activeTab === 'security'" class="settings-content" shadow="never">
-          <template #header>
-            <h3>安全设置</h3>
-          </template>
-
-          <el-form label-width="120px">
-            <el-form-item label="修改密码">
-              <el-button type="primary" @click="changePasswordDialogVisible = true">
-                修改密码
-              </el-button>
-            </el-form-item>
-          </el-form>
-        </el-card>
-
 
 
         <!-- 配置管理 -->
@@ -380,55 +353,6 @@
 
       </el-col>
     </el-row>
-
-    <!-- 修改密码对话框 -->
-    <el-dialog
-      v-model="changePasswordDialogVisible"
-      title="修改密码"
-      width="500px"
-      :close-on-click-modal="false"
-    >
-      <el-form
-        ref="changePasswordFormRef"
-        :model="changePasswordForm"
-        :rules="changePasswordRules"
-        label-width="100px"
-      >
-        <el-form-item label="当前密码" prop="oldPassword">
-          <el-input
-            v-model="changePasswordForm.oldPassword"
-            type="password"
-            placeholder="请输入当前密码"
-            show-password
-          />
-        </el-form-item>
-
-        <el-form-item label="新密码" prop="newPassword">
-          <el-input
-            v-model="changePasswordForm.newPassword"
-            type="password"
-            placeholder="请输入新密码（至少6位）"
-            show-password
-          />
-        </el-form-item>
-
-        <el-form-item label="确认密码" prop="confirmPassword">
-          <el-input
-            v-model="changePasswordForm.confirmPassword"
-            type="password"
-            placeholder="请再次输入新密码"
-            show-password
-          />
-        </el-form-item>
-      </el-form>
-
-      <template #footer>
-        <el-button @click="changePasswordDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="changePasswordLoading" @click="handleChangePassword">
-          确认修改
-        </el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -445,7 +369,6 @@ import {
   Brush,
   TrendCharts,
   Bell,
-  Lock,
   Tools,
   Monitor,
   Coin,
@@ -530,10 +453,8 @@ const updateSectionFromRoute = () => {
 // 监听路由变化（包括 query 参数）
 watch(() => [route.path, route.query.tab], updateSectionFromRoute, { immediate: true })
 
-// 从 authStore 获取用户信息（使用 computed 实现响应式）
+// 从 authStore 获取用户偏好（使用 computed 实现响应式）
 const generalSettings = ref({
-  username: authStore.user?.username || 'admin',
-  email: authStore.user?.email || 'admin@example.com',
   language: authStore.user?.preferences?.language || 'zh-CN',
   timezone: 'Asia/Shanghai'
 })
@@ -579,12 +500,10 @@ const buildPreferencesPayload = (
   }
 }
 
-// 监听用户信息变化，同步更新设置
+// 监听用户偏好变化，同步更新设置
 watch(() => authStore.user, (newUser) => {
   if (newUser) {
     // 更新通用设置
-    generalSettings.value.username = newUser.username || 'admin'
-    generalSettings.value.email = newUser.email || 'admin@example.com'
     generalSettings.value.language = newUser.preferences?.language || 'zh-CN'
 
     // 更新外观设置
@@ -618,13 +537,15 @@ const handleThemeChange = (theme: string | number | boolean | undefined) => {
 
 const saveGeneralSettings = async () => {
   try {
-    // 调用 authStore 更新用户信息
-    const success = await authStore.updateUserInfo({
-      email: generalSettings.value.email,
-      preferences: buildPreferencesPayload({
+    // 更新本地 store（立即生效）
+    appStore.setLanguage(generalSettings.value.language as any)
+
+    // 保存到后端
+    const success = await authStore.updatePreferences(
+      buildPreferencesPayload({
         language: generalSettings.value.language
       })
-    })
+    )
 
     if (success) {
       ElMessage.success('通用设置已保存')
@@ -642,12 +563,12 @@ const saveAppearanceSettings = async () => {
     appStore.setTheme(appearanceSettings.value.theme as any)
 
     // 保存到后端
-    const success = await authStore.updateUserInfo({
-      preferences: buildPreferencesPayload({
+    const success = await authStore.updatePreferences(
+      buildPreferencesPayload({
         ui_theme: appearanceSettings.value.theme,
         sidebar_width: appearanceSettings.value.sidebarWidth
       })
-    })
+    )
 
     if (success) {
       ElMessage.success('外观设置已保存')
@@ -669,15 +590,15 @@ const saveAnalysisSettings = async () => {
     })
 
     // 保存到后端
-    const success = await authStore.updateUserInfo({
-      preferences: buildPreferencesPayload({
+    const success = await authStore.updatePreferences(
+      buildPreferencesPayload({
         default_market: analysisSettings.value.defaultMarket,
         default_depth: analysisSettings.value.defaultDepth,
         default_analysts: analysisSettings.value.defaultAnalysts,
         auto_refresh: analysisSettings.value.autoRefresh,
         refresh_interval: analysisSettings.value.refreshInterval
       })
-    })
+    )
 
     if (success) {
       ElMessage.success('分析偏好已保存')
@@ -691,14 +612,14 @@ const saveAnalysisSettings = async () => {
 const saveNotificationSettings = async () => {
   try {
     // 保存到后端
-    const success = await authStore.updateUserInfo({
-      preferences: buildPreferencesPayload({
+    const success = await authStore.updatePreferences(
+      buildPreferencesPayload({
         desktop_notifications: notificationSettings.value.desktop,
         analysis_complete_notification: notificationSettings.value.analysisComplete,
         system_maintenance_notification: notificationSettings.value.systemMaintenance,
         notifications_enabled: notificationSettings.value.desktop || notificationSettings.value.analysisComplete || notificationSettings.value.systemMaintenance
       })
-    })
+    )
 
     if (success) {
       ElMessage.success('通知设置已保存')
@@ -732,74 +653,6 @@ const goToOperationLogs = () => {
 
 const goToMultiSourceSync = () => {
   router.push('/settings/sync')
-}
-
-// 修改密码相关
-const changePasswordDialogVisible = ref(false)
-const changePasswordLoading = ref(false)
-const changePasswordFormRef = ref()
-const changePasswordForm = ref({
-  oldPassword: '',
-  newPassword: '',
-  confirmPassword: ''
-})
-
-const validateConfirmPassword = (_rule: any, value: any, callback: any) => {
-  if (value === '') {
-    callback(new Error('请再次输入新密码'))
-  } else if (value !== changePasswordForm.value.newPassword) {
-    callback(new Error('两次输入的密码不一致'))
-  } else {
-    callback()
-  }
-}
-
-const changePasswordRules = {
-  oldPassword: [
-    { required: true, message: '请输入当前密码', trigger: 'blur' }
-  ],
-  newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少为6位', trigger: 'blur' }
-  ],
-  confirmPassword: [
-    { required: true, validator: validateConfirmPassword, trigger: 'blur' }
-  ]
-}
-
-const handleChangePassword = async () => {
-  if (!changePasswordFormRef.value) return
-
-  await changePasswordFormRef.value.validate(async (valid: boolean) => {
-    if (valid) {
-      changePasswordLoading.value = true
-      try {
-        const success = await authStore.changePassword(
-          changePasswordForm.value.oldPassword,
-          changePasswordForm.value.newPassword
-        )
-
-        if (success) {
-          ElMessage.success('密码修改成功，请重新登录')
-          changePasswordDialogVisible.value = false
-          changePasswordForm.value = {
-            oldPassword: '',
-            newPassword: '',
-            confirmPassword: ''
-          }
-          // 延迟跳转到登录页
-          setTimeout(() => {
-            authStore.logout()
-            router.push('/login')
-          }, 1500)
-        }
-      } catch (error: any) {
-        ElMessage.error(error.message || '密码修改失败')
-      } finally {
-        changePasswordLoading.value = false
-      }
-    }
-  })
 }
 
 
