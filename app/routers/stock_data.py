@@ -251,11 +251,11 @@ async def search_stocks(
             if any(c.isdigit() for c in keyword):
                 search_conditions.append({"symbol": {"$regex": keyword}})
 
-        # 🔥 添加数据源筛选：只查询优先级最高的数据源
+        # 查询所有已启用的数据源（而非仅优先级最高的一个），避免某数据源无数据时搜不到
         query = {
             "$and": [
                 {"$or": search_conditions},
-                {"source": preferred_source}
+                {"source": {"$in": enabled_sources}}
             ]
         }
 
@@ -264,19 +264,26 @@ async def search_stocks(
 
         results = await cursor.to_list(length=limit)
 
-        # 数据标准化
+        # 按数据源优先级排序（优先级高的排前面），再去重保留每个 code 的第一条
         service = get_stock_data_service()
+        source_priority = {src: i for i, src in enumerate(enabled_sources)}
+        seen_codes = set()
         standardized_results = []
-        for doc in results:
-            standardized_doc = service._standardize_basic_info(doc)
-            standardized_results.append(standardized_doc)
+        for doc in sorted(results, key=lambda d: source_priority.get(d.get("source", ""), 999)):
+            code = doc.get("symbol") or doc.get("code", "")
+            if code in seen_codes:
+                continue
+            seen_codes.add(code)
+            standardized_results.append(service._standardize_basic_info(doc))
+            if len(standardized_results) >= limit:
+                break
 
         return {
             "success": True,
             "data": standardized_results,
             "total": len(standardized_results),
             "keyword": keyword,
-            "source": preferred_source,  # 🔥 返回数据来源
+            "source": enabled_sources[0] if enabled_sources else "unknown",  # 返回优先级最高的数据源名称
             "message": "搜索完成"
         }
         
