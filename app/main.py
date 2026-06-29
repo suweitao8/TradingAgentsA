@@ -13,7 +13,7 @@ For commercial licensing, please contact: hsliup@163.com
 商业许可咨询，请联系：hsliup@163.com
 """
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
@@ -652,19 +652,31 @@ async def log_requests(request: Request, call_next):
 from app.middleware.request_id import RequestIDMiddleware
 app.add_middleware(RequestIDMiddleware)
 
+# 统一错误处理中间件（兜底未被路由捕获的异常，信封对齐 app.core.response）
+from app.middleware.error_handler import ErrorHandlerMiddleware, _error_response
+from app.core.response import fail
+app.add_middleware(ErrorHandlerMiddleware)
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """统一处理路由内主动抛出的 HTTPException，保证错误信封一致。
+
+    覆盖 FastAPI 默认的 {"detail": ...} 格式，改为 {success, message, code}。
+    """
+    status_code = exc.status_code or 500
+    detail = exc.detail if isinstance(exc.detail, str) else "请求错误"
+    return await _error_response(request, status_code, detail)
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    """兜底所有未被中间件和 HTTPException handler 捕获的异常（双重保险）。"""
     logging.error(f"Unhandled exception: {exc}", exc_info=True)
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error": {
-                "code": "INTERNAL_SERVER_ERROR",
-                "message": "Internal server error occurred",
-                "request_id": getattr(request.state, "request_id", None)
-            }
-        }
-    )
+    request_id = getattr(request.state, "request_id", None)
+    body = fail(message="服务器内部错误，请稍后重试", code=500)
+    body["request_id"] = request_id
+    return JSONResponse(status_code=500, content=body)
 
 
 # 测试端点 - 验证中间件是否工作
