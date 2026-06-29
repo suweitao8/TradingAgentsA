@@ -77,6 +77,13 @@ export const favoritesApi = {
       symbols: string[]
       data_source: string
       message: string
-    }>('/api/favorites/sync-realtime', { data_source })
+    }>('/api/favorites/sync-realtime', { data_source }),
+
+  /**
+   * 搜索 A 股股票（按名称或代码模糊匹配）
+   * @param keyword 搜索关键词
+   */
+  searchStock: (keyword: string) =>
+    ApiClient.get<any>('/api/stock-data/search', { keyword, limit: 1 }),
 }
 
