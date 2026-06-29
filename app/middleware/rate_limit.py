@@ -7,7 +7,7 @@ from fastapi import Request, Response, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 import logging
 from typing import Callable, Dict, Optional
-from core.redis_client import get_redis_service, RedisKeys
+from app.core.redis_client import get_redis_service, RedisKeys
 
 logger = logging.getLogger(__name__)
 
@@ -77,15 +77,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             
             raise HTTPException(
                 status_code=429,
-                detail={
-                    "error": {
-                        "code": "RATE_LIMIT_EXCEEDED",
-                        "message": f"请求过于频繁，请稍后重试",
-                        "rate_limit": rate_limit,
-                        "current_count": current_count,
-                        "reset_time": 60
-                    }
-                }
+                detail=f"请求过于频繁，请稍后重试（限制 {rate_limit} 次/分钟，当前 {current_count} 次）"
             )
         
         logger.debug(
@@ -159,15 +151,7 @@ class QuotaMiddleware(BaseHTTPMiddleware):
             
             raise HTTPException(
                 status_code=429,
-                detail={
-                    "error": {
-                        "code": "DAILY_QUOTA_EXCEEDED",
-                        "message": "今日配额已用完，请明天再试",
-                        "daily_quota": self.daily_quota,
-                        "current_usage": current_usage,
-                        "reset_date": today
-                    }
-                }
+                detail=f"今日配额已用完，请明天再试（配额 {self.daily_quota} 次/天，已用 {current_usage} 次）"
             )
         
         logger.debug(

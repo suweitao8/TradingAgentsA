@@ -241,16 +241,19 @@ def bridge_config_to_env():
             mongodb_conn = os.getenv("MONGODB_CONNECTION_STRING", "未设置")
             mongodb_db = os.getenv("MONGODB_DATABASE_NAME", "tradingagentscn")
             logger.info(f"  📋 USE_MONGODB_STORAGE: {use_mongodb}")
-            logger.info(f"  📋 MONGODB_CONNECTION_STRING: {mongodb_conn[:30]}..." if len(mongodb_conn) > 30 else f"  📋 MONGODB_CONNECTION_STRING: {mongodb_conn}")
+            # 脱敏：只打印 host:port，隐去用户名密码（连接串含 credentials 时形如
+            # mongodb://user:pass@host:port，正则去掉 user:pass@ 部分）
+            import re
+            _safe_conn = re.sub(r"://[^@]*@", "://***:***@", mongodb_conn) if "@" in mongodb_conn else mongodb_conn
+            logger.info(f"  📋 MONGODB_CONNECTION_STRING (脱敏): {_safe_conn}")
             logger.info(f"  📋 MONGODB_DATABASE_NAME: {mongodb_db}")
 
             # 直接创建 MongoDBStorage 实例，而不是调用 _init_mongodb_storage()
             # 这样可以捕获更详细的错误信息
             if use_mongodb.lower() == "true":
                 try:
-                    # 🔍 详细日志：显示完整的连接字符串（用于调试）
-                    logger.info(f"  🔍 实际传入的连接字符串: {mongodb_conn}")
-                    logger.info(f"  🔍 实际传入的数据库名称: {mongodb_db}")
+                    # 连接串已在上文脱敏打印，此处不再重复输出明文
+                    logger.info(f"  🔍 数据库名称: {mongodb_db}")
 
                     config_manager.mongodb_storage = MongoDBStorage(
                         connection_string=mongodb_conn,

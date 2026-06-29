@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     PORT: int = Field(default=8000)
     ALLOWED_ORIGINS: List[str] = Field(default_factory=lambda: ["*"])
     ALLOWED_HOSTS: List[str] = Field(default_factory=lambda: ["*"])
+    # CORS 是否允许携带凭证（cookie）。注意：按 CORS 规范，当 ALLOWED_ORIGINS=["*"] 时
+    # 浏览器强制要求 allow_credentials=False，main.py 会据此自动降级，无需手动改这里。
+    # 仅在显式配置了具体源（如 http://localhost:3000）时才应设为 True。
+    CORS_ALLOW_CREDENTIALS: bool = Field(default=True)
 
     # MongoDB配置
     MONGODB_HOST: str = Field(default="localhost")

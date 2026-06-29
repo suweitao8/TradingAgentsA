@@ -153,14 +153,16 @@ async def _print_config_summary(logger):
         logger.info(f"MongoDB: {settings.MONGODB_HOST}:{settings.MONGODB_PORT}/{settings.MONGODB_DATABASE}")
         logger.info(f"Redis: {settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}")
 
-        # 代理配置
-        import os
+        # 代理配置（脱敏：代理地址形如 http://user:pass@host:port，隐去 user:pass）
+        import os, re
+        def _mask_proxy(url: str) -> str:
+            return re.sub(r"://[^@]*@", "://***:***@", url) if url and "@" in url else (url or "")
         if settings.HTTP_PROXY or settings.HTTPS_PROXY:
             logger.info("Proxy Configuration:")
             if settings.HTTP_PROXY:
-                logger.info(f"  HTTP_PROXY: {settings.HTTP_PROXY}")
+                logger.info(f"  HTTP_PROXY: {_mask_proxy(settings.HTTP_PROXY)}")
             if settings.HTTPS_PROXY:
-                logger.info(f"  HTTPS_PROXY: {settings.HTTPS_PROXY}")
+                logger.info(f"  HTTPS_PROXY: {_mask_proxy(settings.HTTPS_PROXY)}")
             if settings.NO_PROXY:
                 # 只显示前3个域名
                 no_proxy_list = settings.NO_PROXY.split(',')
@@ -610,10 +612,21 @@ if not settings.DEBUG:
     )
 
 # CORS中间件
+# 按 CORS 规范：allow_origins=["*"] 与 allow_credentials=True 是非法组合（浏览器会拒绝）。
+# 当配置为通配源时自动降级 credentials=False，避免跨域请求被浏览器拦截。
+_cors_origins = settings.ALLOWED_ORIGINS
+_cors_allow_credentials = settings.CORS_ALLOW_CREDENTIALS
+if "*" in _cors_origins and _cors_allow_credentials:
+    _cors_allow_credentials = False
+    logger.warning(
+        "CORS: ALLOWED_ORIGINS 含通配符 '*'，已自动将 allow_credentials 降级为 False "
+        "（CORS 规范禁止 '*' 与 credentials=True 同时使用）。"
+        "如需携带 cookie，请在 .env 显式配置具体 ALLOWED_ORIGINS。"
+    )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    allow_credentials=_cors_allow_credentials,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
@@ -656,6 +669,14 @@ app.add_middleware(RequestIDMiddleware)
 from app.middleware.error_handler import ErrorHandlerMiddleware, _error_response
 from app.core.response import fail
 app.add_middleware(ErrorHandlerMiddleware)
+
+# 速率限制中间件（防滥用；Redis 不可用时静默放行，不影响正常使用）
+if settings.RATE_LIMIT_ENABLED:
+    from app.middleware.rate_limit import RateLimitMiddleware
+    app.add_middleware(RateLimitMiddleware, default_rate_limit=settings.DEFAULT_RATE_LIMIT)
+    logger.info(f"速率限制已启用（全局默认 {settings.DEFAULT_RATE_LIMIT} 次/分钟）")
+else:
+    logger.info("速率限制未启用（RATE_LIMIT_ENABLED=false）")
 
 
 @app.exception_handler(HTTPException)
