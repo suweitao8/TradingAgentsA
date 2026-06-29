@@ -26,9 +26,9 @@
                 <el-icon><User /></el-icon>
                 <span>通用设置</span>
               </el-menu-item>
-              <el-menu-item index="appearance">
-                <el-icon><Brush /></el-icon>
-                <span>外观设置</span>
+              <el-menu-item index="learning">
+                <el-icon><Reading /></el-icon>
+                <span>学习中心</span>
               </el-menu-item>
               <el-menu-item index="analysis">
                 <el-icon><TrendCharts /></el-icon>
@@ -98,6 +98,14 @@
                 <el-option label="伦敦时间 (UTC+0)" value="Europe/London" />
               </el-select>
             </el-form-item>
+
+            <el-form-item label="主题模式">
+              <el-radio-group v-model="generalSettings.theme" @change="handleThemeChange">
+                <el-radio label="light">浅色主题</el-radio>
+                <el-radio label="dark">深色主题</el-radio>
+                <el-radio label="auto">跟随系统</el-radio>
+              </el-radio-group>
+            </el-form-item>
             
             <el-form-item>
               <el-button type="primary" @click="saveGeneralSettings">
@@ -107,37 +115,96 @@
           </el-form>
         </el-card>
 
-        <!-- 外观设置 -->
-        <el-card v-show="activeTab === 'appearance'" class="settings-content" shadow="never">
+        <!-- 学习中心 -->
+        <el-card v-show="activeTab === 'learning'" class="settings-content" shadow="never">
           <template #header>
-            <h3>外观设置</h3>
+            <h3>📚 学习中心</h3>
           </template>
-          
-          <el-form :model="appearanceSettings" label-width="120px">
-            <el-form-item label="主题模式">
-              <el-radio-group v-model="appearanceSettings.theme" @change="handleThemeChange">
-                <el-radio label="light">浅色主题</el-radio>
-                <el-radio label="dark">深色主题</el-radio>
-                <el-radio label="auto">跟随系统</el-radio>
-              </el-radio-group>
-            </el-form-item>
 
-            <el-form-item label="侧边栏宽度">
-              <el-slider
-                v-model="appearanceSettings.sidebarWidth"
-                :min="200"
-                :max="400"
-                :step="20"
-                show-input
-              />
-            </el-form-item>
+          <p class="learning-subtitle">了解AI、大模型和智能股票分析</p>
 
-            <el-form-item>
-              <el-button type="primary" @click="saveAppearanceSettings">
-                保存设置
-              </el-button>
-            </el-form-item>
-          </el-form>
+          <el-row :gutter="20" class="learning-categories">
+            <el-col :xs="24" :sm="12" :md="8" :lg="6">
+              <el-card class="category-card" shadow="hover" @click="navigateTo('ai-basics')">
+                <div class="card-icon">🤖</div>
+                <h3>AI基础知识</h3>
+                <p>什么是AI？什么是大模型？了解人工智能的基本概念</p>
+                <el-tag type="primary" size="small">1篇文章</el-tag>
+              </el-card>
+            </el-col>
+            <el-col :xs="24" :sm="12" :md="8" :lg="6">
+              <el-card class="category-card" shadow="hover" @click="navigateTo('prompt-engineering')">
+                <div class="card-icon">✍️</div>
+                <h3>提示词工程</h3>
+                <p>学习如何编写有效的提示词，让AI更好地理解你的需求</p>
+                <el-tag type="success" size="small">2篇文章</el-tag>
+              </el-card>
+            </el-col>
+            <el-col :xs="24" :sm="12" :md="8" :lg="6">
+              <el-card class="category-card" shadow="hover" @click="navigateTo('model-selection')">
+                <div class="card-icon">🎯</div>
+                <h3>模型选择指南</h3>
+                <p>了解不同大模型的特点，选择最适合你的模型</p>
+                <el-tag type="warning" size="small">1篇文章</el-tag>
+              </el-card>
+            </el-col>
+            <el-col :xs="24" :sm="12" :md="8" :lg="6">
+              <el-card class="category-card" shadow="hover" @click="navigateTo('analysis-principles')">
+                <div class="card-icon">📊</div>
+                <h3>AI分析股票原理</h3>
+                <p>深入了解多智能体如何协作分析股票</p>
+                <el-tag type="info" size="small">1篇文章</el-tag>
+              </el-card>
+            </el-col>
+            <el-col :xs="24" :sm="12" :md="8" :lg="6">
+              <el-card class="category-card" shadow="hover" @click="navigateTo('risks-limitations')">
+                <div class="card-icon">⚠️</div>
+                <h3>风险与局限性</h3>
+                <p>了解AI的潜在问题和正确使用方式</p>
+                <el-tag type="danger" size="small">1篇文章</el-tag>
+              </el-card>
+            </el-col>
+            <el-col :xs="24" :sm="12" :md="8" :lg="6">
+              <el-card class="category-card" shadow="hover" @click="navigateTo('resources')">
+                <div class="card-icon">📖</div>
+                <h3>源项目与论文</h3>
+                <p>TradingAgents项目介绍和学术论文资源</p>
+                <el-tag type="primary" size="small">2篇文章</el-tag>
+              </el-card>
+            </el-col>
+            <el-col :xs="24" :sm="12" :md="8" :lg="6">
+              <el-card class="category-card" shadow="hover" @click="navigateTo('tutorials')">
+                <div class="card-icon">🎓</div>
+                <h3>实战教程</h3>
+                <p>通过实际案例学习如何使用本工具</p>
+                <el-tag type="success" size="small">2篇文章</el-tag>
+              </el-card>
+            </el-col>
+            <el-col :xs="24" :sm="12" :md="8" :lg="6">
+              <el-card class="category-card" shadow="hover" @click="navigateTo('faq')">
+                <div class="card-icon">❓</div>
+                <h3>常见问题</h3>
+                <p>快速找到常见问题的答案</p>
+                <el-tag type="info" size="small">1篇文章</el-tag>
+              </el-card>
+            </el-col>
+          </el-row>
+
+          <div class="recommended-section">
+            <h2>🌟 推荐阅读</h2>
+            <el-row :gutter="20">
+              <el-col :xs="24" :sm="12" :md="8" v-for="article in recommendedArticles" :key="article.id">
+                <el-card class="article-card" shadow="hover" @click="openArticle(article.id)">
+                  <div class="article-meta">
+                    <el-tag :type="article.tagType" size="small">{{ article.category }}</el-tag>
+                    <span class="read-time">{{ article.readTime }}</span>
+                  </div>
+                  <h4>{{ article.title }}</h4>
+                  <p>{{ article.description }}</p>
+                </el-card>
+              </el-col>
+            </el-row>
+          </div>
         </el-card>
 
         <!-- 分析偏好 -->
@@ -361,12 +428,11 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAppStore } from '@/stores/app'
-import { useAuthStore } from '@/stores/auth'
-import type { UserPreferences } from '@/types/auth'
+import type { UserPreferences } from '@/types/preferences'
 import {
   Setting,
   User,
-  Brush,
+  Reading,
   TrendCharts,
   Bell,
   Tools,
@@ -380,7 +446,6 @@ import {
 const router = useRouter()
 const route = useRoute()
 const appStore = useAppStore()
-const authStore = useAuthStore()
 
 // 当前分组：personal（个人设置）、config（系统配置）、admin（系统管理）
 const currentSection = ref('personal')
@@ -453,35 +518,36 @@ const updateSectionFromRoute = () => {
 // 监听路由变化（包括 query 参数）
 watch(() => [route.path, route.query.tab], updateSectionFromRoute, { immediate: true })
 
-// 从 authStore 获取用户偏好（使用 computed 实现响应式）
+// 从 appStore.serverPreferences 获取用户偏好（使用 computed 实现响应式）
 const generalSettings = ref({
-  language: authStore.user?.preferences?.language || 'zh-CN',
-  timezone: 'Asia/Shanghai'
+  language: appStore.serverPreferences?.language || 'zh-CN',
+  timezone: 'Asia/Shanghai',
+  theme: appStore.serverPreferences?.ui_theme || 'light'
 })
 
 const appearanceSettings = ref({
-  theme: authStore.user?.preferences?.ui_theme || 'light',
-  sidebarWidth: authStore.user?.preferences?.sidebar_width || 240
+  theme: appStore.serverPreferences?.ui_theme || 'light',
+  sidebarWidth: appStore.serverPreferences?.sidebar_width || 240
 })
 
 const analysisSettings = ref({
-  defaultMarket: authStore.user?.preferences?.default_market || 'A股',
-  defaultDepth: authStore.user?.preferences?.default_depth || '3',
-  defaultAnalysts: authStore.user?.preferences?.default_analysts || ['市场分析师', '基本面分析师', '新闻分析师'],
-  autoRefresh: authStore.user?.preferences?.auto_refresh ?? true,
-  refreshInterval: authStore.user?.preferences?.refresh_interval || 30
+  defaultMarket: appStore.serverPreferences?.default_market || 'A股',
+  defaultDepth: appStore.serverPreferences?.default_depth || '3',
+  defaultAnalysts: appStore.serverPreferences?.default_analysts || ['市场分析师', '基本面分析师', '新闻分析师'],
+  autoRefresh: appStore.serverPreferences?.auto_refresh ?? true,
+  refreshInterval: appStore.serverPreferences?.refresh_interval || 30
 })
 
 const notificationSettings = ref({
-  desktop: authStore.user?.preferences?.desktop_notifications ?? true,
-  analysisComplete: authStore.user?.preferences?.analysis_complete_notification ?? true,
-  systemMaintenance: authStore.user?.preferences?.system_maintenance_notification ?? true
+  desktop: appStore.serverPreferences?.desktop_notifications ?? true,
+  analysisComplete: appStore.serverPreferences?.analysis_complete_notification ?? true,
+  systemMaintenance: appStore.serverPreferences?.system_maintenance_notification ?? true
 })
 
 const buildPreferencesPayload = (
   partial: Partial<UserPreferences>
 ): UserPreferences => {
-  const current = authStore.user?.preferences
+  const current = appStore.serverPreferences
   return {
     default_market: current?.default_market || 'A股',
     default_depth: current?.default_depth || '3',
@@ -500,27 +566,28 @@ const buildPreferencesPayload = (
   }
 }
 
-// 监听用户偏好变化，同步更新设置
-watch(() => authStore.user, (newUser) => {
-  if (newUser) {
+// 监听服务端偏好变化，同步更新设置
+watch(() => appStore.serverPreferences, (prefs) => {
+  if (prefs) {
     // 更新通用设置
-    generalSettings.value.language = newUser.preferences?.language || 'zh-CN'
+    generalSettings.value.language = prefs.language || 'zh-CN'
+    generalSettings.value.theme = prefs.ui_theme || 'light'
 
-    // 更新外观设置
-    appearanceSettings.value.theme = newUser.preferences?.ui_theme || 'light'
-    appearanceSettings.value.sidebarWidth = newUser.preferences?.sidebar_width || 240
+    // 更新外观设置（保留数据供 payload，UI 已合并到通用设置）
+    appearanceSettings.value.theme = prefs.ui_theme || 'light'
+    appearanceSettings.value.sidebarWidth = prefs.sidebar_width || 240
 
     // 更新分析偏好
-    analysisSettings.value.defaultMarket = newUser.preferences?.default_market || 'A股'
-    analysisSettings.value.defaultDepth = newUser.preferences?.default_depth || '3'
-    analysisSettings.value.defaultAnalysts = newUser.preferences?.default_analysts || ['市场分析师', '基本面分析师', '新闻分析师']
-    analysisSettings.value.autoRefresh = newUser.preferences?.auto_refresh ?? true
-    analysisSettings.value.refreshInterval = newUser.preferences?.refresh_interval || 30
+    analysisSettings.value.defaultMarket = prefs.default_market || 'A股'
+    analysisSettings.value.defaultDepth = prefs.default_depth || '3'
+    analysisSettings.value.defaultAnalysts = prefs.default_analysts || ['市场分析师', '基本面分析师', '新闻分析师']
+    analysisSettings.value.autoRefresh = prefs.auto_refresh ?? true
+    analysisSettings.value.refreshInterval = prefs.refresh_interval || 30
 
     // 更新通知设置
-    notificationSettings.value.desktop = newUser.preferences?.desktop_notifications ?? true
-    notificationSettings.value.analysisComplete = newUser.preferences?.analysis_complete_notification ?? true
-    notificationSettings.value.systemMaintenance = newUser.preferences?.system_maintenance_notification ?? true
+    notificationSettings.value.desktop = prefs.desktop_notifications ?? true
+    notificationSettings.value.analysisComplete = prefs.analysis_complete_notification ?? true
+    notificationSettings.value.systemMaintenance = prefs.system_maintenance_notification ?? true
   }
 }, { deep: true })
 
@@ -539,11 +606,13 @@ const saveGeneralSettings = async () => {
   try {
     // 更新本地 store（立即生效）
     appStore.setLanguage(generalSettings.value.language as any)
+    appStore.setTheme(generalSettings.value.theme as any)
 
     // 保存到后端
-    const success = await authStore.updatePreferences(
+    const success = await appStore.savePreferences(
       buildPreferencesPayload({
-        language: generalSettings.value.language
+        language: generalSettings.value.language,
+        ui_theme: generalSettings.value.theme
       })
     )
 
@@ -553,29 +622,6 @@ const saveGeneralSettings = async () => {
   } catch (error) {
     console.error('保存通用设置失败:', error)
     ElMessage.error('保存通用设置失败')
-  }
-}
-
-const saveAppearanceSettings = async () => {
-  try {
-    // 更新本地 store（立即生效）
-    appStore.setSidebarWidth(appearanceSettings.value.sidebarWidth)
-    appStore.setTheme(appearanceSettings.value.theme as any)
-
-    // 保存到后端
-    const success = await authStore.updatePreferences(
-      buildPreferencesPayload({
-        ui_theme: appearanceSettings.value.theme,
-        sidebar_width: appearanceSettings.value.sidebarWidth
-      })
-    )
-
-    if (success) {
-      ElMessage.success('外观设置已保存')
-    }
-  } catch (error) {
-    console.error('保存外观设置失败:', error)
-    ElMessage.error('保存外观设置失败')
   }
 }
 
@@ -590,7 +636,7 @@ const saveAnalysisSettings = async () => {
     })
 
     // 保存到后端
-    const success = await authStore.updatePreferences(
+    const success = await appStore.savePreferences(
       buildPreferencesPayload({
         default_market: analysisSettings.value.defaultMarket,
         default_depth: analysisSettings.value.defaultDepth,
@@ -612,7 +658,7 @@ const saveAnalysisSettings = async () => {
 const saveNotificationSettings = async () => {
   try {
     // 保存到后端
-    const success = await authStore.updatePreferences(
+    const success = await appStore.savePreferences(
       buildPreferencesPayload({
         desktop_notifications: notificationSettings.value.desktop,
         analysis_complete_notification: notificationSettings.value.analysisComplete,
@@ -628,6 +674,62 @@ const saveNotificationSettings = async () => {
     console.error('保存通知设置失败:', error)
     ElMessage.error('保存通知设置失败')
   }
+}
+
+// ---- 学习中心 ----
+type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
+
+interface RecommendedArticle {
+  id: string
+  category: string
+  tagType: TagType
+  title: string
+  description: string
+  readTime: string
+}
+
+const recommendedArticles = ref<RecommendedArticle[]>([
+  {
+    id: 'what-is-llm',
+    category: 'AI基础',
+    tagType: 'primary',
+    title: '什么是大语言模型（LLM）？',
+    description: '从零开始了解大语言模型的基本概念和工作原理',
+    readTime: '10分钟'
+  },
+  {
+    id: 'multi-agent-system',
+    category: 'AI分析',
+    tagType: 'info',
+    title: '多智能体系统详解',
+    description: '了解本工具如何通过多个AI智能体协作分析股票',
+    readTime: '15分钟'
+  },
+  {
+    id: 'best-practices',
+    category: '提示词',
+    tagType: 'success',
+    title: '提示词工程最佳实践',
+    description: '学习如何编写高质量的提示词，提升AI分析效果',
+    readTime: '12分钟'
+  }
+])
+
+const navigateTo = (category: string) => {
+  router.push(`/learning/${category}`)
+}
+
+const openArticle = (articleId: string) => {
+  const extMap: Record<string, string> = {
+    'getting-started': 'https://mp.weixin.qq.com/s/uAk4RevdJHMuMvlqpdGUEw',
+    'usage-guide-preview': 'https://mp.weixin.qq.com/s/ppsYiBncynxlsfKFG8uEbw'
+  }
+  const external = extMap[articleId]
+  if (external) {
+    window.open(external, '_blank')
+    return
+  }
+  router.push(`/learning/article/${articleId}`)
 }
 
 // 导航函数
@@ -660,9 +762,10 @@ const goToMultiSourceSync = () => {
 // 生命周期
 onMounted(() => {
   // 从store加载设置
+  generalSettings.value.theme = appStore.theme
   appearanceSettings.value.theme = appStore.theme
   appearanceSettings.value.sidebarWidth = appStore.sidebarWidth
-  
+
   analysisSettings.value.defaultMarket = appStore.preferences.defaultMarket
   analysisSettings.value.defaultDepth = appStore.preferences.defaultDepth
   analysisSettings.value.autoRefresh = appStore.preferences.autoRefresh
@@ -727,6 +830,95 @@ onMounted(() => {
         .el-link {
           margin-right: 16px;
           margin-bottom: 8px;
+        }
+      }
+    }
+
+    /* 学习中心 */
+    .learning-subtitle {
+      color: var(--el-text-color-regular);
+      margin: 0 0 24px 0;
+    }
+
+    .learning-categories {
+      margin-bottom: 32px;
+
+      .category-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: 220px;
+        margin-bottom: 20px;
+        background: var(--el-fill-color-blank);
+        border-color: var(--el-border-color);
+
+        &:hover {
+          transform: translateY(-6px);
+          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-icon {
+          font-size: 40px;
+          text-align: center;
+          margin-bottom: 12px;
+        }
+
+        h3 {
+          font-size: 16px;
+          margin-bottom: 8px;
+          color: var(--el-text-color-primary);
+        }
+
+        p {
+          font-size: 13px;
+          color: var(--el-text-color-regular);
+          margin-bottom: 12px;
+          line-height: 1.5;
+          min-height: 50px;
+        }
+      }
+    }
+
+    .recommended-section {
+      margin-top: 32px;
+
+      h2 {
+        font-size: 18px;
+        margin-bottom: 16px;
+        color: var(--el-text-color-primary);
+      }
+
+      .article-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 16px;
+
+        &:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .article-meta {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 8px;
+
+          .read-time {
+            font-size: 12px;
+            color: var(--el-text-color-placeholder);
+          }
+        }
+
+        h4 {
+          font-size: 15px;
+          margin-bottom: 6px;
+          color: var(--el-text-color-primary);
+        }
+
+        p {
+          font-size: 13px;
+          color: var(--el-text-color-regular);
+          line-height: 1.5;
         }
       }
     }
