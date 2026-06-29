@@ -58,7 +58,7 @@ class AgentState(MessagesState):
 
     # research step
     market_report: Annotated[str, "Report from the Market Analyst"]
-    sentiment_report: Annotated[str, "Report from the Social Media Analyst"]
+    sentiment_report: Annotated[str, "Deprecated: social media analyst removed, kept as empty string for downstream compatibility"]
     news_report: Annotated[
         str, "Report from the News Researcher of current world affairs"
     ]
@@ -67,7 +67,6 @@ class AgentState(MessagesState):
     # 🔧 死循环修复: 工具调用计数器
     market_tool_call_count: Annotated[int, "Market analyst tool call counter"]
     news_tool_call_count: Annotated[int, "News analyst tool call counter"]
-    sentiment_tool_call_count: Annotated[int, "Social media analyst tool call counter"]
     fundamentals_tool_call_count: Annotated[int, "Fundamentals analyst tool call counter"]
 
     # researcher team discussion step

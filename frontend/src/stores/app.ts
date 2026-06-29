@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import type { RouteLocationNormalized } from 'vue-router'
 import { useStorage } from '@vueuse/core'
+import { ApiClient } from '@/api/request'
+import type { UserPreferences } from '@/types/preferences'
 
 export interface AppState {
   // 应用基础状态
@@ -36,6 +38,9 @@ export interface AppState {
   version: string
   buildTime: string
   apiVersion: string
+
+  // 服务端偏好设置（单用户本地部署，无账号概念）
+  serverPreferences: UserPreferences | null
 }
 
 type AppPreferences = AppState['preferences']
@@ -69,7 +74,9 @@ export const useAppStore = defineStore('app', {
 
     version: '0.1.16',
     buildTime: new Date().toISOString(),
-    apiVersion: ''
+    apiVersion: '',
+
+    serverPreferences: null,
   }),
 
   getters: {
@@ -258,6 +265,56 @@ export const useAppStore = defineStore('app', {
       this.loading = false
       this.loadingProgress = 0
       this.currentRoute = null
+    },
+
+    // 从后端加载偏好设置
+    async fetchPreferences() {
+      try {
+        const res = await ApiClient.get('/api/settings/preferences')
+        if (res.success && res.data) {
+          this.serverPreferences = res.data as UserPreferences
+          this.applyServerPreferences(res.data)
+        }
+      } catch (error) {
+        console.warn('⚠️ 加载偏好设置失败，使用默认值', error)
+      }
+    },
+
+    // 保存偏好设置到后端
+    async savePreferences(prefs: Record<string, any>): Promise<boolean> {
+      try {
+        const res = await ApiClient.put('/api/settings/preferences', prefs)
+        if (res.success && res.data) {
+          this.serverPreferences = res.data as UserPreferences
+          this.applyServerPreferences(res.data)
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error('更新偏好设置失败:', error)
+        return false
+      }
+    },
+
+    // 将服务端偏好同步到 appStore 本地状态
+    applyServerPreferences(prefs: any) {
+      if (prefs.ui_theme) {
+        this.setTheme(prefs.ui_theme as 'light' | 'dark' | 'auto')
+      }
+      if (prefs.sidebar_width) {
+        this.setSidebarWidth(prefs.sidebar_width)
+      }
+      if (prefs.language) {
+        this.setLanguage(prefs.language as 'zh-CN' | 'en-US')
+      }
+      if (prefs.default_market || prefs.default_depth || prefs.auto_refresh !== undefined || prefs.refresh_interval) {
+        this.updatePreferences({
+          defaultMarket: prefs.default_market as any,
+          defaultDepth: prefs.default_depth as any,
+          autoRefresh: prefs.auto_refresh,
+          refreshInterval: prefs.refresh_interval,
+        })
+      }
     }
   }
 })

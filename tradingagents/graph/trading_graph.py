@@ -193,7 +193,7 @@ class TradingAgentsGraph:
 
     def __init__(
         self,
-        selected_analysts=["market", "social", "news", "fundamentals"],
+        selected_analysts=["market", "news", "fundamentals"],
         debug=False,
         config: Dict[str, Any] = None,
     ):
@@ -607,16 +607,6 @@ class TradingAgentsGraph:
                     self.toolkit.get_stockstats_indicators_report,
                 ]
             ),
-            "social": ToolNode(
-                [
-                    # 统一工具（推荐）
-                    self.toolkit.get_stock_sentiment_unified,
-                    # 在线工具（备用）
-                    self.toolkit.get_stock_news_openai,
-                    # 离线工具（备用）
-                    self.toolkit.get_reddit_stock_info,
-                ]
-            ),
             "news": ToolNode(
                 [
                     # 统一工具（推荐）
@@ -838,8 +828,8 @@ class TradingAgentsGraph:
 
         LangGraph stream 返回的 chunk 格式：{node_name: {...}}
         节点名称示例：
-        - "Market Analyst", "Fundamentals Analyst", "News Analyst", "Social Analyst"
-        - "tools_market", "tools_fundamentals", "tools_news", "tools_social"
+        - "Market Analyst", "Fundamentals Analyst", "News Analyst"
+        - "tools_market", "tools_fundamentals", "tools_news"
         - "Msg Clear Market", "Msg Clear Fundamentals", etc.
         - "Bull Researcher", "Bear Researcher", "Research Manager"
         - "Trader"
@@ -874,17 +864,14 @@ class TradingAgentsGraph:
                 'Market Analyst': "📊 市场分析师",
                 'Fundamentals Analyst': "💼 基本面分析师",
                 'News Analyst': "📰 新闻分析师",
-                'Social Analyst': "💬 社交媒体分析师",
                 # 工具节点（不发送进度更新，避免重复）
                 'tools_market': None,
                 'tools_fundamentals': None,
                 'tools_news': None,
-                'tools_social': None,
                 # 消息清理节点（不发送进度更新）
                 'Msg Clear Market': None,
                 'Msg Clear Fundamentals': None,
                 'Msg Clear News': None,
-                'Msg Clear Social': None,
                 # 研究员节点
                 'Bull Researcher': "🐂 看涨研究员",
                 'Bear Researcher': "🐻 看跌研究员",
@@ -1115,7 +1102,6 @@ class TradingAgentsGraph:
             "company_of_interest": final_state["company_of_interest"],
             "trade_date": final_state["trade_date"],
             "market_report": final_state["market_report"],
-            "sentiment_report": final_state["sentiment_report"],
             "news_report": final_state["news_report"],
             "fundamentals_report": final_state["fundamentals_report"],
             "investment_debate_state": {

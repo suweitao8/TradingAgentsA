@@ -349,23 +349,20 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
-    path: '/paper',
-    name: 'PaperTrading',
+    path: '/data-collection',
+    name: 'DataCollection',
     component: () => import('@/layouts/BasicLayout.vue'),
     meta: {
-      title: '模拟交易',
-      icon: 'CreditCard',
-      requiresAuth: true,
-      transition: 'slide-up'
+      title: '数据采集',
+      icon: 'DataAnalysis',
     },
     children: [
       {
         path: '',
-        name: 'PaperTradingHome',
-        component: () => import('@/views/PaperTrading/index.vue'),
+        name: 'DataCollectionHome',
+        component: () => import('@/views/DataCollection/index.vue'),
         meta: {
-          title: '模拟交易',
-          requiresAuth: true
+          title: '数据采集',
         }
       }
     ]

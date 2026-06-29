@@ -18,10 +18,9 @@ def create_risk_manager(llm, memory):
         market_research_report = state["market_report"]
         news_report = state["news_report"]
         fundamentals_report = state["fundamentals_report"]
-        sentiment_report = state["sentiment_report"]
         trader_plan = state["investment_plan"]
 
-        curr_situation = f"{market_research_report}\n\n{sentiment_report}\n\n{news_report}\n\n{fundamentals_report}"
+        curr_situation = f"{market_research_report}\n\n{news_report}\n\n{fundamentals_report}"
 
         # 安全检查：确保memory不为None
         if memory is not None:

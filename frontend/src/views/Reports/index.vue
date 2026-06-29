@@ -50,10 +50,6 @@
         
         <el-col :span="8">
           <div class="action-buttons">
-            <el-button @click="exportSelected" :disabled="selectedReports.length === 0">
-              <el-icon><Download /></el-icon>
-              批量导出
-            </el-button>
             <el-button @click="refreshReports">
               <el-icon><Refresh /></el-icon>
               刷新
@@ -66,12 +62,10 @@
     <!-- 报告列表 -->
     <el-card class="reports-list-card" shadow="never">
       <el-table
-        :data="filteredReports"
-        @selection-change="handleSelectionChange"
+        :data="reports"
         v-loading="loading"
         style="width: 100%"
       >
-        <el-table-column type="selection" width="55" />
         
         <el-table-column prop="title" label="报告标题" min-width="200">
           <template #default="{ row }">
@@ -184,13 +178,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Document,
   Search,
-  Download,
   Refresh,
   ArrowDown
 } from '@element-plus/icons-vue'
@@ -218,18 +211,11 @@ const loading = ref(false)
 const searchKeyword = ref('')
 const marketFilter = ref('')
 const dateRange = ref<[string, string] | null>(null)
-const selectedReports = ref<ReportListItem[]>([])
 const currentPage = ref(1)
 const pageSize = ref(20)
 const totalReports = ref(0)
 
 const reports = ref<ReportListItem[]>([])
-
-// 计算属性
-const filteredReports = computed(() => {
-  // 现在数据直接从API获取，不需要前端筛选
-  return reports.value
-})
 
 // API调用函数
 const fetchReports = async () => {
@@ -291,10 +277,6 @@ const handleDateChange = () => {
 const handleMarketChange = () => {
   currentPage.value = 1
   fetchReports()
-}
-
-const handleSelectionChange = (selection: ReportListItem[]) => {
-  selectedReports.value = selection
 }
 
 const viewReport = (report: ReportListItem) => {
@@ -415,10 +397,6 @@ const deleteReport = async (report: ReportListItem) => {
       ElMessage.error('删除报告失败')
     }
   }
-}
-
-const exportSelected = () => {
-  ElMessage.info('批量导出功能开发中...')
 }
 
 const refreshReports = () => {

@@ -16,7 +16,6 @@ console = Console()
 
 ANALYST_ORDER = [
     ("市场分析师 | Market Analyst", AnalystType.MARKET),
-    ("社交媒体分析师 | Social Media Analyst", AnalystType.SOCIAL),
     ("新闻分析师 | News Analyst", AnalystType.NEWS),
     ("基本面分析师 | Fundamentals Analyst", AnalystType.FUNDAMENTALS),
 ]
@@ -134,14 +133,6 @@ def get_analysis_date() -> str:
 def select_analysts(ticker: str = None) -> List[AnalystType]:
     """Select analysts using an interactive checkbox."""
     available_analysts = ANALYST_ORDER.copy()
-
-    if ticker and StockUtils.is_china_stock(ticker):
-        available_analysts = [
-            (display, value)
-            for display, value in ANALYST_ORDER
-            if value != AnalystType.SOCIAL
-        ]
-        console.print(f"[yellow]💡 检测到A股代码 {ticker}，社交媒体分析师不可用（国内数据源限制）[/yellow]")
 
     choices = questionary.checkbox(
         "选择您的分析师团队 | Select Your [Analysts Team]:",

@@ -1288,8 +1288,6 @@ class SimpleAnalysisService:
                             progress_tracker.update_progress("💼 基本面分析师正在分析")
                         elif analyst == "news":
                             progress_tracker.update_progress("📰 新闻分析师正在分析")
-                        elif analyst == "social":
-                            progress_tracker.update_progress("💬 社交媒体分析师正在分析")
 
                     # 研究团队阶段
                     time.sleep(10)
@@ -1355,7 +1353,6 @@ class SimpleAnalysisService:
                 "📊 市场分析师": 27.5,      # 10% + 17.5% (假设2个分析师)
                 "💼 基本面分析师": 45,       # 10% + 35%
                 "📰 新闻分析师": 27.5,       # 如果有3个分析师
-                "💬 社交媒体分析师": 27.5,   # 如果有4个分析师
                 # 研究辩论阶段 (45% → 70%)
                 "🐂 看涨研究员": 51.25,      # 45% + 6.25%
                 "🐻 看跌研究员": 57.5,       # 45% + 12.5%
@@ -1503,7 +1500,6 @@ class SimpleAnalysisService:
                 # 定义所有可能的报告字段
                 report_fields = [
                     'market_report',
-                    'sentiment_report',
                     'news_report',
                     'fundamentals_report',
                     'investment_plan',
@@ -2376,7 +2372,6 @@ class SimpleAnalysisService:
                     # 定义所有可能的报告字段
                     report_fields = [
                         'market_report',
-                        'sentiment_report',
                         'news_report',
                         'fundamentals_report',
                         'investment_plan',
@@ -2749,11 +2744,6 @@ class SimpleAnalysisService:
                     'filename': 'market_report.md',
                     'title': f'{stock_symbol} 股票技术分析报告',
                     'state_key': 'market_report'
-                },
-                'sentiment_report': {
-                    'filename': 'sentiment_report.md',
-                    'title': f'{stock_symbol} 市场情绪分析报告',
-                    'state_key': 'sentiment_report'
                 },
                 'news_report': {
                     'filename': 'news_report.md',

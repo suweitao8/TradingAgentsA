@@ -159,7 +159,6 @@ class MessageBuffer:
         self.agent_status = {
             # Analyst Team
             "Market Analyst": "pending",
-            "Social Analyst": "pending",
             "News Analyst": "pending",
             "Fundamentals Analyst": "pending",
             # Research Team
@@ -178,7 +177,6 @@ class MessageBuffer:
         self.current_agent = None
         self.report_sections = {
             "market_report": None,
-            "sentiment_report": None,
             "news_report": None,
             "fundamentals_report": None,
             "investment_plan": None,
@@ -219,7 +217,6 @@ class MessageBuffer:
             # Format the current section for display
             section_titles = {
                 "market_report": "Market Analysis",
-                "sentiment_report": "Social Sentiment",
                 "news_report": "News Analysis",
                 "fundamentals_report": "Fundamentals Analysis",
                 "investment_plan": "Research Team Decision",
@@ -241,7 +238,6 @@ class MessageBuffer:
             self.report_sections[section]
             for section in [
                 "market_report",
-                "sentiment_report",
                 "news_report",
                 "fundamentals_report",
             ]
@@ -250,10 +246,6 @@ class MessageBuffer:
             if self.report_sections["market_report"]:
                 report_parts.append(
                     f"### Market Analysis\n{self.report_sections['market_report']}"
-                )
-            if self.report_sections["sentiment_report"]:
-                report_parts.append(
-                    f"### Social Sentiment\n{self.report_sections['sentiment_report']}"
                 )
             if self.report_sections["news_report"]:
                 report_parts.append(
@@ -344,7 +336,6 @@ def update_display(layout, spinner_text=None):
     teams = {
         "Analyst Team": [
             "Market Analyst",
-            "Social Analyst",
             "News Analyst",
             "Fundamentals Analyst",
         ],
@@ -770,17 +761,6 @@ def display_complete_report(final_state):
             Panel(
                 Markdown(final_state["market_report"]),
                 title="Market Analyst",
-                border_style="blue",
-                padding=(1, 2),
-            )
-        )
-
-    # Social Analyst Report
-    if final_state.get("sentiment_report"):
-        analyst_reports.append(
-            Panel(
-                Markdown(final_state["sentiment_report"]),
-                title="Social Analyst",
                 border_style="blue",
                 padding=(1, 2),
             )
@@ -1260,7 +1240,6 @@ def run_analysis():
             "market_report": "📈 市场分析师",
             "fundamentals_report": "📊 基本面分析师",
             "technical_report": "🔍 技术分析师",
-            "sentiment_report": "💭 情感分析师",
             "final_report": "🤖 信号处理器"
         }
 
@@ -1311,27 +1290,6 @@ def run_analysis():
                         "market_report", chunk["market_report"]
                     )
                     message_buffer.update_agent_status("Market Analyst", "completed")
-                    # Set next analyst to in_progress
-                    if "social" in selections["analysts"]:
-                        message_buffer.update_agent_status(
-                            "Social Analyst", "in_progress"
-                        )
-
-                if "sentiment_report" in chunk and chunk["sentiment_report"]:
-                    # 只在第一次完成时显示提示
-                    if "sentiment_report" not in completed_analysts:
-                        ui.show_success("💭 情感分析完成")
-                        completed_analysts.add("sentiment_report")
-                        # 调试信息（写入日志文件）
-                        logger.info(f"首次显示情感分析完成提示，已完成分析师: {completed_analysts}")
-                    else:
-                        # 调试信息（写入日志文件）
-                        logger.debug(f"跳过重复的情感分析完成提示，已完成分析师: {completed_analysts}")
-
-                    message_buffer.update_report_section(
-                        "sentiment_report", chunk["sentiment_report"]
-                    )
-                    message_buffer.update_agent_status("Social Analyst", "completed")
                     # Set next analyst to in_progress
                     if "news" in selections["analysts"]:
                         message_buffer.update_agent_status(

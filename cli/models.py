@@ -9,6 +9,5 @@ logger = get_logger("cli")
 
 class AnalystType(str, Enum):
     MARKET = "market"
-    SOCIAL = "social"
     NEWS = "news"
     FUNDAMENTALS = "fundamentals"

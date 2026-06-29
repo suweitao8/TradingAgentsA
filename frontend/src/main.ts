@@ -61,7 +61,6 @@ app.config.warnHandler = (msg, _vm, trace) => {
 // 初始化应用
 const initApp = async () => {
   try {
-    const authStore = useAuthStore()
     const appStore = useAppStore()
 
     // 应用主题
@@ -80,9 +79,7 @@ const initApp = async () => {
 
     // 检查API连接状态
     await appStore.checkApiConnection()
-
-    // 加载偏好设置
-    await authStore.fetchPreferences()
+    // 单用户本地部署模式：偏好设置由 appStore 从 localStorage 管理，无需额外加载
   } catch (error) {
     const err = error as { code?: string; message?: string }
     console.warn('[App] 初始化失败，应用仍将继续启动:', err.message || err)

@@ -18,7 +18,6 @@ _EXPORTS: Dict[str, Tuple[str, str]] = {
     "create_fundamentals_analyst": ("tradingagents.agents.analysts.fundamentals_analyst", "create_fundamentals_analyst"),
     "create_market_analyst": ("tradingagents.agents.analysts.market_analyst", "create_market_analyst"),
     "create_news_analyst": ("tradingagents.agents.analysts.news_analyst", "create_news_analyst"),
-    "create_social_media_analyst": ("tradingagents.agents.analysts.social_media_analyst", "create_social_media_analyst"),
     "create_risky_debator": ("tradingagents.agents.risk_mgmt.aggresive_debator", "create_risky_debator"),
     "create_safe_debator": ("tradingagents.agents.risk_mgmt.conservative_debator", "create_safe_debator"),
     "create_neutral_debator": ("tradingagents.agents.risk_mgmt.neutral_debator", "create_neutral_debator"),
@@ -43,7 +42,6 @@ __all__ = [
     "create_risky_debator",
     "create_risk_manager",
     "create_safe_debator",
-    "create_social_media_analyst",
     "create_trader",
 ]
 

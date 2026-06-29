@@ -15,7 +15,6 @@ def create_bear_researcher(llm, memory):
 
         current_response = investment_debate_state.get("current_response", "")
         market_research_report = state["market_report"]
-        sentiment_report = state["sentiment_report"]
         news_report = state["news_report"]
         fundamentals_report = state["fundamentals_report"]
 
@@ -73,7 +72,7 @@ def create_bear_researcher(llm, memory):
         currency = market_info['currency_name']
         currency_symbol = market_info['currency_symbol']
 
-        curr_situation = f"{market_research_report}\n\n{sentiment_report}\n\n{news_report}\n\n{fundamentals_report}"
+        curr_situation = f"{market_research_report}\n\n{news_report}\n\n{fundamentals_report}"
 
         # 安全检查：确保memory不为None
         if memory is not None:
@@ -104,7 +103,6 @@ def create_bear_researcher(llm, memory):
 可用资源：
 
 市场研究报告：{market_research_report}
-社交媒体情绪报告：{sentiment_report}
 最新世界事务新闻：{news_report}
 公司基本面报告：{fundamentals_report}
 辩论对话历史：{history}

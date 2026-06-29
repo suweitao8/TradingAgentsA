@@ -296,7 +296,7 @@ import { Files, TrendCharts, Check, Close } from '@element-plus/icons-vue'
 import { ANALYSTS, DEFAULT_ANALYSTS, convertAnalystNamesToIds } from '@/constants/analysts'
 import { configApi } from '@/api/config'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useAppStore } from '@/stores/app'
 import ModelConfig from '@/components/ModelConfig.vue'
 import { getMarketByStockCode } from '@/utils/market'
 import { validateStockCode } from '@/utils/stockValidator'
@@ -304,6 +304,7 @@ import { validateStockCode } from '@/utils/stockValidator'
 // 路由实例（必须在顶层调用）
 const router = useRouter()
 const route = useRoute()
+const appStore = useAppStore()
 
 const submitting = ref(false)
 const stockInput = ref('')
@@ -411,8 +412,7 @@ onMounted(async () => {
   await initializeModelSettings()
 
   // 🆕 从用户偏好加载默认设置
-  const authStore = useAuthStore()
-  const userPrefs = authStore.user?.preferences
+  const userPrefs = appStore.serverPreferences
 
   if (userPrefs) {
     // 加载默认分析深度
@@ -538,8 +538,7 @@ const submitBatchAnalysis = async () => {
     const { batch_id, total_tasks } = response.data
 
     // 记住用户选择的分析深度和分析师团队（静默保存，不阻塞分析流程）
-    const authStore = useAuthStore()
-    authStore.updatePreferences({
+    appStore.savePreferences({
       default_depth: batchForm.depth,
       default_analysts: [...batchForm.analysts],
     }).catch(() => {})

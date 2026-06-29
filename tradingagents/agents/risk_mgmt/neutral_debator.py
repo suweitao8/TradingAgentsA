@@ -16,7 +16,6 @@ def create_neutral_debator(llm):
         current_safe_response = risk_debate_state.get("current_safe_response", "")
 
         market_research_report = state["market_report"]
-        sentiment_report = state["sentiment_report"]
         news_report = state["news_report"]
         fundamentals_report = state["fundamentals_report"]
 
@@ -25,7 +24,6 @@ def create_neutral_debator(llm):
         # 📊 记录所有输入数据的长度，用于性能分析
         logger.info(f"📊 [Neutral Analyst] 输入数据长度统计:")
         logger.info(f"  - market_report: {len(market_research_report):,} 字符 (~{len(market_research_report)//4:,} tokens)")
-        logger.info(f"  - sentiment_report: {len(sentiment_report):,} 字符 (~{len(sentiment_report)//4:,} tokens)")
         logger.info(f"  - news_report: {len(news_report):,} 字符 (~{len(news_report)//4:,} tokens)")
         logger.info(f"  - fundamentals_report: {len(fundamentals_report):,} 字符 (~{len(fundamentals_report)//4:,} tokens)")
         logger.info(f"  - trader_decision: {len(trader_decision):,} 字符 (~{len(trader_decision)//4:,} tokens)")
@@ -34,7 +32,7 @@ def create_neutral_debator(llm):
         logger.info(f"  - current_safe_response: {len(current_safe_response):,} 字符 (~{len(current_safe_response)//4:,} tokens)")
 
         # 计算总prompt长度
-        total_prompt_length = (len(market_research_report) + len(sentiment_report) +
+        total_prompt_length = (len(market_research_report) +
                               len(news_report) + len(fundamentals_report) +
                               len(trader_decision) + len(history) +
                               len(current_risky_response) + len(current_safe_response))
@@ -47,7 +45,6 @@ def create_neutral_debator(llm):
 您的任务是挑战激进和安全分析师，指出每种观点可能过于乐观或过于谨慎的地方。使用以下数据来源的见解来支持调整交易员决策的温和、可持续策略：
 
 市场研究报告：{market_research_report}
-社交媒体情绪报告：{sentiment_report}
 最新世界事务报告：{news_report}
 公司基本面报告：{fundamentals_report}
 以下是当前对话历史：{history} 以下是激进分析师的最后回应：{current_risky_response} 以下是安全分析师的最后回应：{current_safe_response}。如果其他观点没有回应，请不要虚构，只需提出您的观点。

@@ -1,9 +1,9 @@
-// 用户偏好设置
+// 偏好设置（单用户本地部署模式，无账号概念）
 export interface UserPreferences {
   // 分析偏好
   default_market: 'A股' | '美股' | '港股'
   default_depth: '1' | '2' | '3' | '4' | '5'  // 1-5级分析深度
-  default_analysts?: string[]  // 默认分析师列表：市场分析师、基本面分析师、新闻分析师、社媒分析师
+  default_analysts?: string[]  // 默认分析师列表：市场分析师、基本面分析师、新闻分析师
   auto_refresh?: boolean
   refresh_interval?: number
 
@@ -20,14 +20,4 @@ export interface UserPreferences {
   desktop_notifications?: boolean
   analysis_complete_notification?: boolean
   system_maintenance_notification?: boolean
-}
-
-// 用户信息接口（单用户本地部署模式，仅保留偏好相关字段）
-export interface User {
-  id: string
-  username: string
-  email?: string
-  avatar?: string
-  is_admin?: boolean
-  preferences?: UserPreferences
 }

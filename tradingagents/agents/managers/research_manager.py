@@ -13,13 +13,12 @@ def create_research_manager(llm, memory):
         instrument_context = build_instrument_context(ticker)
         history = state["investment_debate_state"].get("history", "")
         market_research_report = state["market_report"]
-        sentiment_report = state["sentiment_report"]
         news_report = state["news_report"]
         fundamentals_report = state["fundamentals_report"]
 
         investment_debate_state = state["investment_debate_state"]
 
-        curr_situation = f"{market_research_report}\n\n{sentiment_report}\n\n{news_report}\n\n{fundamentals_report}"
+        curr_situation = f"{market_research_report}\n\n{news_report}\n\n{fundamentals_report}"
 
         # 安全检查：确保memory不为None
         if memory is not None:
@@ -60,8 +59,6 @@ def create_research_manager(llm, memory):
 
 以下是综合分析报告：
 市场研究：{market_research_report}
-
-情绪分析：{sentiment_report}
 
 新闻分析：{news_report}
 

@@ -20,7 +20,6 @@
       </nav>
       
       <div class="sidebar-footer">
-        <UserProfile />
       </div>
     </aside>
 
@@ -61,13 +60,7 @@
             keep-alive 暂时禁用：组件未声明 name，:include 无法匹配，留空即可。
           -->
           <router-view v-slot="{ Component, route }">
-            <transition
-              :name="route.meta.transition || 'fade'"
-              mode="out-in"
-              appear
-            >
-              <component :is="Component" :key="route.path" />
-            </transition>
+            <component :is="Component" :key="route.path" />
           </router-view>
         </div>
       </main>
@@ -87,7 +80,6 @@
 import { computed } from 'vue'
 import { useAppStore } from '@/stores/app'
 import SidebarMenu from '@/components/Layout/SidebarMenu.vue'
-import UserProfile from '@/components/Layout/UserProfile.vue'
 import Breadcrumb from '@/components/Layout/Breadcrumb.vue'
 import HeaderActions from '@/components/Layout/HeaderActions.vue'
 import AppFooter from '@/components/Layout/AppFooter.vue'
@@ -235,8 +227,7 @@ watch(() => route.fullPath, () => {
   min-height: calc(100vh - 60px - 60px); // 减去header和footer高度
 
   .content-wrapper {
-    max-width: 1400px;
-    margin: 0 auto;
+    width: 100%;
   }
 }
 
