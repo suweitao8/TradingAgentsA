@@ -537,6 +537,13 @@ const submitBatchAnalysis = async () => {
 
     const { batch_id, total_tasks } = response.data
 
+    // 记住用户选择的分析深度和分析师团队（静默保存，不阻塞分析流程）
+    const authStore = useAuthStore()
+    authStore.updatePreferences({
+      default_depth: batchForm.depth,
+      default_analysts: [...batchForm.analysts],
+    }).catch(() => {})
+
     // 显示成功提示并引导用户去任务中心
     ElMessageBox.confirm(
       `✅ 批量分析任务已成功提交！\n\n📊 股票数量：${total_tasks}只\n📋 批次ID：${batch_id}\n\n任务正在后台执行中，最多同时执行3个任务，其他任务会自动排队等待。\n\n是否前往任务中心查看进度？`,

@@ -888,6 +888,13 @@ const submitAnalysis = async () => {
       return
     }
 
+    // 记住用户选择的分析深度和分析师团队（静默保存，不阻塞分析流程）
+    const authStore = useAuthStore()
+    authStore.updatePreferences({
+      default_depth: String(analysisForm.researchDepth),
+      default_analysts: [...analysisForm.selectedAnalysts],
+    }).catch(() => {})
+
     // 保存任务状态到缓存
     saveTaskToCache(currentTaskId.value, {
       parameters: { ...analysisForm },
