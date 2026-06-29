@@ -95,6 +95,10 @@
               <el-icon><Plus /></el-icon>
               添加自选股
             </el-button>
+            <el-button type="success" @click="showBatchImportDialog">
+              <el-icon><Upload /></el-icon>
+              批量导入
+            </el-button>
           </div>
         </el-col>
       </el-row>
@@ -495,6 +499,74 @@
       </template>
     </el-dialog>
 
+    <!-- 批量导入对话框 -->
+    <el-dialog
+      v-model="batchImportDialogVisible"
+      title="批量导入自选股"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-alert
+        type="info"
+        :closable="false"
+        style="margin-bottom: 16px;"
+      >
+        每行输入一个股票名称或代码，系统自动识别 A 股个股并添加到自选股。ETF、指数、美股、港股等非 A 股品种会自动跳过。
+      </el-alert>
+
+      <el-input
+        v-model="batchImportText"
+        type="textarea"
+        :rows="12"
+        placeholder="每行一个股票名称或代码，例如：&#10;中际旭创&#10;兆易创新&#10;宁德时代&#10;000001"
+        :disabled="batchImportLoading"
+      />
+
+      <!-- 导入进度 -->
+      <div v-if="batchImportLoading" style="margin-top: 16px;">
+        <el-progress :percentage="batchImportProgress" :format="() => batchImportStatusText" />
+      </div>
+
+      <!-- 导入结果 -->
+      <div v-if="batchImportResult" style="margin-top: 16px;">
+        <el-alert
+          :type="batchImportResult.failed.length > 0 ? 'warning' : 'success'"
+          :closable="false"
+          style="margin-bottom: 12px;"
+        >
+          <div>
+            ✅ 成功添加 <strong>{{ batchImportResult.added }}</strong> 只，
+            ⏭️ 已存在 <strong>{{ batchImportResult.existed }}</strong> 只，
+            ❌ 未识别 <strong>{{ batchImportResult.failed.length }}</strong> 只
+          </div>
+        </el-alert>
+        <div v-if="batchImportResult.failed.length > 0" style="font-size: 13px; color: #909399;">
+          未识别的行（非 A 股个股或未找到匹配）：
+          <el-tag
+            v-for="item in batchImportResult.failed"
+            :key="item"
+            size="small"
+            type="info"
+            style="margin: 2px;"
+          >
+            {{ item }}
+          </el-tag>
+        </div>
+      </div>
+
+      <template #footer>
+        <el-button @click="batchImportDialogVisible = false">关闭</el-button>
+        <el-button
+          type="primary"
+          @click="handleBatchImport"
+          :loading="batchImportLoading"
+          :disabled="!batchImportText.trim()"
+        >
+          开始导入
+        </el-button>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -507,7 +579,8 @@ import {
   Search,
   Refresh,
   Plus,
-  Download
+  Download,
+  Upload
 } from '@element-plus/icons-vue'
 import { favoritesApi } from '@/api/favorites'
 import { tagsApi } from '@/api/tags'
@@ -577,6 +650,18 @@ const addForm = ref({
   tags: [],
   notes: ''
 })
+
+// 批量导入对话框
+const batchImportDialogVisible = ref(false)
+const batchImportLoading = ref(false)
+const batchImportText = ref('')
+const batchImportProgress = ref(0)
+const batchImportStatusText = ref('')
+const batchImportResult = ref<{
+  added: number
+  existed: number
+  failed: string[]
+} | null>(null)
 
 // 股票代码验证器
 const validateStockCode = (_rule: any, value: any, callback: any) => {
@@ -948,6 +1033,102 @@ const handleAddFavorite = async () => {
   } finally {
     addLoading.value = false
   }
+}
+
+// ========== 批量导入 ==========
+
+const showBatchImportDialog = () => {
+  batchImportText.value = ''
+  batchImportResult.value = null
+  batchImportProgress.value = 0
+  batchImportStatusText.value = ''
+  batchImportDialogVisible.value = true
+}
+
+const handleBatchImport = async () => {
+  // 按换行拆分，去空行、去重、去首尾空格
+  const lines = batchImportText.value
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 0)
+  // 去重（保留顺序）
+  const uniqueLines = [...new Set(lines)]
+
+  if (uniqueLines.length === 0) {
+    ElMessage.warning('请输入至少一行股票名称或代码')
+    return
+  }
+
+  batchImportLoading.value = true
+  batchImportResult.value = null
+  batchImportProgress.value = 0
+
+  let added = 0
+  let existed = 0
+  const failed: string[] = []
+
+  for (let i = 0; i < uniqueLines.length; i++) {
+    const keyword = uniqueLines[i]
+    batchImportStatusText.value = `正在处理 ${i + 1}/${uniqueLines.length}：${keyword}`
+    batchImportProgress.value = Math.round(((i + 1) / uniqueLines.length) * 100)
+
+    try {
+      // 1. 搜索 A 股股票（stock_basic_info 集合只含 A 股个股，ETF/指数天然被过滤）
+      const searchRes = await favoritesApi.searchStock(keyword) as any
+      if (!searchRes?.success || !searchRes?.data || searchRes.data.length === 0) {
+        failed.push(keyword)
+        continue
+      }
+
+      const stock = searchRes.data[0]
+      const stockCode = stock.symbol || stock.code
+      const stockName = stock.name
+
+      if (!stockCode || !stockName) {
+        failed.push(keyword)
+        continue
+      }
+
+      // 2. 添加到自选股
+      try {
+        const addRes = await favoritesApi.add({
+          stock_code: stockCode,
+          stock_name: stockName,
+          market: 'A股',
+        } as any) as any
+
+        if (addRes?.success) {
+          added++
+        } else {
+          // 后端返回 success=false 通常是已存在
+          existed++
+        }
+      } catch (addError: any) {
+        // HTTP 400 = 已存在，不算错误
+        const status = addError?.response?.status
+        if (status === 400) {
+          existed++
+        } else {
+          console.error(`添加 ${keyword} 失败:`, addError)
+          failed.push(keyword)
+        }
+      }
+    } catch (error) {
+      console.error(`搜索 ${keyword} 失败:`, error)
+      failed.push(keyword)
+    }
+  }
+
+  batchImportResult.value = { added, existed, failed }
+  batchImportLoading.value = false
+  batchImportStatusText.value = ''
+
+  // 刷新列表
+  if (added > 0) {
+    await loadFavorites()
+  }
+
+  ElMessage.success(`导入完成：成功 ${added} 只，已存在 ${existed} 只，未识别 ${failed.length} 只`)
 }
 
 const handleUpdateFavorite = async () => {
