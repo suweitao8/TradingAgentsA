@@ -43,9 +43,6 @@ export interface AppState {
   version: string
   buildTime: string
   apiVersion: string
-
-  // 服务端偏好设置（单用户本地部署，无账号概念）
-  serverPreferences: UserPreferences | null
 }
 
 type AppPreferences = AppState['preferences']
@@ -83,8 +80,6 @@ export const useAppStore = defineStore('app', {
     version: '0.1.16',
     buildTime: new Date().toISOString(),
     apiVersion: '',
-
-    serverPreferences: null,
   }),
 
   getters: {
