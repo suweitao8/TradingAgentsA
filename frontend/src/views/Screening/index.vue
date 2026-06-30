@@ -1,16 +1,5 @@
 <template>
   <div class="stock-screening">
-    <!-- 页面标题 -->
-    <div class="page-header">
-      <h1 class="page-title">
-        <el-icon><Search /></el-icon>
-        股票筛选
-      </h1>
-      <p class="page-description">
-        通过多维度筛选条件，快速找到符合投资策略的优质股票
-      </p>
-    </div>
-
     <!-- 筛选条件面板 -->
     <el-card class="filter-panel" shadow="never">
       <template #header>
@@ -777,25 +766,6 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .stock-screening {
-  .page-header {
-    margin-bottom: 24px;
-
-    .page-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-      margin: 0 0 8px 0;
-    }
-
-    .page-description {
-      color: var(--el-text-color-regular);
-      margin: 0;
-    }
-  }
-
   .filter-panel {
     margin-bottom: 24px;
 
