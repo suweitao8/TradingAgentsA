@@ -269,13 +269,29 @@ def cmd_finish(args: argparse.Namespace) -> None:
             cwd=REPO_ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace"
         )
         if remove_result2.returncode != 0:
-            # Windows 上 git worktree remove 对含 junction 的目录常失败，回退到 shutil
-            info(f"git worktree remove 受限（{remove_result2.stderr.strip()[:60]}），回退到手动删除")
+            # Windows 上 git worktree remove 对含 junction/文件锁的目录常失败，回退到 shutil
+            # 关键：禁止 ignore_errors=True 静默吞错（历史 bug：吞错后物理目录残留空壳，
+            # 步骤9 只查 git worktree list 看不到残留，误报"全部成功"）。
+            # 必须真实删除成功，失败即 fail 中断，让用户处理占用进程后重试。
+            info(f"git worktree remove 受限（{remove_result2.stderr.strip()[:60]}），回退到 shutil 手动删除")
+            import shutil
+            import stat
+            # Windows 上只读文件（如 .git/objects）会导致 rmtree 失败，用 onerror 清除只读属性后重试
+            def _remove_readonly(func, path, exc_info):
+                os.chmod(path, stat.S_IWRITE)
+                func(path)
             try:
-                import shutil
-                shutil.rmtree(wt_path, ignore_errors=True)
-            except Exception:
-                pass
+                shutil.rmtree(wt_path, onerror=_remove_readonly)
+            except Exception as e:
+                fail(
+                    f"步骤6失败：物理目录删除失败（文件被占用？防病毒扫描？.codegraph 索引进程？）\n"
+                    f"  错误: {e}\n"
+                    f"  路径: {wt_path}\n"
+                    f"  代码已安全合并+推送+分支已删，仅物理目录残留。\n"
+                    f"  请关闭占用该目录的进程（dev server / 编辑器 / CodeGraph），\n"
+                    f"  然后手动删除：rmdir /s /q {wt_path}\n"
+                    f"  或重跑：python scripts/git/worktree.py finish {task}"
+                )
 
     # 步骤7：删功能分支（不用 -D 强制删；-d 会拒绝删未合并分支，删失败必须中断）
     info(f"步骤7/9：删除分支 {branch}（用 -d，git 自动拒绝删未合并分支）")
@@ -295,12 +311,20 @@ def cmd_finish(args: argparse.Namespace) -> None:
     info("步骤8/9：git worktree prune")
     run(["git", "worktree", "prune"], cwd=REPO_ROOT)
 
-    # 步骤9：确认无残留
-    info("步骤9/9：确认 worktree list 无残留")
+    # 步骤9：确认无残留（双重检查：git 注册 + 物理目录）
+    info("步骤9/9：确认无残留（git worktree list + 物理目录）")
     result = run(["git", "worktree", "list"], cwd=REPO_ROOT)
     print(result.stdout.rstrip())
     if str(wt_path) in result.stdout or wt_path.as_posix() in result.stdout:
         fail(f"步骤9失败：worktree list 仍残留 {wt_path}，未完成")
+    # 物理目录检查（历史 bug：git 注册已清但物理空壳目录残留，导致误报"全部成功"）
+    if wt_path.exists():
+        fail(
+            f"步骤9失败：git worktree list 已无残留，但物理目录仍存在：{wt_path}\n"
+            f"  这通常是 Windows 文件锁导致删除不彻底。\n"
+            f"  请关闭占用该目录的进程后手动删除：rmdir /s /q {wt_path}\n"
+            f"  或重跑：python scripts/git/worktree.py finish {task}"
+        )
 
     print()
     ok(f"任务 {task} 收尾完成（合并+推送+清理全部成功）")
