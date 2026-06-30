@@ -1,19 +1,15 @@
 <template>
   <nav class="top-nav">
     <div class="nav-inner">
-      <!-- 左侧：Logo + 版本 -->
+      <!-- 左侧：版本号 -->
       <div class="nav-brand">
-        <router-link to="/dashboard" class="brand-link">
-          <span class="brand-logo">📈</span>
-          <span class="brand-text">股市分析</span>
-        </router-link>
         <span class="version-badge" v-if="appStore.apiVersion">
           <el-icon><MagicStick /></el-icon>
           {{ appStore.apiVersion }}
         </span>
       </div>
 
-      <!-- 中间：导航链接（桌面端） -->
+      <!-- 中间：导航链接（桌面端）— ETF 在左，自选股在右，竖线分隔 -->
       <div class="nav-links-desktop">
         <router-link
           v-for="link in navLinks"
@@ -22,7 +18,7 @@
           class="nav-link"
           :class="{ active: isActive(link) }"
         >
-          <el-icon><component :is="link.icon" /></el-icon>
+          <el-icon v-if="link.icon"><component :is="link.icon" /></el-icon>
           <span>{{ link.label }}</span>
         </router-link>
       </div>
@@ -34,13 +30,13 @@
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item command="/dashboard">仪表板</el-dropdown-item>
+            <el-dropdown-item command="/etfs">ETF</el-dropdown-item>
+            <el-dropdown-item command="/favorites">股票</el-dropdown-item>
+            <el-dropdown-item command="/dashboard" divided>仪表板</el-dropdown-item>
             <el-dropdown-item command="/analysis/single">单股分析</el-dropdown-item>
             <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
             <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
             <el-dropdown-item command="/tasks">任务中心</el-dropdown-item>
-            <el-dropdown-item command="/favorites">我的自选股</el-dropdown-item>
-            <el-dropdown-item command="/etfs">我的ETF</el-dropdown-item>
             <el-dropdown-item command="/data-collection">数据采集</el-dropdown-item>
             <el-dropdown-item command="/learning" divided>学习中心</el-dropdown-item>
             <el-dropdown-item command="/about">关于</el-dropdown-item>
@@ -146,9 +142,10 @@ const notifStore = useNotificationStore()
 const { unreadCount, items } = storeToRefs(notifStore)
 
 // ---- 导航链接 ----
+// ETF 在前（左），自选股在后（右），中间用 CSS 竖线分隔
 const navLinks = [
-  { path: '/favorites', label: '我的自选股', icon: Star },
-  { path: '/etfs', label: '我的ETF', icon: TrendCharts }
+  { path: '/etfs', label: 'ETF', icon: TrendCharts },
+  { path: '/favorites', label: '股票', icon: Star },
 ]
 
 const isActive = (link: { path: string }) => {
@@ -246,36 +243,12 @@ onUnmounted(() => {
   padding: 0 24px;
 }
 
-// ---- Logo 区 ----
+// ---- 版本号区 ----
 .nav-brand {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
-
-  .brand-link {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-  }
-
-  .brand-text {
-    font-size: 18px;
-    font-weight: 700;
-    background: var(--glass-brand-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    white-space: nowrap;
-    letter-spacing: 0.5px;
-  }
-
-  .brand-logo {
-    font-size: 20px;
-    line-height: 1;
-    filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.4));
-  }
 
   .version-badge {
     display: inline-flex;
@@ -302,9 +275,27 @@ onUnmounted(() => {
 .nav-links-desktop {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
   flex: 1;
   justify-content: center;
+
+  // 两个链接之间的竖线分隔符
+  .nav-link + .nav-link {
+    position: relative;
+    margin-left: 2px;
+    padding-left: 16px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 1px;
+      height: 18px;
+      background: var(--glass-stroke-base);
+    }
+  }
 }
 
 .nav-link {
@@ -333,6 +324,7 @@ onUnmounted(() => {
   &.active {
     color: var(--accent-cyan);
     background: var(--accent-cyan-soft);
+    font-weight: 600;
   }
 }
 

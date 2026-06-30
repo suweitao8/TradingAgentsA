@@ -19,7 +19,7 @@ NProgress.configure({
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/dashboard'
+    redirect: '/etfs'
   },
   // 兼容文档链接：将 /paper/<name>.md 重定向到学习中心文章路由
   {
