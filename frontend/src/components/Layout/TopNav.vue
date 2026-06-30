@@ -40,6 +40,7 @@
               <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
               <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
               <el-dropdown-item command="/tasks" divided>任务中心</el-dropdown-item>
+              <el-dropdown-item command="/data-collection">数据采集</el-dropdown-item>
               <el-dropdown-item command="/learning" divided>学习中心</el-dropdown-item>
               <el-dropdown-item command="/about">关于</el-dropdown-item>
             </el-dropdown-menu>
@@ -132,7 +133,6 @@ import { useNotificationStore } from '@/stores/notifications'
 import { storeToRefs } from 'pinia'
 import {
   Star,
-  DataAnalysis,
   ArrowDown,
   MoreFilled,
   Menu,
@@ -151,15 +151,14 @@ const { unreadCount, items } = storeToRefs(notifStore)
 
 // ---- 导航链接 ----
 const navLinks = [
-  { path: '/favorites', label: '我的自选股', icon: Star },
-  { path: '/data-collection', label: '数据采集', icon: DataAnalysis }
+  { path: '/favorites', label: '我的自选股', icon: Star }
 ]
 
 const isActive = (link: { path: string }) => {
   return route.path === link.path || route.path.startsWith(link.path + '/')
 }
 
-// 「更多」下拉涵盖了仪表板/分析/报告/任务中心/学习中心/关于
+// 「更多」下拉涵盖了仪表板/分析/报告/任务中心/学习中心/数据采集/关于
 const isMoreActive = computed(() => {
   return (
     route.path.startsWith('/dashboard') ||
@@ -167,6 +166,7 @@ const isMoreActive = computed(() => {
     route.path.startsWith('/reports') ||
     route.path.startsWith('/tasks') ||
     route.path.startsWith('/learning') ||
+    route.path.startsWith('/data-collection') ||
     route.path.startsWith('/about')
   )
 })
