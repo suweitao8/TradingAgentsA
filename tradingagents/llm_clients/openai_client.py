@@ -32,6 +32,7 @@ _PROVIDER_CONFIG = {
     "openrouter": ("https://openrouter.ai/api/v1", "OPENROUTER_API_KEY"),
     "aihubmix": ("https://aihubmix.com/v1", "AIHUBMIX_API_KEY"),
     "ollama": ("http://localhost:11434/v1", None),
+    "jdcloud": ("https://modelservice.jdcloud.com/coding/openai/v1", "JDCLOUD_API_KEY"),
     "custom_openai": (None, "CUSTOM_OPENAI_API_KEY"),
 }
 

@@ -428,37 +428,22 @@ class ConfigService:
             config_type="system",
             llm_configs=[
                 LLMConfig(
-                    provider=ModelProvider.OPENAI,
-                    model_name="gpt-3.5-turbo",
-                    api_key="your-openai-api-key",
-                    api_base="https://api.openai.com/v1",
-                    max_tokens=4000,
-                    temperature=0.7,
-                    enabled=False,
-                    description="OpenAI GPT-3.5 Turbo模型"
-                ),
-                LLMConfig(
-                    provider=ModelProvider.ZHIPU,
-                    model_name="glm-4",
-                    api_key="your-zhipu-api-key",
-                    api_base="https://open.bigmodel.cn/api/paas/v4",
+                    provider=ModelProvider.JDCLOUD,
+                    model_name="kimi-k2.5",
+                    model_display_name="Kimi K2.5",
+                    api_key="your-jdcloud-api-key",
+                    api_base="https://modelservice.jdcloud.com/coding/openai/v1",
                     max_tokens=4000,
                     temperature=0.7,
                     enabled=True,
-                    description="智谱AI GLM-4模型（推荐）"
-                ),
-                LLMConfig(
-                    provider=ModelProvider.QWEN,
-                    model_name="qwen-turbo",
-                    api_key="your-qwen-api-key",
-                    api_base="https://dashscope.aliyuncs.com/compatible-mode/v1",
-                    max_tokens=4000,
-                    temperature=0.7,
-                    enabled=False,
-                    description="阿里云通义千问模型"
+                    description="京东云言犀 Kimi K2.5（默认模型）",
+                    priority=1,
+                    capability_level=3,
+                    suitable_roles=["both"],
+                    features=["tool_calling", "long_context"],
                 )
             ],
-            default_llm="glm-4",
+            default_llm="kimi-k2.5",
             data_source_configs=[
                 DataSourceConfig(
                     name="AKShare",

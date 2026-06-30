@@ -30,6 +30,7 @@ class ModelProvider(str, Enum):
     CUSTOM_OPENAI = "custom_openai"
     QIANFAN = "qianfan"
     LOCAL = "local"
+    JDCLOUD = "jdcloud"          # 京东云（言犀，默认渠道）
 
     # 🆕 聚合渠道
     AI302 = "302ai"              # 302.AI

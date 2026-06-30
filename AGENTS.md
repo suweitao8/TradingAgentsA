@@ -69,6 +69,7 @@
 - **依赖声明在 `pyproject.toml`**（不要用 `requirements.txt`，已废弃）。前端依赖在 `frontend/package.json`（用 yarn，不用 npm）。
 - **配置源是 `app/core/config.py` 的 `Settings`**（pydantic-settings 读 `.env`），不要在代码里硬编码密钥、端口、数据库连接串；新增配置项时同步更新 `.env.example`。
 - **数据库**：MongoDB（主库，motor 异步驱动）+ Redis（缓存/队列）。MongoDB 库名由主版本号 + 实例标签派生（`MONGODB_DATABASE_SCOPE`），改版本隔离逻辑要极其谨慎，详见 `docs/deployment/database/`。
+- **LLM provider 改动必须同步 7 处源头**（散落在多层，极易漏改）：新增/启用/禁用任一 provider 时，逐项核对：① `tradingagents/llm_clients/provider_keys.py`（别名/env_key/默认 URL）② `tradingagents/llm_clients/factory.py`（`_OPENAI_COMPATIBLE` 集合或 google/anthropic 分支）③ `tradingagents/llm_clients/openai_client.py`（`_PROVIDER_CONFIG` 默认 base_url+env）④ `tradingagents/graph/trading_graph.py` 的 `create_llm_by_provider`（OpenAI 兼容集合，漏配会掉进"自定义厂家"兜底分支丢失归一化）⑤ `app/models/config.py` 的 `ModelProvider` 枚举 ⑥ `app/services/config_service.py` 的 `_create_default_config`（开箱默认模型）⑦ `app/scripts/init_providers.py`（DB 种子）+ `.env.example`。**本项目当前默认渠道为京东云 jdcloud（模型 kimi-k2.5），其他 provider 已禁用但代码保留。**
 - 仓库内源码、配置与文档统一使用 UTF-8 编码。
 - 规则、规范、文档、代理指引类请求，直接修改本文件，不走完整开发链路。
 - 修改本文件时，先通读全文，合并重复条目、删除冗余表述、统一术语和结构，再保存。
