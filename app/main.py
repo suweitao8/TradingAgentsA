@@ -229,14 +229,11 @@ async def lifespan(app: FastAPI):
     await init_db()
 
     # 初始化 Redis（用于速率限制等中间件，非关键路径，失败不阻塞启动）
-    if settings.REDIS_ENABLED:
-        try:
-            await init_redis()
-            logger.info("✅ Redis 客户端已初始化（速率限制/缓存中间件可用）")
-        except Exception as e:
-            logger.warning(f"⚠️  Redis 初始化失败（速率限制将降级放行）: {e}")
-    else:
-        logger.info("ℹ️  Redis 未启用，跳过初始化")
+    try:
+        await init_redis()
+        logger.info("✅ Redis 客户端已初始化（速率限制/缓存中间件可用）")
+    except Exception as e:
+        logger.warning(f"⚠️  Redis 初始化失败（速率限制将降级放行）: {e}")
 
     #  配置桥接：将统一配置写入环境变量，供 TradingAgents 核心库使用
     try:
@@ -656,11 +653,10 @@ async def lifespan(app: FastAPI):
                 logger.warning(f"Scheduler shutdown error: {e}")
 
         await close_db()
-        if settings.REDIS_ENABLED:
-            try:
-                await close_redis()
-            except Exception as e:
-                logger.warning(f"Redis close error: {e}")
+        try:
+            await close_redis()
+        except Exception as e:
+            logger.warning(f"Redis close error: {e}")
         logger.info("TradingAgents FastAPI backend stopped")
 
 
