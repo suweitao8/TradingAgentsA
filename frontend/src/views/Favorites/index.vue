@@ -1,68 +1,55 @@
 <template>
   <div class="favorites">
-    <div class="page-header">
-      <h1 class="page-title">
-        <el-icon><Star /></el-icon>
-        我的自选股
-      </h1>
-    </div>
-
-    <!-- 操作栏 -->
+    <!-- 操作栏：搜索框 + 所有按钮同一行 -->
     <el-card class="action-card" shadow="never">
-      <el-row :gutter="16" align="middle" style="margin-bottom: 16px;">
-        <el-col :span="24">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索股票代码或名称"
-            clearable
+      <div class="action-bar">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索股票代码或名称"
+          clearable
+          class="search-input"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
+        <div class="action-buttons">
+          <el-button @click="refreshData">
+            <el-icon><Refresh /></el-icon>
+            刷新
+          </el-button>
+          <!-- 只有有A股自选股时才显示同步实时行情按钮 -->
+          <el-button
+            v-if="hasAStocks"
+            type="success"
+            @click="syncAllRealtime"
+            :loading="syncRealtimeLoading"
           >
-            <template #prefix>
-              <el-icon><Search /></el-icon>
-            </template>
-          </el-input>
-        </el-col>
-      </el-row>
-
-      <el-row :gutter="16" align="middle">
-        <el-col :span="24">
-          <div class="action-buttons">
-            <el-button @click="refreshData">
-              <el-icon><Refresh /></el-icon>
-              刷新
-            </el-button>
-            <!-- 只有有A股自选股时才显示同步实时行情按钮 -->
-            <el-button
-              v-if="hasAStocks"
-              type="success"
-              @click="syncAllRealtime"
-              :loading="syncRealtimeLoading"
-            >
-              <el-icon><Refresh /></el-icon>
-              同步实时行情
-            </el-button>
-            <!-- 只有选中的股票都是A股时才显示批量同步按钮 -->
-            <el-button
-              v-if="selectedStocksAreAllAShares"
-              type="primary"
-              @click="showBatchSyncDialog"
-            >
-              <el-icon><Download /></el-icon>
-              批量同步数据
-            </el-button>
-            <el-button @click="openTagManager">
-              标签管理
-            </el-button>
-            <el-button type="primary" @click="showAddDialog">
-              <el-icon><Plus /></el-icon>
-              添加自选股
-            </el-button>
-            <el-button type="success" @click="showBatchImportDialog">
-              <el-icon><Upload /></el-icon>
-              批量导入
-            </el-button>
-          </div>
-        </el-col>
-      </el-row>
+            <el-icon><Refresh /></el-icon>
+            同步实时行情
+          </el-button>
+          <!-- 只有选中的股票都是A股时才显示批量同步按钮 -->
+          <el-button
+            v-if="selectedStocksAreAllAShares"
+            type="primary"
+            @click="showBatchSyncDialog"
+          >
+            <el-icon><Download /></el-icon>
+            批量同步数据
+          </el-button>
+          <el-button @click="openTagManager">
+            标签管理
+          </el-button>
+          <el-button type="primary" @click="showAddDialog">
+            <el-icon><Plus /></el-icon>
+            添加自选股
+          </el-button>
+          <el-button type="success" @click="showBatchImportDialog">
+            <el-icon><Upload /></el-icon>
+            批量导入
+          </el-button>
+        </div>
+      </div>
     </el-card>
 
     <!-- 自选股列表 -->
@@ -569,7 +556,6 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import {
-  Star,
   Search,
   Refresh,
   Plus,
@@ -1299,27 +1285,27 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .favorites {
-  .page-header {
-    margin-bottom: 24px;
+  .action-card {
+    margin-bottom: 16px;
 
-    .page-title {
+    .action-bar {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-      margin: 0 0 8px 0;
+      gap: 12px;
+      flex-wrap: wrap;
     }
-  }
 
-  .action-card {
-    margin-bottom: 24px;
+    .search-input {
+      flex: 1 1 240px;
+      min-width: 200px;
+      max-width: 360px;
+    }
 
     .action-buttons {
       display: flex;
       gap: 8px;
-      justify-content: flex-end;
+      flex-shrink: 0;
+      flex-wrap: wrap;
     }
   }
 
