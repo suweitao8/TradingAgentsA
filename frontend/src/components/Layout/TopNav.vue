@@ -4,7 +4,8 @@
       <!-- 左侧：Logo + 版本 -->
       <div class="nav-brand">
         <router-link to="/dashboard" class="brand-link">
-          <span class="brand-text">股票分析</span>
+          <span class="brand-logo">📈</span>
+          <span class="brand-text">股市分析</span>
         </router-link>
         <span class="version-badge" v-if="appStore.apiVersion">
           <el-icon><MagicStick /></el-icon>
@@ -67,6 +68,13 @@
           </template>
         </el-dropdown>
 
+        <!-- 主题切换 -->
+        <el-tooltip :content="isDark ? '切换到浅色模式' : '切换到深色模式'" placement="bottom">
+          <button class="action-btn" @click="toggleTheme">
+            <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon>
+          </button>
+        </el-tooltip>
+
         <!-- 通知 -->
         <el-tooltip content="通知" placement="bottom">
           <el-badge :value="unreadCount" :hidden="unreadCount === 0">
@@ -124,7 +132,9 @@ import {
   Menu,
   Bell,
   Setting,
-  MagicStick
+  MagicStick,
+  Sunny,
+  Moon
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -162,6 +172,13 @@ const onNavCommand = (command: string) => {
 // ---- 操作按钮 ----
 const goSettings = () => {
   router.push('/settings')
+}
+
+// ---- 主题切换（深色/浅色二态切换）----
+const isDark = computed(() => appStore.isDarkTheme)
+const toggleTheme = () => {
+  // 二态切换：当前深色 → 切浅色；当前浅色/auto → 切深色
+  appStore.setTheme(isDark.value ? 'light' : 'dark')
 }
 
 // ---- 通知抽屉 ----
@@ -211,10 +228,11 @@ onUnmounted(() => {
   top: 0;
   z-index: 999;
   background: var(--glass-bg-nav);
+  // 底部青光分割线（金融科技感）
   border-bottom: 1px solid var(--glass-stroke-soft);
-  backdrop-filter: blur(var(--glass-blur-nav)) saturate(1.6);
-  -webkit-backdrop-filter: blur(var(--glass-blur-nav)) saturate(1.6);
-  box-shadow: var(--glass-shadow-nav);
+  box-shadow: inset 0 -1px 0 0 rgba(34, 211, 238, 0.08), var(--glass-shadow-nav);
+  backdrop-filter: blur(var(--glass-blur-nav)) saturate(1.4);
+  -webkit-backdrop-filter: blur(var(--glass-blur-nav)) saturate(1.4);
 }
 
 .nav-inner {
@@ -247,6 +265,13 @@ onUnmounted(() => {
     background-clip: text;
     -webkit-text-fill-color: transparent;
     white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+
+  .brand-logo {
+    font-size: 20px;
+    line-height: 1;
+    filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.4));
   }
 
   .version-badge {
@@ -298,13 +323,13 @@ onUnmounted(() => {
   }
 
   &:hover {
-    color: var(--el-color-primary);
-    background: var(--glass-bg-surface);
+    color: var(--accent-cyan);
+    background: var(--glass-bg-surface-hover);
   }
 
   &.active {
-    color: var(--el-color-primary);
-    background: var(--el-color-primary-light-9);
+    color: var(--accent-cyan);
+    background: var(--accent-cyan-soft);
   }
 }
 
@@ -334,8 +359,8 @@ onUnmounted(() => {
   }
 
   &:hover {
-    background: var(--glass-bg-surface);
-    color: var(--el-color-primary);
+    background: var(--glass-bg-surface-hover);
+    color: var(--accent-cyan);
   }
 }
 

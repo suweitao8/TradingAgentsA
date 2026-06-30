@@ -1,5 +1,5 @@
 """
-TradingAgentsA FastAPI Backend
+股市分析 FastAPI Backend
 主应用程序入口
 
 Copyright (c) 2025 hsliuping. All rights reserved.
@@ -83,7 +83,7 @@ async def _print_config_summary(logger):
     """显示配置摘要"""
     try:
         logger.info("=" * 70)
-        logger.info("📋 TradingAgentsA Configuration Summary")
+        logger.info("📋 股市分析 Configuration Summary")
         logger.info("=" * 70)
 
         # .env 文件路径信息
@@ -669,7 +669,7 @@ async def lifespan(app: FastAPI):
 
 # 创建FastAPI应用
 app = FastAPI(
-    title="TradingAgentsA API",
+    title="股市分析 API",
     description="股票分析与批量队列系统 API",
     version=get_version(),
     docs_url="/docs" if settings.DEBUG else None,
@@ -831,7 +831,7 @@ async def root():
     """根路径，返回API信息"""
     print("🏠 根路径被访问")
     return {
-        "name": "TradingAgentsA API",
+        "name": "股市分析 API",
         "version": get_version(),
         "status": "running",
         "docs_url": "/docs" if settings.DEBUG else None

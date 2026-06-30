@@ -136,7 +136,7 @@ const handleWizardComplete = async (data: any) => {
     localStorage.setItem('config_wizard_completed', 'true')
 
     ElMessage.success({
-      message: '配置完成！欢迎使用 TradingAgentsA',
+      message: '配置完成！欢迎使用股市分析',
       duration: 3000
     })
   } catch (error) {

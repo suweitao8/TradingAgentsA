@@ -1,11 +1,14 @@
-// SCSS变量定义
+// SCSS变量定义 — 与 tokens.scss 深色金融风配色保持同步
 
-// 颜色变量
-$primary-color: #2f7bff;
-$success-color: #67C23A;
-$warning-color: #E6A23C;
-$danger-color: #F56C6C;
-$info-color: #909399;
+// 颜色变量（与 tokens.scss 的 --el-color-* / --stock-* 对齐）
+$primary-color: #3b82f6;
+$success-color: #22c55e;
+$warning-color: #f59e0b;
+$danger-color: #ef4444;
+$info-color: #64748b;
+$accent-cyan: #22d3ee;
+$stock-up: #ef4444;
+$stock-down: #22c55e;
 
 // 间距变量
 $spacing-xs: 4px;
@@ -21,16 +24,16 @@ $font-size-md: 16px;
 $font-size-lg: 18px;
 $font-size-xl: 20px;
 
-// 边框圆角
-$border-radius-sm: 4px;
-$border-radius-md: 6px;
-$border-radius-lg: 8px;
-$border-radius-xl: 12px;
+// 边框圆角（与 tokens.scss 的 --glass-radius-* 对齐）
+$border-radius-sm: 6px;
+$border-radius-md: 10px;
+$border-radius-lg: 12px;
+$border-radius-xl: 16px;
 
 // 阴影
-$box-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
-$box-shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
-$box-shadow-heavy: 0 8px 16px rgba(0, 0, 0, 0.2);
+$box-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.30);
+$box-shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.40);
+$box-shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.50);
 
 // 断点
 $breakpoint-xs: 480px;

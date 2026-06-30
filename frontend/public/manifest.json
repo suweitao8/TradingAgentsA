@@ -1,11 +1,11 @@
 {
-  "name": "TradingAgentsA",
-  "short_name": "TradingAgents",
+  "name": "股市分析",
+  "short_name": "股市分析",
   "description": "多智能体股票分析学习平台",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#409EFF",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
   "icons": [
     {
       "src": "/logo.svg",

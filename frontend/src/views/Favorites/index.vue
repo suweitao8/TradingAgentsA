@@ -862,11 +862,11 @@ onMounted(() => {
     }
 
     .text-red {
-      color: #f56c6c;
+      color: var(--stock-up);
     }
 
     .text-green {
-      color: #67c23a;
+      color: var(--stock-down);
     }
   }
 }

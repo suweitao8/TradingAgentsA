@@ -1,40 +1,15 @@
 /**
- * 暗色主题补充样式
+ * 主题补充样式
  *
- * 设计令牌层(tokens.scss)已通过 html.dark 选择器自动切换玻璃表面、文字、
- * 边框、阴影等变量，index.scss 的组件样式也全部基于令牌驱动。
- * 此文件仅保留 Element Plus 官方 dark/css-vars.css 未覆盖的少量补充。
+ * tokens.scss 已将 :root 默认设为深色金融风，index.scss 的组件样式全部令牌驱动。
+ * 此文件仅保留少量 Element Plus 官方样式未覆盖的补充，对深色/浅色均生效。
  */
 
-html.dark {
-  // 全局背景
-  background-color: var(--glass-bg-canvas);
-
-  // 标题在暗色下确保高对比
-  h1, h2, h3, h4, h5, h6 {
-    color: var(--glass-text-primary);
-  }
-
-  // 页面标题工具类
-  .page-title,
-  .section-title,
-  .card-title {
-    color: var(--glass-text-primary);
-  }
-
-  // 表格表头暗色背景
-  .el-table {
-    th.el-table__cell {
-      background-color: rgba(255, 255, 255, 0.04) !important;
-    }
-  }
-
-  // 分析页面头部卡片暗色阴影
-  .single-analysis,
-  .batch-analysis {
-    .page-header .header-content {
-      background: var(--glass-bg-surface) !important;
-      box-shadow: var(--glass-shadow-md) !important;
-    }
+// 分析页面头部卡片背景统一（深色/浅色均用令牌，避免硬编码）
+.single-analysis,
+.batch-analysis {
+  .page-header .header-content {
+    background: var(--glass-bg-surface) !important;
+    box-shadow: var(--glass-shadow-md) !important;
   }
 }
