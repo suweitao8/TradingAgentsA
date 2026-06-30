@@ -131,12 +131,16 @@ class FavoritesService:
                         it["change_percent"] = q.get("pct_chg")
                         it["turnover_rate"] = q.get("turnover_rate")
                         it["volume_ratio"] = q.get("volume_ratio")
-                # 兜底：仅当 market_quotes 未覆盖到某些代码（价格为空）时，
-                # 才调在线快照补齐 —— 避免每次刷新都拉全市场（58秒）。
-                # 换手率/量比已由入库任务写入 market_quotes，不再作为在线兜底触发条件。
+                # 兜底：当 market_quotes 缺价格、换手率或量比时，
+                # 调东方财富延迟快照补齐（该接口带换手率/量比，且 QuotesService 有30秒缓存）。
+                # 根因：入库任务（Tushare rt_k）不返回换手率/量比，market_quotes 里这两个字段大面积为空。
                 missing_codes = [
                     it.get("stock_code") for it in items
-                    if it.get("stock_code") and it.get("current_price") is None
+                    if it.get("stock_code") and (
+                        it.get("current_price") is None
+                        or it.get("turnover_rate") is None
+                        or it.get("volume_ratio") is None
+                    )
                 ]
                 if missing_codes:
                     try:
