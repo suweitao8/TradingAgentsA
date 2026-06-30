@@ -55,48 +55,68 @@ class QuotesService:
             return {c: q for c, q in self._cache.items() if c in codes and q}
 
     def _fetch_spot_akshare(self) -> Dict[str, Dict[str, Optional[float]]]:
-        """通过 AKShare 东方财富全市场快照接口拉取行情，并标准化为字典。
-        预期列（常见）：代码、名称、最新价、涨跌幅、成交额。
-        不同版本可能有差异，做多列名兼容。
+        """通过东方财富全市场快照接口拉取行情，并标准化为字典。
+
+        直接用小 pz 分页请求东方财富 API（每页 20 条），避免 AKShare
+        stock_zh_a_spot_em() 的 pz=100 大请求被东方财富断连的问题。
+        字段：最新价、涨跌幅、成交额、换手率、量比。
         """
         try:
-            import akshare as ak  # 已在项目中使用，不额外安装
-            df = ak.stock_zh_a_spot_em()
-            if df is None or getattr(df, "empty", True):
-                logger.warning("AKShare spot 返回空数据")
-                return {}
-            # 兼容常见列名
-            code_col = next((c for c in ["代码", "代码code", "symbol", "股票代码"] if c in df.columns), None)
-            price_col = next((c for c in ["最新价", "现价", "最新价(元)", "price", "最新"] if c in df.columns), None)
-            pct_col = next((c for c in ["涨跌幅", "涨跌幅(%)", "涨幅", "pct_chg"] if c in df.columns), None)
-            amount_col = next((c for c in ["成交额", "成交额(元)", "amount", "成交额(万元)"] if c in df.columns), None)
+            import requests
 
-            if not code_col or not price_col:
-                logger.error(f"AKShare spot 缺少必要列: code={code_col}, price={price_col}")
-                return {}
+            # 使用延迟行情域名（push2delay），实时域名 push2 在容器内易被限流断连
+            url = "https://82.push2delay.eastmoney.com/api/qt/clist/get"
+            # fields: f2=最新价 f3=涨跌幅 f6=成交额 f8=换手率 f10=量比 f12=代码
+            base_params = {
+                "po": "1",
+                "np": "1",
+                "ut": "bd1d9ddb04089700cf9c27f6f7426281",
+                "fltt": "2",
+                "invt": "2",
+                "fid": "f12",
+                "fs": "m:0 t:6,m:0 t:80,m:1 t:2,m:1 t:23,m:0 t:81 s:2048",
+                "fields": "f2,f3,f6,f8,f10,f12",
+            }
 
             result: Dict[str, Dict[str, Optional[float]]] = {}
-            for _, row in df.iterrows():  # type: ignore
-                code_raw = row.get(code_col)
-                if not code_raw:
-                    continue
-                # 标准化股票代码：移除前导0，然后补齐到6位
-                code_str = str(code_raw).strip()
-                # 如果是纯数字，移除前导0后补齐到6位
-                if code_str.isdigit():
-                    code_clean = code_str.lstrip('0') or '0'  # 移除前导0，如果全是0则保留一个0
-                    code = code_clean.zfill(6)  # 补齐到6位
-                else:
-                    code = code_str.zfill(6)
-                close = _safe_float(row.get(price_col))
-                pct = _safe_float(row.get(pct_col)) if pct_col else None
-                amt = _safe_float(row.get(amount_col)) if amount_col else None
-                # 若成交额单位为万元，统一转换为元（部分接口是万元，这里不强转，保持原样由前端展示单位）
-                result[code] = {"close": close, "pct_chg": pct, "amount": amt}
-            logger.info(f"AKShare spot 拉取完成: {len(result)} 条")
+            page_size = 20  # 小 pz 避免被东方财富断连
+            page_no = 1
+            total = None
+            while True:
+                params = {**base_params, "pn": str(page_no), "pz": str(page_size)}
+                resp = requests.get(url, params=params, timeout=8)
+                if resp.status_code != 200:
+                    logger.warning(f"东方财富 spot 第{page_no}页 HTTP {resp.status_code}")
+                    break
+                data = resp.json().get("data") or {}
+                if total is None:
+                    total = data.get("total", 0)
+                diff = data.get("diff") or []
+                if not diff:
+                    break
+                for item in diff:
+                    code = str(item.get("f12", "")).strip().zfill(6)
+                    if not code:
+                        continue
+                    result[code] = {
+                        "close": _safe_float(item.get("f2")),
+                        "pct_chg": _safe_float(item.get("f3")),
+                        "amount": _safe_float(item.get("f6")),
+                        "turnover_rate": _safe_float(item.get("f8")),
+                        "volume_ratio": _safe_float(item.get("f10")),
+                    }
+                # 已拉完全部
+                if total and len(result) >= total:
+                    break
+                page_no += 1
+                # 安全上限，避免死循环（A 股约 5500 只 / 20 = 275 页）
+                if page_no > 400:
+                    break
+
+            logger.info(f"东方财富 spot 拉取完成: {len(result)} 条")
             return result
         except Exception as e:
-            logger.error(f"获取AKShare实时快照失败: {e}")
+            logger.error(f"获取东方财富实时快照失败: {e}")
             return {}
 
 

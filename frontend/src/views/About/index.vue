@@ -460,8 +460,6 @@ const viewDocumentation = () => {
 
 <style lang="scss" scoped>
 .about {
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 0 24px;
 
   // Hero Section
