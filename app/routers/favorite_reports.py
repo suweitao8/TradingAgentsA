@@ -104,15 +104,18 @@ async def generate_reports(
         stock_code = request.stock_code
 
         async def _run():
-            if report_type == "daily":
-                if stock_code:
-                    # 单只：临时不限定，直接全量（服务内部幂等）
-                    pass
-                await svc.generate_daily_reports(user_id)
-            elif report_type == "realtime":
-                await svc.generate_realtime_reports(user_id)
-            else:
-                logger.warning(f"⚠️ 未知 report_type: {report_type}")
+            """后台生成报告（带异常捕获，避免被 BackgroundTasks 静默吞掉）"""
+            try:
+                logger.info(f"🚀 [BackgroundTask] 开始生成报告: type={report_type}, user={user_id}")
+                if report_type == "daily":
+                    await get_favorite_report_service().generate_daily_reports(user_id)
+                elif report_type == "realtime":
+                    await get_favorite_report_service().generate_realtime_reports(user_id)
+                else:
+                    logger.warning(f"⚠️ 未知 report_type: {report_type}")
+                logger.info(f"✅ [BackgroundTask] 报告生成完成: type={report_type}, user={user_id}")
+            except Exception as e:
+                logger.error(f"❌ [BackgroundTask] 报告生成失败: type={report_type}, user={user_id}", exc_info=True)
 
         background_tasks.add_task(_run)
         return ok(
