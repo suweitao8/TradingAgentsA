@@ -43,8 +43,6 @@ class RealtimeNewsAggregator:
         }
 
         # API密钥配置
-        self.finnhub_key = os.getenv('FINNHUB_API_KEY')
-        self.alpha_vantage_key = os.getenv('ALPHA_VANTAGE_API_KEY')
         self.newsapi_key = os.getenv('NEWSAPI_KEY')
 
     def get_realtime_stock_news(self, ticker: str, hours_back: int = 6, max_news: int = 10) -> List[NewsItem]:
@@ -143,107 +141,6 @@ class RealtimeNewsAggregator:
             logger.info(f"[新闻聚合器] 新闻标题示例: {', '.join(sample_titles)}")
 
         return sorted_news
-
-    def _get_finnhub_realtime_news(self, ticker: str, hours_back: int) -> List[NewsItem]:
-        """获取FinnHub实时新闻"""
-        if not self.finnhub_key:
-            return []
-
-        try:
-            # 计算时间范围
-            end_time = datetime.now(ZoneInfo(get_timezone_name()))
-            start_time = end_time - timedelta(hours=hours_back)
-
-            # FinnHub API调用
-            url = "https://finnhub.io/api/v1/company-news"
-            params = {
-                'symbol': ticker,
-                'from': start_time.strftime('%Y-%m-%d'),
-                'to': end_time.strftime('%Y-%m-%d'),
-                'token': self.finnhub_key
-            }
-
-            response = requests.get(url, params=params, headers=self.headers)
-            response.raise_for_status()
-
-            news_data = response.json()
-            news_items = []
-
-            for item in news_data:
-                # 检查新闻时效性
-                publish_time = datetime.fromtimestamp(item.get('datetime', 0), tz=ZoneInfo(get_timezone_name()))
-                if publish_time < start_time:
-                    continue
-
-                # 评估紧急程度
-                urgency = self._assess_news_urgency(item.get('headline', ''), item.get('summary', ''))
-
-                news_items.append(NewsItem(
-                    title=item.get('headline', ''),
-                    content=item.get('summary', ''),
-                    source=item.get('source', 'FinnHub'),
-                    publish_time=publish_time,
-                    url=item.get('url', ''),
-                    urgency=urgency,
-                    relevance_score=self._calculate_relevance(item.get('headline', ''), ticker)
-                ))
-
-            return news_items
-
-        except Exception as e:
-            logger.error(f"FinnHub新闻获取失败: {e}")
-            return []
-
-    def _get_alpha_vantage_news(self, ticker: str, hours_back: int) -> List[NewsItem]:
-        """获取Alpha Vantage新闻"""
-        if not self.alpha_vantage_key:
-            return []
-
-        try:
-            url = "https://www.alphavantage.co/query"
-            params = {
-                'function': 'NEWS_SENTIMENT',
-                'tickers': ticker,
-                'apikey': self.alpha_vantage_key,
-                'limit': 50
-            }
-
-            response = requests.get(url, params=params, headers=self.headers)
-            response.raise_for_status()
-
-            data = response.json()
-            news_items = []
-
-            if 'feed' in data:
-                for item in data['feed']:
-                    # 解析时间
-                    time_str = item.get('time_published', '')
-                    try:
-                        publish_time = datetime.strptime(time_str, '%Y%m%dT%H%M%S').replace(tzinfo=ZoneInfo(get_timezone_name()))
-                    except:
-                        continue
-
-                    # 检查时效性
-                    if publish_time < datetime.now(ZoneInfo(get_timezone_name())) - timedelta(hours=hours_back):
-                        continue
-
-                    urgency = self._assess_news_urgency(item.get('title', ''), item.get('summary', ''))
-
-                    news_items.append(NewsItem(
-                        title=item.get('title', ''),
-                        content=item.get('summary', ''),
-                        source=item.get('source', 'Alpha Vantage'),
-                        publish_time=publish_time,
-                        url=item.get('url', ''),
-                        urgency=urgency,
-                        relevance_score=self._calculate_relevance(item.get('title', ''), ticker)
-                    ))
-
-            return news_items
-
-        except Exception as e:
-            logger.error(f"Alpha Vantage新闻获取失败: {e}")
-            return []
 
     def _get_newsapi_news(self, ticker: str, hours_back: int) -> List[NewsItem]:
         """获取NewsAPI新闻"""

@@ -491,7 +491,6 @@ class ConfigManager:
 
         # 合并.env中的其他配置
         env_settings = {
-            "finnhub_api_key": os.getenv("FINNHUB_API_KEY", ""),
             "reddit_client_id": os.getenv("REDDIT_CLIENT_ID", ""),
             "reddit_client_secret": os.getenv("REDDIT_CLIENT_SECRET", ""),
             "reddit_user_agent": os.getenv("REDDIT_USER_AGENT", ""),
@@ -526,7 +525,6 @@ class ConfigManager:
                 "openai": bool(os.getenv("OPENAI_API_KEY")),
                 "google": bool(os.getenv("GOOGLE_API_KEY")),
                 "anthropic": bool(os.getenv("ANTHROPIC_API_KEY")),
-                "finnhub": bool(os.getenv("FINNHUB_API_KEY")),
             },
             "other_configs": {
                 "reddit_configured": bool(os.getenv("REDDIT_CLIENT_ID") and os.getenv("REDDIT_CLIENT_SECRET")),
@@ -649,10 +647,7 @@ class ConfigManager:
             settings.get("data_dir"),
             settings.get("cache_dir"),
             settings.get("results_dir"),
-            os.path.join(settings.get("data_dir", ""), "finnhub_data"),
-            os.path.join(settings.get("data_dir", ""), "finnhub_data", "news_data"),
-            os.path.join(settings.get("data_dir", ""), "finnhub_data", "insider_sentiment"),
-            os.path.join(settings.get("data_dir", ""), "finnhub_data", "insider_transactions")
+
         ]
         
         for directory in directories:
