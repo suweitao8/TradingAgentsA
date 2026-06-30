@@ -257,13 +257,20 @@ async def lifespan(app: FastAPI):
     logger.info("TradingAgents FastAPI backend started")
 
     # 启动期：若需要在休市时补充上一交易日收盘快照
+    # 注意：backfill 依赖外部行情接口，休市时可能耗时较长，改为 fire-and-forget
+    # 异步执行，避免阻塞服务启动（用户访问 /api/health 不应等待 backfill 完成）
     if settings.QUOTES_BACKFILL_ON_STARTUP:
-        try:
-            qi = QuotesIngestionService()
-            await qi.ensure_indexes()
-            await qi.backfill_last_close_snapshot_if_needed()
-        except Exception as e:
-            logger.warning(f"Startup backfill failed (ignored): {e}")
+        async def _run_backfill_safely():
+            try:
+                qi = QuotesIngestionService()
+                await qi.ensure_indexes()
+                await qi.backfill_last_close_snapshot_if_needed()
+                logger.info("Startup backfill completed")
+            except Exception as e:
+                logger.warning(f"Startup backfill failed (ignored): {e}")
+
+        asyncio.create_task(_run_backfill_safely())
+        logger.info("Startup backfill scheduled (fire-and-forget)")
 
     # 启动每日定时任务：可配置
     scheduler: AsyncIOScheduler | None = None
