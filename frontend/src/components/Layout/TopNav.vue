@@ -50,7 +50,7 @@
       <div class="nav-actions">
         <!-- 更多下拉 -->
         <el-dropdown trigger="hover" :hide-on-click="false" @command="onNavCommand">
-          <button class="action-btn" :class="{ active: isMoreActive }">
+          <button class="action-btn more-btn" :class="{ active: isMoreActive }">
             <el-icon><MoreFilled /></el-icon>
           </button>
           <template #dropdown>
@@ -336,6 +336,17 @@ onUnmounted(() => {
   &:hover {
     background: var(--glass-bg-surface);
     color: var(--el-color-primary);
+  }
+}
+
+// 「更多」按钮：去掉 hover 圆圈背景
+.action-btn.more-btn {
+  background: transparent;
+  &:hover {
+    background: transparent;
+  }
+  &.active {
+    background: transparent;
   }
 }
 
