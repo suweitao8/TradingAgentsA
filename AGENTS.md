@@ -394,6 +394,7 @@ python scripts/git/worktree.py finish <task-name>
 ### 版本号管理
 - 版本号在 `VERSION` 文件（当前 `v1.0.1`），`pyproject.toml` 的 `version` 字段与之保持一致。
 - 发版时同步更新两处 + 写 `docs/releases/` 版本说明 + 打 `v*` tag（触发 CI 构建镜像）。
+- **前端版本号单一来源**：前端不硬编码版本号，统一从后端 `/api/health`（读 VERSION 文件）获取，经 `appStore.apiVersion` 在各处显示（TopNav/About/Dashboard）。改版本号只需改 `VERSION` 文件一处，前端启动自动同步。新增显示版本号的位置一律读 `appStore.apiVersion`，禁止硬编码。
 
 ### 临时调试脚本管理
 - 临时验证/调试脚本放 `scripts/debug/`，不要堆在根目录或 `tests/` 顶层。
