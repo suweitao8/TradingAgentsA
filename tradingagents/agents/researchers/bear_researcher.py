@@ -46,14 +46,7 @@ def create_bear_researcher(llm, memory):
                                 return name
                         except Exception as e:
                             logger.error(f"❌ [空头研究员] 降级方案也失败: {e}")
-                elif market_info_dict['is_hk']:
-                    try:
-                        from tradingagents.dataflows.providers.hk.improved_hk import get_hk_company_name_improved
-                        name = get_hk_company_name_improved(ticker_code)
-                        return name
-                    except Exception:
-                        clean_ticker = ticker_code.replace('.HK', '').replace('.hk', '')
-                        return f"港股{clean_ticker}"
+                
                 elif market_info_dict['is_us']:
                     us_stock_names = {
                         'AAPL': '苹果公司', 'TSLA': '特斯拉', 'NVDA': '英伟达',
@@ -66,8 +59,6 @@ def create_bear_researcher(llm, memory):
             return f"股票代码{ticker_code}"
 
         company_name = _get_company_name(ticker, market_info)
-        is_hk = market_info['is_hk']
-        is_us = market_info['is_us']
 
         currency = market_info['currency_name']
         currency_symbol = market_info['currency_symbol']
