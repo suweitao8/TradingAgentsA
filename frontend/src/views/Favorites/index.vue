@@ -72,6 +72,7 @@
         v-loading="loading"
         style="width: 100%"
         @selection-change="handleSelectionChange"
+        @row-contextmenu="handleRowContextMenu"
       >
         <el-table-column type="selection" width="55" />
         <el-table-column prop="stock_code" label="股票代码" width="120">
@@ -196,6 +197,29 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- 右键菜单 -->
+      <el-dropdown
+        ref="contextMenuRef"
+        trigger="contextmenu"
+        placement="bottom-start"
+        :visible="contextMenuVisible"
+        @visible-change="(v: boolean) => contextMenuVisible = v"
+      >
+        <template #default><span /></template>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click="editFavorite(contextMenuRow)">编辑</el-dropdown-item>
+            <!-- 只有A股显示同步 -->
+            <el-dropdown-item
+              v-if="contextMenuRow?.market === 'A股'"
+              @click="showSingleSyncDialog(contextMenuRow)"
+            >同步</el-dropdown-item>
+            <el-dropdown-item @click="analyzeFavorite(contextMenuRow)">分析</el-dropdown-item>
+            <el-dropdown-item @click="removeFavorite(contextMenuRow)" divided>移除</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
 
       <!-- 空状态 -->
       <div v-if="!loading && favorites.length === 0" class="empty-state">
@@ -582,6 +606,18 @@ const searchKeyword = ref('')
 
 // 批量选择
 const selectedStocks = ref<FavoriteItem[]>([])
+
+// 右键菜单
+const contextMenuRef = ref()
+const contextMenuVisible = ref(false)
+const contextMenuRow = ref<FavoriteItem | null>(null)
+
+// 右键行时弹出菜单（阻止浏览器默认右键菜单）
+const handleRowContextMenu = (row: FavoriteItem, _column: any, event: MouseEvent) => {
+  event.preventDefault()
+  contextMenuRow.value = row
+  contextMenuVisible.value = true
+}
 
 // 批量同步对话框
 const batchSyncDialogVisible = ref(false)
