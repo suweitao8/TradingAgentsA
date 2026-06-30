@@ -7,17 +7,15 @@
 ## 脚本列表
 
 - `create_github_release.py - 创建GitHub发布`
-- `release_v0.1.2.py - 发布v0.1.2版本`
-- `release_v0.1.3.py - 发布v0.1.3版本`
 
 ## 使用方法
 
 ```bash
 # 进入项目根目录
-cd C:\code\TradingAgentsCN
+cd TradingAgentsA
 
 # 运行脚本
-python scripts/deployment/script_name.py
+python scripts/deployment/create_github_release.py
 ```
 
 ## 注意事项

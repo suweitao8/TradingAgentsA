@@ -133,7 +133,8 @@ def docker_install():
         if result.returncode == 0:
             print_colored("✅ Docker服务启动成功!", Colors.GREEN)
             print_colored("\n🌐 访问地址:", Colors.BLUE)
-            print_colored("主应用: http://localhost:8501", Colors.GREEN)
+            print_colored("前端界面: http://localhost:3000", Colors.GREEN)
+            print_colored("后端 API: http://localhost:8000", Colors.GREEN)
             print_colored("Redis管理: http://localhost:8081", Colors.GREEN)
             return True
         else:
@@ -178,7 +179,7 @@ def local_install():
     # 安装依赖
     print_colored("📦 安装项目依赖...", Colors.BLUE)
     try:
-        result = subprocess.run([str(pip_path), 'install', '-r', 'requirements.txt'], 
+        result = subprocess.run([str(pip_path), 'install', '-e', '.'],
                               capture_output=True, text=True)
         if result.returncode == 0:
             print_colored("✅ 依赖安装成功", Colors.GREEN)
@@ -208,18 +209,21 @@ def local_install():
     
     # 启动应用
     print_colored("🚀 启动应用...", Colors.BLUE)
-    print_colored("应用将在浏览器中打开: http://localhost:8501", Colors.GREEN)
-    
+    print_colored("后端 API: http://localhost:8000", Colors.GREEN)
+    print_colored("前端界面: http://localhost:3000", Colors.GREEN)
+
     # 提供启动命令
     if platform.system() == "Windows":
         activate_cmd = "env\\Scripts\\activate"
-        start_cmd = f"{activate_cmd} && python -m streamlit run web/app.py"
     else:
         activate_cmd = "source env/bin/activate"
-        start_cmd = f"{activate_cmd} && python -m streamlit run web/app.py"
-    
+    start_backend = f"{activate_cmd} && python -m uvicorn app.main:app --reload --port 8000"
+    start_frontend = "cd frontend && yarn dev"
+
     print_colored(f"\n📋 启动命令:", Colors.BLUE)
-    print_colored(f"  {start_cmd}", Colors.GREEN)
+    print_colored(f"  后端: {start_backend}", Colors.GREEN)
+    print_colored(f"  前端: {start_frontend}", Colors.GREEN)
+    print_colored(f"\n  或使用 Docker 一键启动: docker-compose up -d", Colors.YELLOW)
     
     return True
 
