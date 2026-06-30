@@ -85,12 +85,9 @@ export function validateSymbol(symbol: string, market?: string): boolean {
  */
 export function formatSymbol(symbol: string, market?: string): string {
   if (!symbol) return ''
-  
-  const trimmed = symbol.trim().HK`
-    }
-    return trimmed.toUpperCase()
-  }
-  
+
+  const trimmed = symbol.trim()
+
   return trimmed
 }
 

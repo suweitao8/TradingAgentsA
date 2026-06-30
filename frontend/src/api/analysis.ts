@@ -359,12 +359,10 @@ export const validateAnalysisRequest = (request: Partial<AnalysisRequest>): stri
 
   // 验证股票代码格式
   if (request.stock_symbol) {
-    const symbol = request.stock_symbol.trim().toUpperCase()$/.test(symbol)) {
-      }
-    } else if (request.market_type === 'A股') {
+    const symbol = request.stock_symbol.trim().toUpperCase()
+    if (request.market_type === 'A股') {
       if (!/^\d{6}$/.test(symbol)) {
         errors.push('A股代码格式不正确，应为6位数字')
-      }\.HK$/.test(symbol)) {
       }
     }
   }
@@ -386,7 +384,13 @@ export const formatAnalysisType = (type: string): string => {
 
 export const formatMarketType = (market: string): string => {
   const marketMap: Record<string, string> = {
-    'A股': '🇨🇳 A股', string> = {
+    'A股': '🇨🇳 A股'
+  }
+  return marketMap[market] ?? market
+}
+
+export const formatDataSource = (source: string): string => {
+  const sourceMap: Record<string, string> = {
     finnhub: 'FinnHub',
     tushare: 'Tushare',
     akshare: 'AKShare',
@@ -429,15 +433,15 @@ export const getAllTasks = async (params: {
 
 // 工具函数
 export const getStockExamples = (market: string): string[] => {
-  const examples: Record<string, string[]> = { 'TSLA', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'NFLX'],
-    'A股': ['000001', '600519', '000002', '600036', '000858', '002415', '300059', '688981'], '9988.HK', '3690.HK', '0941.HK', '1810.HK', '2318.HK', '1299.HK']
+  const examples: Record<string, string[]> = {
+    'A股': ['000001', '600519', '000002', '600036', '000858', '002415', '300059', '688981']
   }
   return examples[market] ?? []
 }
 
 export const getStockPlaceholder = (market: string): string => {
-  const placeholders: Record<string, string> = { TSLA, MSFT',
-    'A股': '输入A股代码，如 000001, 600519', 9988.HK'
+  const placeholders: Record<string, string> = {
+    'A股': '输入A股代码，如 000001, 600519'
   }
   return placeholders[market] ?? '输入股票代码'
 }

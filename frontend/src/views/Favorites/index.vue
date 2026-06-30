@@ -673,7 +673,7 @@ const validateStockCode = (_rule: any, value: any, callback: any) => {
       callback(new Error('A股代码必须是6位数字，如：000001'))
       return
     }
-  }  }  }
+  }
 
   callback()
 }
