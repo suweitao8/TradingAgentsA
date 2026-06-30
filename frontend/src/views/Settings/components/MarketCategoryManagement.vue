@@ -84,6 +84,7 @@ import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { configApi, type MarketCategory, type DataSourceGrouping } from '@/api/config'
 import MarketCategoryDialog from './MarketCategoryDialog.vue'
+import { showError } from '@/utils/message'
 
 // Refs
 const loading = ref(false)
@@ -114,7 +115,7 @@ const loadCategories = async () => {
     categories.value.sort((a, b) => a.sort_order - b.sort_order)
   } catch (error) {
     console.error('加载市场分类失败:', error)
-    ElMessage.error('加载市场分类失败')
+    showError('加载市场分类失败')
   } finally {
     loading.value = false
   }
@@ -151,7 +152,7 @@ const toggleCategory = async (category: MarketCategory) => {
     ElMessage.success(`分类已${category.enabled ? '启用' : '禁用'}`)
   } catch (error) {
     console.error('切换分类状态失败:', error)
-    ElMessage.error('切换分类状态失败')
+    showError('切换分类状态失败')
   }
 }
 
@@ -177,7 +178,7 @@ const deleteCategory = async (category: MarketCategory) => {
   } catch (error) {
     if (error !== 'cancel') {
       console.error('删除市场分类失败:', error)
-      ElMessage.error('删除市场分类失败')
+      showError('删除市场分类失败')
     }
   }
 }

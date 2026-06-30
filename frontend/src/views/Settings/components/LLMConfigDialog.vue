@@ -353,6 +353,7 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
 import { configApi, type LLMProvider, type LLMConfig, validateLLMConfig } from '@/api/config'
+import { showError } from '@/utils/message'
 
 // Props
 interface Props {
@@ -698,7 +699,7 @@ const handleSubmit = async () => {
     // 验证配置数据
     const errors = validateLLMConfig(formData.value)
     if (errors.length > 0) {
-      ElMessage.error(`配置验证失败: ${errors.join(', ')}`)
+      showError(`配置验证失败: ${errors.join(', ')}`)
       return
     }
 
@@ -721,7 +722,7 @@ const handleSubmit = async () => {
     handleClose()
   } catch (error) {
     console.error('❌ 提交大模型配置失败:', error)
-    ElMessage.error(isEdit.value ? '模型配置更新失败' : '模型配置添加失败')
+    showError(isEdit.value ? '模型配置更新失败' : '模型配置添加失败')
   } finally {
     loading.value = false
   }
@@ -747,7 +748,7 @@ const loadProviders = async (showSuccessMessage = false) => {
     }
   } catch (error) {
     console.error('❌ 加载厂家列表失败:', error)
-    ElMessage.error('加载厂家列表失败')
+    showError('加载厂家列表失败')
   } finally {
     providersLoading.value = false
   }

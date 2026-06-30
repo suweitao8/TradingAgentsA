@@ -275,6 +275,7 @@ import {
   ArrowDown
 } from '@element-plus/icons-vue'
 import { marked } from 'marked'
+import { showError } from '@/utils/message'
 
 type ReportModuleContent = string | Record<string, unknown>
 
@@ -352,7 +353,7 @@ const fetchReportDetail = async () => {
     }
   } catch (error) {
     console.error('获取报告详情失败:', error)
-    ElMessage.error('获取报告详情失败')
+    showError('获取报告详情失败')
   } finally {
     loading.value = false
   }
@@ -403,12 +404,9 @@ const downloadReport = async (format: string = 'markdown') => {
 
     // 显示详细错误信息
     if (error.message && error.message.includes('pandoc')) {
-      ElMessage.error({
-        message: 'PDF/Word 导出需要安装 pandoc 工具',
-        duration: 5000
-      })
+      showError('PDF/Word 导出需要安装 pandoc 工具', { duration: 5000 })
     } else {
-      ElMessage.error(`下载报告失败: ${error.message || '未知错误'}`)
+      showError(`下载报告失败: ${error.message || '未知错误'}`)
     }
   }
 }

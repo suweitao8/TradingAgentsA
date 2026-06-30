@@ -232,9 +232,6 @@
           </div>
         </el-card>
 
-
-
-
       </el-col>
 
       <el-col :span="6">
@@ -264,8 +261,6 @@
             <div class="fact"><span>负债率</span><b>{{ fmtPercent(basics.debtRatio) }}</b></div>
           </div>
         </el-card>
-
-
 
         <!-- 快捷操作 -->
         <el-card shadow="hover" class="actions-card">
@@ -371,12 +366,10 @@ import VChart from 'vue-echarts'
 import type { EChartsOption } from 'echarts'
 import { favoritesApi } from '@/api/favorites'
 
-
 echartsUse([CandlestickChart, GridComponent, TooltipComponent, DataZoomComponent, LegendComponent, TitleComponent, CanvasRenderer])
 
 const route = useRoute()
 const router = useRouter()
-
 
 // 分析状态
 const analysisStatus = ref<'idle' | 'running' | 'completed' | 'failed'>('idle')
@@ -394,7 +387,7 @@ const activeReportTab = ref('')
 const code = computed(() => {
   const routeCode = String(route.params.code || '').toUpperCase()
   if (!routeCode) {
-    ElMessage.error('股票代码不能为空')
+    showError('股票代码不能为空')
     router.push({ name: 'Dashboard' })
     return ''
   }
@@ -594,11 +587,11 @@ async function handleSync() {
       await fetchQuote()
       await fetchFundamentals()
     } else {
-      ElMessage.error(res.message || '同步失败')
+      showError(res.message || '同步失败')
     }
   } catch (error: any) {
     console.error('同步失败:', error)
-    ElMessage.error(error.message || '同步失败，请稍后重试')
+    showError(error.message || '同步失败，请稍后重试')
   } finally {
     syncLoading.value = false
   }
@@ -638,7 +631,7 @@ async function clearCache() {
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('清除缓存失败:', error)
-      ElMessage.error(error.message || '清除缓存失败')
+      showError(error.message || '清除缓存失败')
     }
   } finally {
     clearCacheLoading.value = false
@@ -777,8 +770,6 @@ watch(() => route.params.code, async (newCode, oldCode) => {
   await loadPageData()
 })
 
-
-
 // K线占位相关
 const periodOptions = ['日K','周K','月K']
 const period = ref('日K')
@@ -846,7 +837,6 @@ async function fetchKline() {
     console.error('获取K线失败', e)
   }
 }
-
 
 // 新闻
 const newsFilter = ref('all')
@@ -921,7 +911,7 @@ async function onToggleFavorite() {
     }
   } catch (e: any) {
     console.error('自选操作失败', e)
-    ElMessage.error(e?.message || '自选操作失败')
+    showError(e?.message || '自选操作失败')
   }
 }
 
@@ -1084,6 +1074,7 @@ function fmtConf(v: any) {
 }
 
 import { formatDateTimeWithRelative, formatDateTime } from '@/utils/datetime'
+import { showError } from '@/utils/message'
 
 // 格式化分析时间（处理UTC时间转换为中国本地时间）
 function formatAnalysisTime(dateStr: any): string {

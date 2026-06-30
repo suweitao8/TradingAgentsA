@@ -121,6 +121,7 @@ import { ElMessage } from 'element-plus'
 import { Rank } from '@element-plus/icons-vue'
 import Sortable from 'sortablejs'
 import { configApi, type DataSourceConfig } from '@/api/config'
+import { showError } from '@/utils/message'
 
 // Props
 interface Props {
@@ -209,7 +210,7 @@ const updatePriority = async (item: DataSourceConfig & { priority: number; enabl
     ElMessage.success('优先级更新成功')
   } catch (error) {
     console.error('更新优先级失败:', error)
-    ElMessage.error('更新优先级失败')
+    showError('更新优先级失败')
   }
 }
 
@@ -227,7 +228,7 @@ const toggleDataSource = async (item: DataSourceConfig & { priority: number; ena
     ElMessage.success(`数据源已${newEnabled ? '启用' : '禁用'}`)
   } catch (error) {
     console.error('切换数据源状态失败:', error)
-    ElMessage.error('切换数据源状态失败')
+    showError('切换数据源状态失败')
   }
 }
 
@@ -249,17 +250,11 @@ const testDataSource = async (item: DataSourceConfig) => {
         duration: 3000
       })
     } else {
-      ElMessage.error({
-        message: `❌ ${result.message}`,
-        duration: 5000
-      })
+      showError(`❌ ${result.message}`, { duration: 5000 })
     }
   } catch (error: any) {
     console.error('测试数据源失败:', error)
-    ElMessage.error({
-      message: `❌ 测试失败: ${error.message || '未知错误'}`,
-      duration: 5000
-    })
+    showError(`❌ 测试失败: ${error.message || '未知错误'}`, { duration: 5000 })
   } finally {
     testingDataSources.value[item.name] = false
   }

@@ -607,6 +607,7 @@ import {
   type SchedulerStats
 } from '@/api/scheduler'
 import { formatDateTime, formatRelativeTime } from '@/utils/datetime'
+import { showError } from '@/utils/message'
 
 // 数据
 const loading = ref(false)
@@ -713,7 +714,7 @@ const loadJobs = async () => {
     jobs.value = Array.isArray(jobsRes.data) ? jobsRes.data : []
     stats.value = statsRes.data || null
   } catch (error: any) {
-    ElMessage.error(error.message || '加载任务列表失败')
+    showError(error.message || '加载任务列表失败')
     jobs.value = []
     stats.value = null
   } finally {
@@ -741,7 +742,7 @@ const handleSaveMetadata = async () => {
     editDialogVisible.value = false
     await loadJobs()
   } catch (error: any) {
-    ElMessage.error(error.message || '更新任务信息失败')
+    showError(error.message || '更新任务信息失败')
   } finally {
     saveLoading.value = false
   }
@@ -754,7 +755,7 @@ const showJobDetail = async (job: Job) => {
     currentJob.value = res.data || null
     detailDialogVisible.value = true
   } catch (error: any) {
-    ElMessage.error(error.message || '获取任务详情失败')
+    showError(error.message || '获取任务详情失败')
   }
 }
 
@@ -770,7 +771,7 @@ const handlePause = async (job: Job) => {
     await loadJobs()
   } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error(error.message || '暂停任务失败')
+      showError(error.message || '暂停任务失败')
     }
   } finally {
     actionLoading[job.id] = false
@@ -784,7 +785,7 @@ const handleResume = async (job: Job) => {
     ElMessage.success('任务已恢复')
     await loadJobs()
   } catch (error: any) {
-    ElMessage.error(error.message || '恢复任务失败')
+    showError(error.message || '恢复任务失败')
   } finally {
     actionLoading[job.id] = false
   }
@@ -806,7 +807,7 @@ const handleTrigger = async (job: Job) => {
     await loadJobs()
   } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error(error.message || '触发任务失败')
+      showError(error.message || '触发任务失败')
     }
   } finally {
     actionLoading[job.id] = false
@@ -854,7 +855,7 @@ const loadHistory = async () => {
     } as JobHistory))
     historyTotal.value = res.data?.total || 0
   } catch (error: any) {
-    ElMessage.error(error.message || '加载执行历史失败')
+    showError(error.message || '加载执行历史失败')
     historyList.value = []
     historyTotal.value = 0
   } finally {
@@ -937,7 +938,7 @@ const loadExecutions = async () => {
     executionList.value = Array.isArray(res.data?.items) ? res.data.items : []
     executionTotal.value = res.data?.total || 0
   } catch (error: any) {
-    ElMessage.error(error.message || '加载执行历史失败')
+    showError(error.message || '加载执行历史失败')
     executionList.value = []
     executionTotal.value = 0
   } finally {
@@ -1032,7 +1033,7 @@ const handleCancelExecution = async (execution: any) => {
     }
   } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error(error.message || '终止任务失败')
+      showError(error.message || '终止任务失败')
     }
   }
 }
@@ -1062,7 +1063,7 @@ const handleMarkFailed = async (execution: any) => {
     }
   } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error(error.message || '标记失败')
+      showError(error.message || '标记失败')
     }
   }
 }
@@ -1091,7 +1092,7 @@ const handleDeleteExecution = async (execution: any) => {
     }
   } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error(error.message || '删除失败')
+      showError(error.message || '删除失败')
     }
   }
 }

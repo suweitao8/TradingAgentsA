@@ -198,6 +198,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Refresh, Download, Search, View, Delete } from '@element-plus/icons-vue'
 import { LogsApi, type LogFileInfo, type LogContentResponse, type LogStatistics } from '@/api/logs'
+import { showError } from '@/utils/message'
 
 type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
 
@@ -248,7 +249,7 @@ const loadLogFiles = async () => {
     logFiles.value = await LogsApi.listLogFiles()
     ElMessage.success('日志文件列表加载成功')
   } catch (error: any) {
-    ElMessage.error(`加载失败: ${error.message || error}`)
+    showError(`加载失败: ${error.message || error}`)
   } finally {
     loading.value = false
   }
@@ -258,7 +259,7 @@ const loadStatistics = async () => {
   try {
     statistics.value = await LogsApi.getStatistics(7)
   } catch (error: any) {
-    ElMessage.error(`加载统计失败: ${error.message || error}`)
+    showError(`加载统计失败: ${error.message || error}`)
   }
 }
 
@@ -280,7 +281,7 @@ const loadLogContent = async () => {
       keyword: viewFilter.value.keyword || undefined
     })
   } catch (error: any) {
-    ElMessage.error(`加载日志内容失败: ${error.message || error}`)
+    showError(`加载日志内容失败: ${error.message || error}`)
   } finally {
     viewLoading.value = false
   }
@@ -304,7 +305,7 @@ const downloadLog = async (file: LogFileInfo) => {
     
     ElMessage.success('日志下载成功')
   } catch (error: any) {
-    ElMessage.error(`下载失败: ${error.message || error}`)
+    showError(`下载失败: ${error.message || error}`)
   }
 }
 
@@ -314,7 +315,7 @@ const deleteLog = async (file: LogFileInfo) => {
     ElMessage.success('日志文件已删除')
     await loadLogFiles()
   } catch (error: any) {
-    ElMessage.error(`删除失败: ${error.message || error}`)
+    showError(`删除失败: ${error.message || error}`)
   }
 }
 
@@ -349,7 +350,7 @@ const exportLogs = async () => {
     ElMessage.success('日志导出成功')
     exportDialogVisible.value = false
   } catch (error: any) {
-    ElMessage.error(`导出失败: ${error.message || error}`)
+    showError(`导出失败: ${error.message || error}`)
   } finally {
     exportLoading.value = false
   }

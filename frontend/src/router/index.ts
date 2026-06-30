@@ -2,9 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { nextTick } from 'vue'
 import { useAppStore } from '@/stores/app'
-import { ElMessage } from 'element-plus'
+
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
+import { showError } from '@/utils/message'
 
 // 配置NProgress
 NProgress.configure({
@@ -192,7 +193,6 @@ const routes: RouteRecordRaw[] = [
       }
     ]
   },
-
 
   {
     path: '/tasks',
@@ -472,7 +472,7 @@ router.onError((error, to) => {
     return
   }
   // 非 chunk 错误，或刷新后仍失败，提示用户手动处理
-  ElMessage.error('页面加载失败，请重试')
+  showError('页面加载失败，请重试')
 })
 
 export default router

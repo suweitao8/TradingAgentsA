@@ -131,6 +131,7 @@ import {
   type SyncStatus, 
   type DataSourceStatus 
 } from '@/api/sync'
+import { showError } from '@/utils/message'
 
 // 路由
 const router = useRouter()
@@ -190,11 +191,11 @@ const quickSync = async () => {
       syncStatus.value = response.data
       startStatusPolling()
     } else {
-      ElMessage.error(`同步启动失败: ${response.message}`)
+      showError(`同步启动失败: ${response.message}`)
     }
   } catch (err: any) {
     console.error('启动同步失败:', err)
-    ElMessage.error(`同步启动失败: ${err.message}`)
+    showError(`同步启动失败: ${err.message}`)
   } finally {
     syncing.value = false
   }

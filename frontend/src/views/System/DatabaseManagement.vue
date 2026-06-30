@@ -231,10 +231,6 @@
       </el-row>
     </el-card>
 
-
-
-
-
     <!-- 数据清理 -->
     <el-card class="cleanup-card" shadow="never" style="margin-top: 24px">
       <template #header>
@@ -300,6 +296,7 @@ import {
   type DatabaseStatus,
   type DatabaseStats
 } from '@/api/database'
+import { showError } from '@/utils/message'
 
 // 响应式数据
 const loading = ref(false)
@@ -351,7 +348,7 @@ const loadDatabaseStatus = async () => {
     console.log('📊 数据库状态加载成功:', status)
   } catch (error) {
     console.error('❌ 加载数据库状态失败:', error)
-    ElMessage.error('加载数据库状态失败')
+    showError('加载数据库状态失败')
   } finally {
     loading.value = false
   }
@@ -364,7 +361,7 @@ const loadDatabaseStats = async () => {
     console.log('📈 数据库统计加载成功:', stats)
   } catch (error) {
     console.error('❌ 加载数据库统计失败:', error)
-    ElMessage.error('加载数据库统计失败')
+    showError('加载数据库统计失败')
   }
 }
 
@@ -395,7 +392,7 @@ const testConnections = async () => {
 
   } catch (error) {
     console.error('❌ 连接测试失败:', error)
-    ElMessage.error('连接测试失败')
+    showError('连接测试失败')
   } finally {
     testing.value = false
   }
@@ -476,7 +473,7 @@ const exportData = async () => {
 
   } catch (error) {
     console.error('❌ 数据导出失败:', error)
-    ElMessage.error('数据导出失败')
+    showError('数据导出失败')
   } finally {
     exporting.value = false
   }
@@ -548,7 +545,7 @@ const importData = async () => {
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('❌ 数据导入失败:', error)
-      ElMessage.error(error.response?.data?.detail || '数据导入失败')
+      showError(error.response?.data?.detail || '数据导入失败')
     }
   } finally {
     importing.value = false
@@ -575,7 +572,7 @@ const cleanupAnalysisResults = async () => {
   } catch (error) {
     if (error !== 'cancel') {
       console.error('❌ 清理分析结果失败:', error)
-      ElMessage.error('清理分析结果失败')
+      showError('清理分析结果失败')
     }
   } finally {
     cleaning.value = false
@@ -601,16 +598,12 @@ const cleanupOperationLogs = async () => {
   } catch (error) {
     if (error !== 'cancel') {
       console.error('❌ 清理操作日志失败:', error)
-      ElMessage.error('清理操作日志失败')
+      showError('清理操作日志失败')
     }
   } finally {
     cleaning.value = false
   }
 }
-
-
-
-
 
 // 生命周期
 onMounted(async () => {
@@ -712,8 +705,6 @@ onMounted(async () => {
       }
     }
   }
-
-
 
   .cleanup-card {
     .cleanup-section {

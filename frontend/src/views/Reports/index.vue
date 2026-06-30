@@ -232,7 +232,7 @@ const fetchReports = async () => {
     }
   } catch (error) {
     console.error('获取报告列表失败:', error)
-    ElMessage.error('获取报告列表失败')
+    showError('获取报告列表失败')
   } finally {
     loading.value = false
   }
@@ -301,12 +301,9 @@ const downloadReport = async (report: ReportListItem, format: string = 'markdown
 
     // 显示详细错误信息
     if (err.message && err.message.includes('pandoc')) {
-      ElMessage.error({
-        message: 'PDF/Word 导出需要安装 pandoc 工具',
-        duration: 5000
-      })
+      showError('PDF/Word 导出需要安装 pandoc 工具', { duration: 5000 })
     } else {
-      ElMessage.error(`下载报告失败: ${err.message || '未知错误'}`)
+      showError(`下载报告失败: ${err.message || '未知错误'}`)
     }
   }
 }
@@ -369,7 +366,7 @@ const deleteReport = async (report: ReportListItem) => {
     const err = error as Error
     if (err.message !== 'cancel') {
       console.error('删除报告失败:', err)
-      ElMessage.error('删除报告失败')
+      showError('删除报告失败')
     }
   }
 }
@@ -415,6 +412,7 @@ const getStatusText = (status: string) => {
 }
 
 import { formatDateTime } from '@/utils/datetime'
+import { showError } from '@/utils/message'
 
 const formatTime = (time: string) => {
   return formatDateTime(time)

@@ -265,6 +265,7 @@ import {
   type DataSourceConfig,
   type MarketCategory
 } from '@/api/config'
+import { showError } from '@/utils/message'
 
 // Props
 interface Props {
@@ -505,7 +506,7 @@ const loadMarketCategories = async () => {
     marketCategories.value = await configApi.getMarketCategories()
   } catch (error) {
     console.error('加载市场分类失败:', error)
-    ElMessage.error('加载市场分类失败')
+    showError('加载市场分类失败')
   }
 }
 
@@ -633,7 +634,7 @@ const handleSubmit = async () => {
       errorMessage = error.message
     }
 
-    ElMessage.error(errorMessage)
+    showError(errorMessage)
   } finally {
     loading.value = false
   }
@@ -672,11 +673,11 @@ const handleTest = async () => {
     if (result.success) {
       ElMessage.success(`连接测试成功: ${result.message}`)
     } else {
-      ElMessage.error(`连接测试失败: ${result.message}`)
+      showError(`连接测试失败: ${result.message}`)
     }
   } catch (error) {
     console.error('测试连接失败:', error)
-    ElMessage.error('测试连接失败')
+    showError('测试连接失败')
   } finally {
     testing.value = false
   }

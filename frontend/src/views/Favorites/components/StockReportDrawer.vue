@@ -127,6 +127,7 @@ import {
   favoriteReportsApi,
   type StockReportsResp,
 } from '@/api/favorites'
+import { showError } from '@/utils/message'
 
 const props = defineProps<{
   modelValue: boolean
@@ -176,7 +177,7 @@ async function loadReports() {
       activeTab.value = 'daily'
     }
   } catch (e: any) {
-    ElMessage.error('加载报告失败：' + (e?.message || e))
+    showError('加载报告失败：' + (e?.message || e))
     reports.value = { daily: [], realtime: [] }
   } finally {
     loading.value = false
@@ -195,7 +196,7 @@ async function handleGenerate() {
     const delay = reportType === 'realtime' ? 5000 : 30000
     setTimeout(() => loadReports(), delay)
   } catch (e: any) {
-    ElMessage.error('生成失败：' + (e?.message || e))
+    showError('生成失败：' + (e?.message || e))
   } finally {
     generating.value = false
   }

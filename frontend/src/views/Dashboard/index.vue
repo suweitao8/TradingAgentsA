@@ -23,7 +23,6 @@
       </div>
     </div>
 
-
     <!-- 学习中心推荐卡片 -->
     <el-card class="learning-highlight-card">
       <div class="learning-highlight">
@@ -270,8 +269,6 @@ const favoriteStocks = ref<any[]>([])
 // 市场快讯数据
 const marketNews = ref<any[]>([])
 
-
-
 // 方法
 const quickAnalysis = () => {
   router.push('/analysis/single')
@@ -321,7 +318,7 @@ const downloadReport = async (analysis: AnalysisTask) => {
     if (!res.ok) {
       const msg = `下载失败：HTTP ${res.status}`
       console.error(msg)
-      ElMessage.error('下载失败，报告可能尚未生成')
+      showError('下载失败，报告可能尚未生成')
       return
     }
     const blob = await res.blob()
@@ -339,7 +336,7 @@ const downloadReport = async (analysis: AnalysisTask) => {
     ElMessage.success('报告已开始下载')
   } catch (err) {
     console.error('下载报告出错:', err)
-    ElMessage.error('下载失败，请稍后重试')
+    showError('下载失败，请稍后重试')
   }
 }
 
@@ -376,6 +373,7 @@ const getStatusText = (status: string | AnalysisStatus) => {
 }
 
 import { formatDateTime } from '@/utils/datetime'
+import { showError } from '@/utils/message'
 
 const formatTime = (time: string) => {
   return formatDateTime(time)

@@ -822,7 +822,7 @@ const submitAnalysis = async () => {
   // 验证股票代码格式
   const validation = validateStockCode(stockCode, analysisForm.market)
   if (!validation.valid) {
-    ElMessage.error(validation.message || '股票代码格式不正确')
+    showError(validation.message || '股票代码格式不正确')
     stockCodeError.value = validation.message || '股票代码格式不正确'
     return
   }
@@ -868,7 +868,7 @@ const submitAnalysis = async () => {
 
     if (!currentTaskId.value) {
       console.error('❌ 任务ID为空:', response)
-      ElMessage.error('任务ID获取失败，请重试')
+      showError('任务ID获取失败，请重试')
       return
     }
 
@@ -914,7 +914,7 @@ const submitAnalysis = async () => {
     }, 1000) // 1秒后查询
 
   } catch (error: any) {
-    ElMessage.error(error.message || '提交分析失败')
+    showError(error.message || '提交分析失败')
   } finally {
     submitting.value = false
   }
@@ -1241,7 +1241,7 @@ const formatReportContent = (content: any) => {
 const downloadReport = async (format: string = 'markdown') => {
   try {
     if (!analysisResults.value && !currentTaskId.value) {
-      ElMessage.error('报告尚未生成，无法下载')
+      showError('报告尚未生成，无法下载')
       return
     }
 
@@ -1291,12 +1291,9 @@ const downloadReport = async (format: string = 'markdown') => {
 
     // 显示详细错误信息
     if (err.message && err.message.includes('pandoc')) {
-      ElMessage.error({
-        message: 'PDF/Word 导出需要安装 pandoc 工具',
-        duration: 5000
-      })
+      showError('PDF/Word 导出需要安装 pandoc 工具', { duration: 5000 })
     } else {
-      ElMessage.error(`下载报告失败: ${err.message || '未知错误'}`)
+      showError(`下载报告失败: ${err.message || '未知错误'}`)
     }
   }
 }
@@ -1673,6 +1670,7 @@ const applyRecommendedModels = () => {
 
 // 监听分析深度变化
 import { watch } from 'vue'
+import { showError } from '@/utils/message'
 watch(() => analysisForm.researchDepth, () => {
   checkModelSuitability()
 })

@@ -165,6 +165,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Refresh, Upload, StarFilled } from '@element-plus/icons-vue'
 import { etfsApi, type EtfItem, type AddEtfReq } from '@/api/etfs'
+import { showError } from '@/utils/message'
 
 // ---- 状态 ----
 const etfs = ref<EtfItem[]>([])
@@ -220,7 +221,7 @@ async function loadEtfs() {
     const res = await etfsApi.list()
     etfs.value = res.data || []
   } catch (e: any) {
-    ElMessage.error(e?.message || '加载 ETF 列表失败')
+    showError(e?.message || '加载 ETF 列表失败')
   } finally {
     loading.value = false
   }
@@ -264,7 +265,7 @@ async function loadPopularEtfs() {
     )
     await loadEtfs()
   } catch (e: any) {
-    ElMessage.error(e?.message || '加载热门 ETF 失败')
+    showError(e?.message || '加载热门 ETF 失败')
   } finally {
     popularLoading.value = false
   }
@@ -291,7 +292,7 @@ async function handleUpdateEtf() {
     editDialogVisible.value = false
     await loadEtfs()
   } catch (e: any) {
-    ElMessage.error(e?.message || '更新失败')
+    showError(e?.message || '更新失败')
   }
 }
 
@@ -308,7 +309,7 @@ async function removeEtf(row: EtfItem) {
     await loadEtfs()
   } catch (e: any) {
     if (e !== 'cancel' && e?.message) {
-      ElMessage.error(e.message)
+      showError(e.message)
     }
   }
 }
@@ -351,7 +352,7 @@ async function handleBatchImport() {
     ElMessage.success(result.message || '导入完成')
     await loadEtfs()
   } catch (e: any) {
-    ElMessage.error(e?.message || '批量导入失败')
+    showError(e?.message || '批量导入失败')
   } finally {
     batchLoading.value = false
   }
