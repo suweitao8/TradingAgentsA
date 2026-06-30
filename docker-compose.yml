@@ -1,7 +1,10 @@
 version: '3.8'
 
-# TradingAgentsA v1.0.0-preview Docker Compose配置
+# TradingAgentsA v1.0.1 Docker Compose配置
 # 支持前后端分离部署
+# 注意：镜像 tag 沿用 v1.0.0-preview（历史命名），与 VERSION 文件(v1.0.1)不同步，
+#       改 tag 需全量重建镜像（会中断服务），故保留旧 tag。前端代码更新后需手动
+#       `docker compose build frontend` 重建，见 AGENTS.md「Docker 镜像与 git 代码脱节陷阱」。
 
 services:
   # FastAPI 后端服务
@@ -80,7 +83,7 @@ services:
     networks:
       - tradingagents-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1"]
       interval: 30s
       timeout: 10s
       retries: 3

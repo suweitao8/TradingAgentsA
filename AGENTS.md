@@ -263,6 +263,32 @@
 - 改了后端 Python 代码 → uvicorn `--reload` 自动重载；若改了启动配置/依赖/环境变量，需重启 backend。
 - 重启策略：先启动新实例确认可用，再停旧实例（无缝重启）。
 
+### ⚠️ Docker 镜像与 git 代码脱节陷阱（多对话并发必读）
+
+**核心事实：`localhost:3000` 若由 Docker 容器 `tradingagents-frontend` 提供（nginx 托管 `/usr/share/nginx/html/` 下构建产物），则容器跑的是「镜像构建那一刻冻结的静态文件」，git 合并/推送后不会自动进容器。** 这与 Vite dev server（实时 HMR）完全不同。
+
+**"重启后改动丢失"的根因**：`docker compose up -d` / `docker compose restart` / 重启 Docker Desktop 时，compose 发现镜像 tag（如 `tradingagents-frontend:v1.0.0-preview`）已存在就直接复用，**不会重新 build**。只有镜像 tag 被重新 build 过，容器才跑新代码。多对话并发时，谁最后 `docker compose build`，容器就跑谁的版本——中间其他对话的代码改动若无重建，一律不在容器里。
+
+**判断当前 3000 端口是 Docker 容器还是 Vite dev**：
+```bash
+docker ps --filter name=tradingagents-frontend --format "{{.Status}}"  # 有输出=Docker容器在跑
+docker inspect tradingagents-frontend --format '{{.Created}}'           # 镜像构建时间
+```
+镜像创建时间早于代码改动提交时间 = 改动没进容器（需重建）。
+
+**前端代码改动后让 Docker 容器生效**（耗时约 1-2 分钟，需先告知用户）：
+```bash
+docker compose build --no-cache frontend && docker compose up -d frontend
+# 验证：容器内 JS 文件 hash 是否变化
+MSYS_NO_PATHCONV=1 docker exec tradingagents-frontend cat /usr/share/nginx/html/index.html
+```
+
+**多对话并发操作 Docker 的规则**：
+- 开发调试阶段优先用 Vite dev server（`yarn dev`，HMR 实时生效），不要依赖容器。
+- 容器只用于验证最终生产效果。`docker compose build frontend` 是"发布"动作，多对话时需协调，避免互相覆盖镜像。
+- **禁止**用 `docker compose down` 清理其他对话正在用的容器；重启服务用 `docker compose restart <服务名>` 而非 down+up。
+- 用户反馈"看不到改动/改动被撤销"时，**第一步**查 `docker inspect tradingagents-frontend --format '{{.Created}}'` 看镜像时间，而不是查 git——容器跑旧镜像是头号嫌疑，git 提交几乎不会真的丢。
+
 ### 基本信息
 | 服务 | 端口 | 启动命令 |
 |------|------|---------|
