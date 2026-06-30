@@ -317,13 +317,13 @@ onUnmounted(() => {
   }
 
   &:hover {
-    color: var(--accent-cyan);
+    color: var(--glass-text-primary);
     background: var(--glass-bg-surface-hover);
   }
 
   &.active {
-    color: var(--accent-cyan);
-    background: var(--accent-cyan-soft);
+    color: var(--glass-text-primary);
+    background: var(--glass-bg-surface-hover);
     font-weight: 600;
   }
 }
