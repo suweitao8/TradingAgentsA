@@ -175,9 +175,17 @@ const createAxiosInstance = (): AxiosInstance => {
 
           case 502:
           case 503:
-          case 504:
-            showErrorMessage('服务暂时不可用，请稍后重试')
+          case 504: {
+            // 后端短暂不可用（重启/重建窗口）：先静默重试，重试耗尽才提示
+            // 重试期间不弹错误，避免给用户造成"服务挂了"的错觉
+            if (await shouldRetry(config, error)) {
+              return retryRequest(instance, config)
+            }
+            if (!config?.skipErrorHandler) {
+              showErrorMessage('服务暂时不可用，请稍后重试')
+            }
             break
+          }
 
           default:
             if (!config?.skipErrorHandler) {
