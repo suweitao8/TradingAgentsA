@@ -8,24 +8,10 @@
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from app.core.database import get_mongo_db_sync
 from app.models.preferences import UserPreferences
 
 
 PREFERENCES_DOC_KEY = "user_preferences"
-
-
-def get_preferences() -> UserPreferences:
-    """获取偏好设置（同步，用于非异步上下文）"""
-    try:
-        db = get_mongo_db_sync()
-        doc = db.system_configs.find_one({"key": PREFERENCES_DOC_KEY})
-        if doc and "data" in doc:
-            return UserPreferences(**doc["data"])
-    except Exception as e:
-        print(f"⚠️ [preferences] 从数据库读取偏好设置失败: {e}，使用默认值")
-
-    return UserPreferences()
 
 
 async def get_preferences_async() -> UserPreferences:

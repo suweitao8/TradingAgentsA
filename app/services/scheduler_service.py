@@ -1082,15 +1082,13 @@ async def update_job_progress(
         processed_items: 已处理项数
     """
     try:
-        from pymongo import MongoClient
-        from app.core.config import settings
+        from app.core.database import get_mongo_db
 
-        # 使用同步客户端避免事件循环冲突
-        sync_client = MongoClient(settings.MONGO_URI)
-        sync_db = sync_client[settings.MONGO_DB]
+        # 使用 motor 异步客户端（复用连接池，避免高频进度更新每次新建连接）
+        db = get_mongo_db()
 
         # 查找最近的执行记录
-        latest_execution = sync_db.scheduler_executions.find_one(
+        latest_execution = await db.scheduler_executions.find_one(
             {"job_id": job_id, "status": {"$in": ["running", "success", "failed"]}},
             sort=[("timestamp", -1)]
         )
@@ -1098,7 +1096,6 @@ async def update_job_progress(
         if latest_execution:
             # 检查是否有取消请求
             if latest_execution.get("cancel_requested"):
-                sync_client.close()
                 logger.warning(f"⚠️ 任务 {job_id} 收到取消请求，即将停止")
                 raise TaskCancelledException(f"任务 {job_id} 已被用户取消")
 
@@ -1118,7 +1115,7 @@ async def update_job_progress(
             if processed_items is not None:
                 update_data["processed_items"] = processed_items
 
-            sync_db.scheduler_executions.update_one(
+            await db.scheduler_executions.update_one(
                 {"_id": latest_execution["_id"]},
                 {"$set": update_data}
             )
@@ -1151,9 +1148,7 @@ async def update_job_progress(
             if processed_items is not None:
                 execution_record["processed_items"] = processed_items
 
-            sync_db.scheduler_executions.insert_one(execution_record)
-
-        sync_client.close()
+            await db.scheduler_executions.insert_one(execution_record)
 
     except Exception as e:
         logger.error(f"❌ 更新任务进度失败: {e}")

@@ -100,21 +100,15 @@ async def validate_config():
 
             # 🔥 修改：直接从数据库读取原始数据，避免使用 get_llm_providers() 返回的已修改数据
             # get_llm_providers() 会将环境变量的 Key 赋值给 provider.api_key，导致无法区分来源
-            from pymongo import MongoClient
-            from app.core.config import settings
+            from app.core.database import get_mongo_db
             from app.models.config import LLMProvider
 
-            # 创建同步 MongoDB 客户端
-            client = MongoClient(settings.MONGO_URI)
-            db = client[settings.MONGO_DB]
-            providers_collection = db.llm_providers
+            # 使用 motor 异步客户端（复用连接池，避免临时 MongoClient 连接泄漏）
+            db = get_mongo_db()
 
             # 查询所有厂家配置（原始数据）
-            providers_data = list(providers_collection.find())
+            providers_data = await db.llm_providers.find().to_list(length=None)
             llm_providers = [LLMProvider(**data) for data in providers_data]
-
-            # 关闭同步客户端
-            client.close()
 
             logger.info(f"🔍 获取到 {len(llm_providers)} 个大模型厂家")
 
