@@ -564,10 +564,7 @@ export const DATA_SOURCE_TYPES = {
   // 中国市场数据源
   TUSHARE: 'tushare',
   AKSHARE: 'akshare',
-  BAOSTOCK: 'baostock',
-
-  // 美股数据源
-  FINNHUB: 'finnhub',
+  BAOSTOCK: 'baostock',  FINNHUB: 'finnhub',
   YAHOO_FINANCE: 'yahoo_finance',
   ALPHA_VANTAGE: 'alpha_vantage',
   IEX_CLOUD: 'iex_cloud',
@@ -616,22 +613,6 @@ export const DEFAULT_MARKET_CATEGORIES: Partial<MarketCategory>[] = [
     description: '中国A股市场数据源',
     enabled: true,
     sort_order: 1
-  },
-  {
-    id: 'us_stocks',
-    name: 'us_stocks',
-    display_name: '美股',
-    description: '美国股票市场数据源',
-    enabled: true,
-    sort_order: 2
-  },
-  {
-    id: 'hk_stocks',
-    name: 'hk_stocks',
-    display_name: '港股',
-    description: '香港股票市场数据源',
-    enabled: true,
-    sort_order: 3
   },
   {
     id: 'crypto',

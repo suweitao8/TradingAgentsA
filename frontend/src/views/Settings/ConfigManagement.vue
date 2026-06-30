@@ -669,45 +669,10 @@
               <el-switch v-model="systemSettings.ta_use_app_cache" :disabled="!isEditable('ta_use_app_cache')" />
               <div class="setting-description">优先使用 App 缓存（stock_basic_info / market_quotes），未命中自动回退直连数据源</div>
             </el-form-item>
-
-
-            <el-form-item label="港股最小请求间隔">
-              <el-input-number v-model="systemSettings.ta_hk_min_request_interval_seconds" :min="0.1" :step="0.1" :disabled="!isEditable('ta_hk_min_request_interval_seconds')" />
-              <span class="setting-description">秒</span>
-              <el-tooltip effect="dark" content="港股数据请求的最小间隔，用于节流" placement="top">
-                <i class="el-icon-info" style="margin-left:8px; color:#909399;" />
-              </el-tooltip>
-            </el-form-item>
-
-            <el-form-item label="港股请求超时">
-              <el-input-number v-model="systemSettings.ta_hk_timeout_seconds" :min="1" :step="1" :disabled="!isEditable('ta_hk_timeout_seconds')" />
-              <span class="setting-description">秒</span>
-            </el-form-item>
-
-            <el-form-item label="港股最大重试">
-              <el-input-number v-model="systemSettings.ta_hk_max_retries" :min="0" :step="1" :disabled="!isEditable('ta_hk_max_retries')" />
-            </el-form-item>
-
-            <el-form-item label="港股限速等待">
-              <el-input-number v-model="systemSettings.ta_hk_rate_limit_wait_seconds" :min="1" :step="1" :disabled="!isEditable('ta_hk_rate_limit_wait_seconds')" />
-              <span class="setting-description">秒</span>
-            </el-form-item>
-
-            <el-form-item label="港股缓存TTL">
-              <el-input-number v-model="systemSettings.ta_hk_cache_ttl_seconds" :min="10" :step="10" :disabled="!isEditable('ta_hk_cache_ttl_seconds')" />
-              <span class="setting-description">秒</span>
-            </el-form-item>
-
             <el-form-item label="A股最小调用间隔">
               <el-input-number v-model="systemSettings.ta_china_min_api_interval_seconds" :min="0.1" :step="0.1" :disabled="!isEditable('ta_china_min_api_interval_seconds')" />
               <span class="setting-description">秒</span>
             </el-form-item>
-
-            <el-form-item label="美股最小调用间隔">
-              <el-input-number v-model="systemSettings.ta_us_min_api_interval_seconds" :min="0.1" :step="0.1" :disabled="!isEditable('ta_us_min_api_interval_seconds')" />
-              <span class="setting-description">秒</span>
-            </el-form-item>
-
             <el-form-item label="GoogleNews最小延时">
               <el-input-number v-model="systemSettings.ta_google_news_sleep_min_seconds" :min="0.1" :step="0.1" :disabled="!isEditable('ta_google_news_sleep_min_seconds')" />
               <span class="setting-description">秒</span>

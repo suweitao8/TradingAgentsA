@@ -179,9 +179,7 @@
                 placeholder="请选择数据源"
               >
                 <el-option label="AKShare（推荐，免费无需密钥）" value="akshare" />
-                <el-option label="Tushare（专业A股数据）" value="tushare" />
-                <el-option label="FinnHub（美股数据）" value="finnhub" />
-              </el-select>
+                <el-option label="Tushare（专业A股数据）" value="tushare" />              </el-select>
             </el-form-item>
 
             <el-form-item

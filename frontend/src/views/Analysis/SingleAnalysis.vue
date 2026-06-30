@@ -72,14 +72,6 @@
                           <span>🇨🇳 A股市场</span>
                           <span style="color: #909399; font-size: 12px; margin-left: 8px;">（6位数字）</span>
                         </el-option>
-                        <el-option label="🇺🇸 美股市场" value="美股">
-                          <span>🇺🇸 美股市场</span>
-                          <span style="color: #909399; font-size: 12px; margin-left: 8px;">（1-5个字母）</span>
-                        </el-option>
-                        <el-option label="🇭🇰 港股市场" value="港股">
-                          <span>🇭🇰 港股市场</span>
-                          <span style="color: #909399; font-size: 12px; margin-left: 8px;">（1-5位数字）</span>
-                        </el-option>
                       </el-select>
                     </el-form-item>
                   </el-col>
@@ -670,7 +662,7 @@ marked.setOptions({
 })
 
 // 市场类型定义
-type MarketType = 'A股' | '美股' | '港股'
+type MarketType = 'A股'
 
 // 表单类型定义
 interface AnalysisForm {
