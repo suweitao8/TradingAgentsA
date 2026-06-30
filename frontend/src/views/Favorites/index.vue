@@ -108,6 +108,21 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
+
+        <el-table-column label="今日报告" width="110" align="center">
+          <template #default="{ row }">
+            <el-badge
+              :is-dot="hasReportToday(row.stock_code)"
+              :hidden="!hasReportToday(row.stock_code)"
+              class="report-badge"
+            >
+              <el-button type="primary" link size="small" @click="openReportDrawer(row)">
+                <el-icon><Document /></el-icon>
+                查看
+              </el-button>
+            </el-badge>
+          </template>
+        </el-table-column>
       </el-table>
 
       <!-- 右键菜单 -->
@@ -128,6 +143,7 @@
               @click="showSingleSyncDialog(contextMenuRow)"
             >同步</el-dropdown-item>
             <el-dropdown-item @click="analyzeFavorite(contextMenuRow)">分析</el-dropdown-item>
+            <el-dropdown-item @click="openReportDrawer(contextMenuRow)">今日报告</el-dropdown-item>
             <el-dropdown-item @click="removeFavorite(contextMenuRow)" divided>移除</el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -142,6 +158,14 @@
         </el-empty>
       </div>
     </el-card>
+
+    <!-- 分析报告抽屉 -->
+    <StockReportDrawer
+      v-model="reportDrawerVisible"
+      :stock-code="reportDrawerStockCode"
+      :stock-name="reportDrawerStockName"
+      @generated="loadReportBadges"
+    />
 
     <!-- 编辑自选股对话框 -->
     <el-dialog
@@ -286,11 +310,13 @@ import { useRouter } from 'vue-router'
 import {
   Search,
   Refresh,
-  Upload
+  Upload,
+  Document
 } from '@element-plus/icons-vue'
-import { favoritesApi } from '@/api/favorites'
+import { favoritesApi, favoriteReportsApi } from '@/api/favorites'
 import { stockSyncApi } from '@/api/stockSync'
 import { normalizeMarketForAnalysis } from '@/utils/market'
+import StockReportDrawer from './components/StockReportDrawer.vue'
 
 import type { FavoriteItem } from '@/api/favorites'
 
@@ -339,6 +365,54 @@ const getIndustryOrder = (industry: string | undefined | null): number => {
 }
 
 const searchKeyword = ref('')
+
+// ==================== 分析报告抽屉 ====================
+const reportDrawerVisible = ref(false)
+const reportDrawerStockCode = ref('')
+const reportDrawerStockName = ref('')
+// 当日报告徽标缓存：{ [stock_code]: { has_daily, has_realtime } }
+const reportBadges = ref<Record<string, { has_daily: boolean; has_realtime: boolean }>>({})
+
+const openReportDrawer = (row: any) => {
+  if (!row) return
+  reportDrawerStockCode.value = row.stock_code || ''
+  reportDrawerStockName.value = row.stock_name || ''
+  reportDrawerVisible.value = true
+}
+
+const hasReportToday = (stockCode?: string): boolean => {
+  if (!stockCode) return false
+  const b = reportBadges.value[stockCode]
+  return !!(b && (b.has_daily || b.has_realtime))
+}
+
+// 加载全部自选股的当日报告徽标（用于红点提示）
+const loadReportBadges = async () => {
+  const codes = favorites.value
+    .map(f => f.stock_code)
+    .filter((c): c is string => !!c)
+  if (codes.length === 0) return
+  try {
+    const results = await Promise.all(
+      codes.map(async (code) => {
+        try {
+          const resp = await favoriteReportsApi.hasToday(code)
+          const data = (resp as any)?.data
+          return [code, data || { has_daily: false, has_realtime: false }] as const
+        } catch {
+          return [code, { has_daily: false, has_realtime: false }] as const
+        }
+      })
+    )
+    const map: Record<string, { has_daily: boolean; has_realtime: boolean }> = {}
+    for (const [code, info] of results) {
+      map[code] = info
+    }
+    reportBadges.value = map
+  } catch (e) {
+    console.warn('加载报告徽标失败', e)
+  }
+}
 
 // 右键菜单
 const contextMenuRef = ref()
@@ -726,7 +800,7 @@ const formatPercent = (value: any): string => {
 
 // 生命周期
 onMounted(() => {
-  loadFavorites()
+  loadFavorites().then(() => loadReportBadges())
 })
 </script>
 

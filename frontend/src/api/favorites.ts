@@ -87,3 +87,82 @@ export const favoritesApi = {
     ApiClient.get<any>('/api/stock-data/search', { keyword, limit: 1 }),
 }
 
+// ==================== 自选股分析报告 ====================
+
+/** 每日报告（完整分析） */
+export interface DailyReport {
+  id: string
+  analysis_id?: string
+  task_id?: string
+  stock_code: string
+  stock_name?: string
+  report_type: 'daily'
+  trade_date: string
+  summary?: string
+  recommendation?: string
+  confidence_score?: number
+  risk_level?: string
+  key_points?: string[]
+  research_depth?: string | number
+  model_info?: string
+  status?: string
+  created_at?: string
+}
+
+/** 盘中实时报告（行情+简评） */
+export interface RealtimeReport {
+  id: string
+  stock_code: string
+  stock_name?: string
+  report_type: 'realtime'
+  trade_date: string
+  hour_slot?: number
+  quotes_snapshot?: {
+    current_price?: number | null
+    change_percent?: number | null
+    turnover_rate?: number | null
+    volume_ratio?: number | null
+    amount?: number | null
+  }
+  commentary?: string
+  recommendation?: string
+  risk_level?: string
+  key_points?: string[]
+  model_info?: string
+  status?: string
+  created_at?: string
+}
+
+/** 报告查询结果 */
+export interface StockReportsResp {
+  daily: DailyReport[]
+  realtime: RealtimeReport[]
+}
+
+export const favoriteReportsApi = {
+  /**
+   * 查询某只自选股的分析报告（每日 + 盘中实时）
+   */
+  getReports: (stockCode: string, params?: { report_type?: string; trade_date?: string; limit?: number }) =>
+    ApiClient.get<StockReportsResp>(`/api/favorites/reports/${stockCode}`, params),
+
+  /**
+   * 取最新一份报告
+   */
+  getLatest: (stockCode: string) =>
+    ApiClient.get<DailyReport | RealtimeReport | null>(`/api/favorites/reports/${stockCode}/latest`),
+
+  /**
+   * 判断当日是否有报告（徽标用）
+   */
+  hasToday: (stockCode: string) =>
+    ApiClient.get<{ has_daily: boolean; has_realtime: boolean }>(`/api/favorites/reports/${stockCode}/has-today`),
+
+  /**
+   * 手动触发生成报告
+   */
+  generate: (payload: { report_type: 'daily' | 'realtime'; stock_code?: string }) =>
+    ApiClient.post<{ status: string; report_type: string; stock_code?: string }>(`/api/favorites/reports/generate`, payload),
+}
+
+

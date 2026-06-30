@@ -567,6 +567,63 @@ async def lifespan(app: FastAPI):
         else:
             logger.info(f"📰 新闻数据同步已配置（仅自选股）: {settings.NEWS_SYNC_CRON}")
 
+        # ==================== 自选股分析报告定时任务 ====================
+        from app.services.favorite_report_service import (
+            get_favorite_report_service,
+            collect_users_with_favorites,
+        )
+        from app.utils.trading_time import is_trading_time
+
+        async def run_favorite_daily_report():
+            """每日报告：遍历所有有自选股的用户，对每只 A 股生成每日分析报告（完整分析，深度=快速）"""
+            try:
+                user_ids = await collect_users_with_favorites()
+                logger.info(f"📊 [自选股每日报告] 开始，共 {len(user_ids)} 个用户")
+                svc = get_favorite_report_service()
+                for uid in user_ids:
+                    try:
+                        await svc.generate_daily_reports(uid)
+                    except Exception as e:
+                        logger.error(f"❌ [自选股每日报告] 用户 {uid} 失败: {e}", exc_info=True)
+                logger.info(f"📊 [自选股每日报告] 全部完成")
+            except Exception as e:
+                logger.error(f"❌ [自选股每日报告] 任务失败: {e}", exc_info=True)
+
+        async def run_favorite_realtime_report():
+            """盘中实时报告：仅在交易时段执行，对每个用户每只自选股生成行情+LLM简评"""
+            try:
+                if not is_trading_time():
+                    logger.debug("⏭️ [自选股实时报告] 非交易时段，跳过")
+                    return
+                user_ids = await collect_users_with_favorites()
+                logger.info(f"📈 [自选股实时报告] 开始，共 {len(user_ids)} 个用户")
+                svc = get_favorite_report_service()
+                for uid in user_ids:
+                    try:
+                        await svc.generate_realtime_reports(uid)
+                    except Exception as e:
+                        logger.error(f"❌ [自选股实时报告] 用户 {uid} 失败: {e}", exc_info=True)
+                logger.info(f"📈 [自选股实时报告] 全部完成")
+            except Exception as e:
+                logger.error(f"❌ [自选股实时报告] 任务失败: {e}", exc_info=True)
+
+        if settings.FAVORITE_REPORT_ENABLED:
+            scheduler.add_job(
+                run_favorite_daily_report,
+                CronTrigger.from_crontab(settings.FAVORITE_DAILY_REPORT_CRON, timezone=settings.TIMEZONE),
+                id="favorite_daily_report",
+                name="自选股每日分析报告（工作日09:05）",
+            )
+            scheduler.add_job(
+                run_favorite_realtime_report,
+                CronTrigger.from_crontab(settings.FAVORITE_REALTIME_REPORT_CRON, timezone=settings.TIMEZONE),
+                id="favorite_realtime_report",
+                name="自选股盘中实时报告（交易时段每小时）",
+            )
+            logger.info(f"📅 自选股分析报告已配置：每日 {settings.FAVORITE_DAILY_REPORT_CRON}，实时 {settings.FAVORITE_REALTIME_REPORT_CRON}")
+        else:
+            logger.info("⏸️ 自选股分析报告定时任务未启用（FAVORITE_REPORT_ENABLED=False）")
+
         scheduler.start()
 
         # 设置调度器实例到服务中，以便API可以管理任务

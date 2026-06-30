@@ -301,3 +301,11 @@ async def sync_favorites_realtime(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"同步失败: {str(e)}"
         )
+
+
+# ==================== 自选股分析报告子路由 ====================
+# 挂载后路径：/api/favorites/reports/{stock_code} 等
+from app.routers import favorite_reports  # noqa: E402
+
+router.include_router(favorite_reports.router)
+

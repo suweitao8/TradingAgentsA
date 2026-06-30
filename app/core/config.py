@@ -314,6 +314,14 @@ class Settings(BaseSettings):
     NEWS_SYNC_HOURS_BACK: int = Field(default=24)
     NEWS_SYNC_MAX_PER_SOURCE: int = Field(default=50)
 
+    # ===== 自选股分析报告配置 =====
+    # 每日报告：工作日 09:05 生成（避开 09:00 开盘高峰），复用完整分析（深度=快速）
+    # 盘中实时报告：交易时段每小时刷新一次，内部用 is_trading_time() 判断是否执行
+    FAVORITE_REPORT_ENABLED: bool = Field(default=True, description="启用自选股分析报告定时任务")
+    FAVORITE_DAILY_REPORT_CRON: str = Field(default="5 9 * * 1-5", description="每日报告 cron（工作日09:05）")
+    FAVORITE_REALTIME_REPORT_CRON: str = Field(default="0 9-15 * * 1-5", description="盘中实时报告 cron（工作日9-15点每小时）")
+    FAVORITE_REPORT_MAX_CONCURRENT: int = Field(default=2, ge=1, le=10, description="每日报告最大并发数（防止打爆LLM）")
+
     @property
     def is_production(self) -> bool:
         """是否为生产环境"""
