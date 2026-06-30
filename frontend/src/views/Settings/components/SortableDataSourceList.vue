@@ -331,7 +331,7 @@ onUnmounted(() => {
         padding: 4px;
 
         &:hover {
-          color: #409eff;
+          color: #2f7bff;
         }
       }
 

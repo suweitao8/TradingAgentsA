@@ -212,11 +212,11 @@
                   <p style="margin: 8px 0;">由于数据量较大，Web 界面备份体验较差，建议使用 MongoDB 原生工具：</p>
                   <div style="background: #f5f7fa; padding: 12px; border-radius: 4px; margin: 8px 0;">
                     <p style="margin: 4px 0; font-weight: bold;">📦 备份命令：</p>
-                    <code style="display: block; margin: 4px 0; color: #409eff;">
+                    <code style="display: block; margin: 4px 0; color: #2f7bff;">
                       mongodump --uri="mongodb://localhost:27017" --db=tradingagents --out=./backup --gzip
                     </code>
                     <p style="margin: 12px 0 4px 0; font-weight: bold;">🔄 还原命令：</p>
-                    <code style="display: block; margin: 4px 0; color: #409eff;">
+                    <code style="display: block; margin: 4px 0; color: #2f7bff;">
                       mongorestore --uri="mongodb://localhost:27017" --db=tradingagents --gzip ./backup/tradingagents
                     </code>
                   </div>

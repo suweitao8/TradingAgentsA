@@ -61,56 +61,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { Download, Clock, View, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { marked } from 'marked'
+import { registry, articleOrder } from './data'
 
 const route = useRoute()
 const router = useRouter()
 
 const articleId = computed(() => route.params.id as string)
-
-// 回退：不集成 Mermaid
-
-// 文章注册表：支持本地 Markdown 或外链（externalUrl）
-type ArticleInfo = {
-  title: string
-  category: string
-  categoryType: any
-  readTime: string
-  loader?: () => Promise<any>
-  externalUrl?: string
-}
-
-const registry: Record<string, ArticleInfo> = {
-  'what-is-llm': { title: '什么是大语言模型（LLM）？', loader: () => import('../../../../docs/learning/01-ai-basics/what-is-llm.md?raw'), category: 'AI基础知识', categoryType: 'primary', readTime: '10分钟' },
-  'prompt-basics': { title: '提示词基础', loader: () => import('../../../../docs/learning/02-prompt-engineering/prompt-basics.md?raw'), category: '提示词工程', categoryType: 'success', readTime: '10分钟' },
-  'best-practices': { title: '提示词工程最佳实践', loader: () => import('../../../../docs/learning/02-prompt-engineering/best-practices.md?raw'), category: '提示词工程', categoryType: 'success', readTime: '12分钟' },
-  'model-comparison': { title: '大语言模型对比与选择', loader: () => import('../../../../docs/learning/03-model-selection/model-comparison.md?raw'), category: '模型选择指南', categoryType: 'warning', readTime: '15分钟' },
-  'multi-agent-system': { title: '多智能体系统详解', loader: () => import('../../../../docs/learning/04-analysis-principles/multi-agent-system.md?raw'), category: 'AI分析原理', categoryType: 'info', readTime: '15分钟' },
-  'risk-warnings': { title: 'AI股票分析的风险与局限性', loader: () => import('../../../../docs/learning/05-risks-limitations/risk-warnings.md?raw'), category: '风险与局限性', categoryType: 'danger', readTime: '12分钟' },
-  'tradingagents-intro': { title: 'TradingAgents项目介绍', loader: () => import('../../../../docs/learning/06-resources/tradingagents-intro.md?raw'), category: '源项目与论文', categoryType: 'primary', readTime: '15分钟' },
-  'paper-guide': { title: 'TradingAgents论文解读', loader: () => import('../../../../docs/learning/06-resources/paper-guide.md?raw'), category: '源项目与论文', categoryType: 'primary', readTime: '20分钟' },
-  'TradingAgents_论文中文版': { title: 'TradingAgents 论文中文版', loader: () => import('../../../../docs/paper/TradingAgents_论文中文版.md?raw'), category: '源项目与论文', categoryType: 'primary', readTime: '40分钟' },
-  // 快速入门改为外链，点击后直接跳转到微信文章
-  'getting-started': { title: '快速入门教程（外链）', externalUrl: 'https://mp.weixin.qq.com/s/uAk4RevdJHMuMvlqpdGUEw', category: '实战教程', categoryType: 'success', readTime: '10分钟' },
-  // 使用指南（试用版）外链
-  'usage-guide-preview': { title: '使用指南（试用版）', externalUrl: 'https://mp.weixin.qq.com/s/ppsYiBncynxlsfKFG8uEbw', category: '实战教程', categoryType: 'success', readTime: '15分钟' },
-  'general-questions': { title: '常见问题解答', loader: () => import('../../../../docs/learning/08-faq/general-questions.md?raw'), category: '常见问题', categoryType: 'info', readTime: '15分钟' }
-}
-
-// 文章顺序用于上一页/下一页
-const articleOrder = [
-  'what-is-llm',
-  'prompt-basics',
-  'best-practices',
-  'model-comparison',
-  'multi-agent-system',
-  'risk-warnings',
-  'tradingagents-intro',
-  'paper-guide',
-  'TradingAgents_论文中文版',
-  'getting-started',
-  'usage-guide-preview',
-  'general-questions'
-]
 
 // 当前文章数据
 const article = ref({
@@ -383,11 +339,9 @@ watch(articleId, (id) => {
   .learning-article {
     display: flex;
     padding: 24px;
-    max-width: 1400px;
-    margin: 0 auto;
+    width: 100%;
     gap: 24px;
     flex: 1;
-    width: 100%;
 
     .article-container {
       flex: 1;

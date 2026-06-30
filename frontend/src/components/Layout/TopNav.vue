@@ -26,25 +26,36 @@
           <span>{{ link.label }}</span>
         </router-link>
 
-        <router-link to="/analysis/single" class="nav-link" :class="{ active: isAnalysisActive }">
-          <el-icon><TrendCharts /></el-icon>
-          <span>单股分析</span>
-        </router-link>
+        <!-- 股票分析下拉 -->
+        <el-dropdown trigger="hover" :hide-on-click="false" @command="onNavCommand">
+          <div class="nav-link dropdown-trigger" :class="{ active: isAnalysisActive }">
+            <el-icon><TrendCharts /></el-icon>
+            <span>股票分析</span>
+            <el-icon class="caret"><ArrowDown /></el-icon>
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="/analysis/single">单股分析</el-dropdown-item>
+              <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
+              <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
 
-        <router-link to="/analysis/batch" class="nav-link" :class="{ active: isBatchActive }">
-          <el-icon><Files /></el-icon>
-          <span>批量分析</span>
-        </router-link>
-
-        <router-link to="/reports" class="nav-link" :class="{ active: isReportsActive }">
-          <el-icon><Document /></el-icon>
-          <span>分析报告</span>
-        </router-link>
-
-        <router-link to="/about" class="nav-link" :class="{ active: isAboutActive }">
-          <el-icon><InfoFilled /></el-icon>
-          <span>关于</span>
-        </router-link>
+        <!-- 更多下拉 -->
+        <el-dropdown trigger="hover" :hide-on-click="false" @command="onNavCommand">
+          <div class="nav-link dropdown-trigger" :class="{ active: isMoreActive }">
+            <el-icon><MoreFilled /></el-icon>
+            <span>更多</span>
+            <el-icon class="caret"><ArrowDown /></el-icon>
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="/learning">学习中心</el-dropdown-item>
+              <el-dropdown-item command="/about">关于</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
 
       <!-- 移动端汉堡菜单 -->
@@ -60,6 +71,8 @@
             <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
             <el-dropdown-item command="/tasks">任务中心</el-dropdown-item>
             <el-dropdown-item command="/favorites">我的自选股</el-dropdown-item>
+            <el-dropdown-item command="/data-collection">数据采集</el-dropdown-item>
+            <el-dropdown-item command="/learning" divided>学习中心</el-dropdown-item>
             <el-dropdown-item command="/about">关于</el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -74,6 +87,16 @@
               <el-icon><Bell /></el-icon>
             </button>
           </el-badge>
+        </el-tooltip>
+
+        <!-- 主题切换 -->
+        <el-tooltip :content="themeTooltip" placement="bottom">
+          <button class="action-btn" @click="toggleTheme">
+            <el-icon>
+              <Sunny v-if="appStore.isDarkTheme" />
+              <Moon v-else />
+            </el-icon>
+          </button>
         </el-tooltip>
 
         <!-- 设置 -->
@@ -122,15 +145,16 @@ import {
   Odometer,
   List,
   Star,
+  DataAnalysis,
   TrendCharts,
-  Files,
-  Document,
-  InfoFilled,
+  ArrowDown,
+  MoreFilled,
   Menu,
   Bell,
+  Sunny,
+  Moon,
   Setting,
-  MagicStick,
-  DataAnalysis
+  MagicStick
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -152,19 +176,11 @@ const isActive = (link: { path: string }) => {
 }
 
 const isAnalysisActive = computed(() => {
-  return route.path.startsWith('/analysis/single')
+  return route.path.startsWith('/analysis') || route.path.startsWith('/reports')
 })
 
-const isBatchActive = computed(() => {
-  return route.path.startsWith('/analysis/batch')
-})
-
-const isReportsActive = computed(() => {
-  return route.path.startsWith('/reports')
-})
-
-const isAboutActive = computed(() => {
-  return route.path.startsWith('/about')
+const isMoreActive = computed(() => {
+  return route.path.startsWith('/learning') || route.path.startsWith('/about')
 })
 
 const onNavCommand = (command: string) => {
@@ -172,6 +188,13 @@ const onNavCommand = (command: string) => {
 }
 
 // ---- 操作按钮 ----
+const themeTooltip = computed(() => {
+  const map: Record<string, string> = { light: '浅色（点击切换）', dark: '深色（点击切换）', auto: '跟随系统（点击切换）' }
+  return map[appStore.theme] || '切换主题'
+})
+
+const toggleTheme = () => { appStore.toggleTheme() }
+
 const goSettings = () => {
   router.push('/settings')
 }
@@ -235,7 +258,8 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 // ---- Logo 区 ----
@@ -323,6 +347,13 @@ onUnmounted(() => {
   &.active {
     color: var(--el-color-primary);
     background: var(--el-color-primary-light-9);
+  }
+
+  &.dropdown-trigger {
+    .caret {
+      font-size: 12px;
+      margin-left: -2px;
+    }
   }
 }
 
