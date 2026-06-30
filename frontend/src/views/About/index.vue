@@ -6,7 +6,7 @@
         <div class="hero-text">
           <h1 class="hero-title">
             TradingAgentsA
-            <span class="version-badge">v1.0.1</span>
+            <span class="version-badge">{{ versionLabel }}</span>
           </h1>
           <p class="hero-subtitle">
             现代化的多智能体股票分析学习平台
@@ -322,7 +322,7 @@
       <div class="version-info">
         <div class="version-card">
           <div class="version-main">
-            <div class="version-number">v1.0.1</div>
+            <div class="version-number">{{ versionLabel }}</div>
             <div class="version-status">稳定版</div>
           </div>
           <div class="version-details">
@@ -336,7 +336,7 @@
             </div>
             <div class="version-item">
               <span class="label">API版本</span>
-              <span class="value">v1.0.1</span>
+              <span class="value">{{ versionLabel }}</span>
             </div>
           </div>
         </div>
@@ -429,8 +429,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAppStore } from '@/stores/app'
 import {
   TrendCharts,
   Search,
@@ -447,6 +448,9 @@ import {
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const appStore = useAppStore()
+// 版本号统一来自后端 /api/health（VERSION 文件），apiVersion 为空时兜底
+const versionLabel = computed(() => appStore.apiVersion || 'v1.0.1')
 const buildTime = ref(new Date().toLocaleString('zh-CN'))
 
 const goToAnalysis = () => {
