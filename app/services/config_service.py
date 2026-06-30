@@ -24,6 +24,30 @@ from tradingagents.llm_clients.provider_keys import canonical_aliases, normalize
 logger = logging.getLogger(__name__)
 
 
+# ---------------------------------------------------------------------------
+# 异步 HTTP 辅助函数
+# ---------------------------------------------------------------------------
+# config_service 内大量 async def 方法（测试连接/拉取模型列表）需要发 HTTP 请求。
+# 直接在 async def 里调用同步的 requests.post/get 会阻塞事件循环（timeout 10-15s
+# 期间整个后端卡死）。统一用 asyncio.to_thread 把 requests 调用丢到线程池执行，
+# 避免阻塞事件循环。
+
+async def _async_request(method: str, url: str, **kwargs):
+    """异步发起 HTTP 请求（在线程池中执行同步 requests，不阻塞事件循环）。
+
+    Args:
+        method: HTTP 方法（post / get / put / delete）
+        url: 请求 URL
+        **kwargs: 透传给 requests 的参数（json / headers / params / timeout 等）
+
+    Returns:
+        requests.Response
+    """
+    import requests as _requests
+    fn = getattr(_requests, method.lower())
+    return await asyncio.to_thread(fn, url, **kwargs)
+
+
 class ConfigService:
     """配置管理服务类"""
 
@@ -966,21 +990,21 @@ class ConfigService:
 
             # 3. 根据厂家类型选择测试方法
             if provider_str == "google":
-                # Google AI 使用专门的测试方法
+                # Google AI 使用专门的测试方法（在线程池中运行，避免阻塞事件循环）
                 logger.info(f"🔍 使用 Google AI 专用测试方法")
-                result = self._test_google_api(api_key, f"{provider_str} {llm_config.model_name}", api_base, llm_config.model_name)
+                result = await asyncio.to_thread(self._test_google_api, api_key, f"{provider_str} {llm_config.model_name}", api_base, llm_config.model_name)
                 result["response_time"] = time.time() - start_time
                 return result
             elif provider_str == "deepseek":
-                # DeepSeek 使用专门的测试方法
+                # DeepSeek 使用专门的测试方法（在线程池中运行，避免阻塞事件循环）
                 logger.info(f"🔍 使用 DeepSeek 专用测试方法")
-                result = self._test_deepseek_api(api_key, f"{provider_str} {llm_config.model_name}", llm_config.model_name)
+                result = await asyncio.to_thread(self._test_deepseek_api, api_key, f"{provider_str} {llm_config.model_name}", llm_config.model_name)
                 result["response_time"] = time.time() - start_time
                 return result
             elif provider_str == "dashscope":
-                # DashScope 使用专门的测试方法
+                # DashScope 使用专门的测试方法（在线程池中运行，避免阻塞事件循环）
                 logger.info(f"🔍 使用 DashScope 专用测试方法")
-                result = self._test_dashscope_api(api_key, f"{provider_str} {llm_config.model_name}", llm_config.model_name)
+                result = await asyncio.to_thread(self._test_dashscope_api, api_key, f"{provider_str} {llm_config.model_name}", llm_config.model_name)
                 result["response_time"] = time.time() - start_time
                 return result
             else:
@@ -1021,8 +1045,8 @@ class ConfigService:
                 logger.info(f"📦 使用模型: {llm_config.model_name}")
                 logger.info(f"📦 请求数据: {data}")
 
-                # 发送测试请求
-                response = requests.post(url, json=data, headers=headers, timeout=15)
+                # 发送测试请求（异步，不阻塞事件循环）
+                response = await _async_request("post", url, json=data, headers=headers, timeout=15)
                 response_time = time.time() - start_time
 
                 logger.info(f"📡 收到响应: HTTP {response.status_code}")
@@ -1439,7 +1463,7 @@ class ConfigService:
                 try:
                     url = f"{ds_config.endpoint}/v8/finance/chart/AAPL"
                     params = {"interval": "1d", "range": "1d"}
-                    response = requests.get(url, params=params, timeout=10)
+                    response = await _async_request("get", url, params=params, timeout=10)
 
                     if response.status_code == 200:
                         data = response.json()
@@ -1575,7 +1599,7 @@ class ConfigService:
 
                 try:
                     logger.info(f"🔌 [TEST] Calling Alpha Vantage API with key (length: {len(api_key)})")
-                    response = requests.get(url, params=params, timeout=10)
+                    response = await _async_request("get", url, params=params, timeout=10)
 
                     if response.status_code == 200:
                         data = response.json()
@@ -1670,7 +1694,7 @@ class ConfigService:
                                 # 默认使用 header 认证
                                 headers["Authorization"] = f"Bearer {api_key}"
 
-                        response = requests.get(ds_config.endpoint, params=params, headers=headers, timeout=10)
+                        response = await _async_request("get", ds_config.endpoint, params=params, headers=headers, timeout=10)
                         response_time = time.time() - start_time
 
                         if response.status_code < 500:

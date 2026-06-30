@@ -5,6 +5,7 @@ from langchain_openai import ChatOpenAI
 
 from .base_client import BaseLLMClient, normalize_content
 from .validators import validate_model
+from .provider_keys import PROVIDER_REGISTRY
 
 
 class NormalizedChatOpenAI(ChatOpenAI):
@@ -24,16 +25,12 @@ _PASSTHROUGH_KWARGS = (
     "http_async_client",
 )
 
+# 从 PROVIDER_REGISTRY 派生（canonical_name -> (default_url, env_key)），
+# 不再硬编码重复的 URL/env_key 配置。
 _PROVIDER_CONFIG = {
-    "deepseek": ("https://api.deepseek.com", "DEEPSEEK_API_KEY"),
-    "qwen": ("https://dashscope.aliyuncs.com/compatible-mode/v1", "DASHSCOPE_API_KEY"),
-    "glm": ("https://open.bigmodel.cn/api/paas/v4/", "ZHIPU_API_KEY"),
-    "qianfan": ("https://qianfan.baidubce.com/v2", "QIANFAN_API_KEY"),
-    "openrouter": ("https://openrouter.ai/api/v1", "OPENROUTER_API_KEY"),
-    "aihubmix": ("https://aihubmix.com/v1", "AIHUBMIX_API_KEY"),
-    "ollama": ("http://localhost:11434/v1", None),
-    "jdcloud": ("https://modelservice.jdcloud.com/coding/openai/v1", "JDCLOUD_API_KEY"),
-    "custom_openai": (None, "CUSTOM_OPENAI_API_KEY"),
+    name: (meta.default_url, meta.env_key)
+    for name, meta in PROVIDER_REGISTRY.items()
+    if meta.client_type == "openai_compat"
 }
 
 

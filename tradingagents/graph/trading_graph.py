@@ -38,41 +38,41 @@ from .signal_processing import SignalProcessor
 
 def create_llm_by_provider(provider: str, model: str, backend_url: str, temperature: float, max_tokens: int, timeout: int, api_key: str = None, **extra_kwargs):
     """
-    根据 provider 创建对应的 LLM 实例
+    根据 provider 创建对应的 LLM 实例。
+
+    provider 类型和 env_key 统一从 PROVIDER_REGISTRY 查表，不再在本函数内硬编码
+    OpenAI 兼容集合或 per-provider env_key 分支。
 
     Args:
-        provider: 供应商名称 (google, dashscope, deepseek, openai, etc.)
+        provider: 供应商名称（支持别名/中文名，内部归一化）
         model: 模型名称
         backend_url: API 地址
         temperature: 温度参数
         max_tokens: 最大 token 数
         timeout: 超时时间
-        api_key: API Key（可选，如果未提供则从环境变量读取）
+        api_key: API Key（可选，未提供则从环境变量读取）
+        **extra_kwargs: 透传给 LLM 客户端的额外参数
 
     Returns:
         LLM 实例
     """
+    from tradingagents.llm_clients.provider_keys import is_openai_compatible, get_provider_meta
+
     logger.info(f"🔧 [创建LLM] provider={provider}, model={model}, url={backend_url}")
     logger.info(f"🔑 [API Key] 来源: {'数据库配置' if api_key else '环境变量'}")
 
     normalized_provider = normalize_provider_key(provider)
 
-    if normalized_provider in {"openai", "jdcloud", "siliconflow", "openrouter", "aihubmix", "ollama", "deepseek", "qwen", "glm", "custom_openai", "qianfan"}:
+    # ---- OpenAI 兼容 provider（含 jdcloud/deepseek/qwen/glm/siliconflow 等）----
+    if is_openai_compatible(normalized_provider):
+        # api_key 优先用传入值（来自 DB），其次从注册表声明的 env_key 读取
         if not api_key:
-            if normalized_provider == "siliconflow":
-                api_key = os.getenv('SILICONFLOW_API_KEY')
-            elif normalized_provider == "openrouter":
-                api_key = os.getenv('OPENROUTER_API_KEY') or os.getenv('OPENAI_API_KEY')
-            elif normalized_provider == "openai":
-                api_key = os.getenv('OPENAI_API_KEY')
-            else:
-                env_key = env_key_for_provider(normalized_provider)
-                if env_key:
-                    api_key = os.getenv(env_key)
+            meta = get_provider_meta(normalized_provider)
+            if meta and meta.env_key:
+                api_key = os.getenv(meta.env_key)
 
-        factory_provider = "openai" if normalized_provider == "siliconflow" else normalized_provider
         client = create_llm_client(
-            provider=factory_provider,
+            provider=normalized_provider,
             model=model,
             base_url=backend_url,
             api_key=api_key,
@@ -83,8 +83,8 @@ def create_llm_by_provider(provider: str, model: str, backend_url: str, temperat
         )
         return client.get_llm()
 
+    # ---- Google ----
     if normalized_provider == "google":
-        # 优先使用传入的 API Key，否则从环境变量读取
         google_api_key = api_key or os.getenv('GOOGLE_API_KEY')
         if not google_api_key:
             raise ValueError("使用Google需要设置GOOGLE_API_KEY环境变量或在数据库中配置API Key")
@@ -101,50 +101,49 @@ def create_llm_by_provider(provider: str, model: str, backend_url: str, temperat
         )
         return client.get_llm()
 
-    elif normalized_provider == "anthropic":
-        from langchain_anthropic import ChatAnthropic
-
-        return ChatAnthropic(
+    # ---- Anthropic ----
+    if normalized_provider == "anthropic":
+        client = create_llm_client(
+            provider="anthropic",
             model=model,
             base_url=backend_url,
+            api_key=api_key or os.getenv("ANTHROPIC_API_KEY"),
             temperature=temperature,
             max_tokens=max_tokens,
             timeout=timeout,
             **extra_kwargs,
         )
+        return client.get_llm()
 
-    else:
-        # 🔧 自定义厂家：使用 OpenAI 兼容模式
-        logger.info(f"🔧 使用 OpenAI 兼容模式处理自定义厂家: {provider}")
+    # ---- 未注册的自定义厂家：走 OpenAI 兼容兜底 ----
+    logger.info(f"🔧 使用 OpenAI 兼容兜底处理未注册厂家: {provider}")
 
-        # 优先使用传入的 api_key（来自数据库配置），其次尝试环境变量
-        custom_api_key = api_key
-        if not custom_api_key:
-            # 尝试从环境变量获取 API Key（支持多种命名格式）
-            api_key_candidates = [
-                f"{provider.upper()}_API_KEY",  # 例如: KYX_API_KEY
-                f"{provider}_API_KEY",          # 例如: kyx_API_KEY
-                "CUSTOM_OPENAI_API_KEY"         # 通用环境变量
-            ]
-            for env_var in api_key_candidates:
-                custom_api_key = os.getenv(env_var)
-                if custom_api_key:
-                    logger.info(f"✅ 从环境变量 {env_var} 获取到 API Key")
-                    break
+    custom_api_key = api_key
+    if not custom_api_key:
+        api_key_candidates = [
+            f"{provider.upper()}_API_KEY",
+            f"{provider}_API_KEY",
+            "CUSTOM_OPENAI_API_KEY",
+        ]
+        for env_var in api_key_candidates:
+            custom_api_key = os.getenv(env_var)
+            if custom_api_key:
+                logger.info(f"✅ 从环境变量 {env_var} 获取到 API Key")
+                break
 
-        if not custom_api_key:
-            logger.warning(f"⚠️ 未找到自定义厂家 {provider} 的 API Key，尝试使用默认配置")
+    if not custom_api_key:
+        logger.warning(f"⚠️ 未找到自定义厂家 {provider} 的 API Key，尝试使用默认配置")
 
-        from langchain_openai import ChatOpenAI
+    from langchain_openai import ChatOpenAI
 
-        return ChatOpenAI(
-            model=model,
-            base_url=backend_url,
-            api_key=custom_api_key,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            timeout=timeout
-        )
+    return ChatOpenAI(
+        model=model,
+        base_url=backend_url,
+        api_key=custom_api_key,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        timeout=timeout,
+    )
 
 
 def _create_provider_pair(

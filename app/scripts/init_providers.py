@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """
 初始化大模型厂家数据脚本
+
+厂家元数据（canonical_name / display_name / default_url / 是否启用）统一从
+tradingagents.llm_clients.provider_keys.PROVIDER_REGISTRY 派生，本脚本不再
+硬编码重复的 URL 和名称，新增 provider 只需在注册表追加一条。
+
+如需补充 provider 的展示描述（description/website/api_doc_url），在下方
+_PROVIDER_EXTRA_INFO 字典维护。
 """
 
 import asyncio
@@ -12,151 +19,126 @@ from datetime import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from app.core.database import init_db, get_mongo_db
-from app.models.config import LLMProvider
-from tradingagents.llm_clients.provider_keys import canonical_aliases
+from tradingagents.llm_clients.provider_keys import PROVIDER_REGISTRY, canonical_aliases
+
+# 展示性补充信息（非协议必需，仅用于前端展示）
+_PROVIDER_EXTRA_INFO = {
+    "jdcloud": {
+        "description": "京东云言犀模型服务，提供 Kimi K2.5 等大模型，OpenAI 兼容接口。本项目默认渠道。",
+        "website": "https://modelservice.jdcloud.com/",
+        "api_doc_url": "https://modelservice.jdcloud.com/coding/openai/v1",
+    },
+    "openai": {
+        "description": "OpenAI 是人工智能领域的领先公司，提供 GPT 系列模型",
+        "website": "https://openai.com",
+        "api_doc_url": "https://platform.openai.com/docs",
+    },
+    "anthropic": {
+        "description": "Anthropic 专注于 AI 安全研究，提供 Claude 系列模型",
+        "website": "https://anthropic.com",
+        "api_doc_url": "https://docs.anthropic.com",
+    },
+    "google": {
+        "description": "Google 的人工智能平台，提供 Gemini 系列模型",
+        "website": "https://ai.google.dev",
+        "api_doc_url": "https://ai.google.dev/docs",
+    },
+    "glm": {
+        "description": "智谱 AI 提供 GLM 系列中文大模型",
+        "website": "https://zhipuai.cn",
+        "api_doc_url": "https://open.bigmodel.cn/doc",
+    },
+    "deepseek": {
+        "description": "DeepSeek 提供高性能的 AI 推理服务",
+        "website": "https://www.deepseek.com",
+        "api_doc_url": "https://platform.deepseek.com/api-docs",
+    },
+    "qwen": {
+        "description": "阿里云百炼大模型服务平台，提供通义千问等模型",
+        "website": "https://bailian.console.aliyun.com",
+        "api_doc_url": "https://help.aliyun.com/zh/dashscope/",
+    },
+    "siliconflow": {
+        "description": "硅基流动提供高性价比的 AI 推理服务，支持多种开源模型",
+        "website": "https://siliconflow.cn",
+        "api_doc_url": "https://docs.siliconflow.cn",
+    },
+    "aihubmix": {
+        "description": "AIHubMix 深度适配全球顶级模型，多模型交叉验证，无限并发按量计费。",
+        "website": "https://aihubmix.com",
+        "api_doc_url": "https://docs.aihubmix.com/cn/quick-start",
+    },
+    "openrouter": {
+        "description": "OpenRouter 提供 300+ 大模型的统一 API 接口",
+        "website": "https://openrouter.ai",
+        "api_doc_url": "https://openrouter.ai/docs",
+    },
+    "ollama": {
+        "description": "Ollama 本地大模型运行环境，无需联网即可使用",
+        "website": "https://ollama.com",
+        "api_doc_url": "https://github.com/ollama/ollama/blob/main/docs/api.md",
+    },
+    "qianfan": {
+        "description": "百度千帆大模型平台，提供文心一言等模型",
+        "website": "https://qianfan.cloud.baidu.com",
+        "api_doc_url": "https://cloud.baidu.com/doc/WENXINWORKSHOP/index",
+    },
+    "custom_openai": {
+        "description": "自定义 OpenAI 兼容接口，适用于自建或第三方兼容服务",
+        "website": "",
+        "api_doc_url": "",
+    },
+}
+
 
 async def init_providers():
-    """初始化大模型厂家数据
+    """初始化大模型厂家数据。
 
-    注意：本项目当前默认只启用京东云（jdcloud）一个渠道，模型为 Kimi K2.5。
-    其他渠道（OpenAI / Anthropic / Google / 智谱 / DeepSeek / 百炼 / 硅基流动 /
-    302.AI / AIHubMix）的种子数据见文末 _INACTIVE_PROVIDERS，如需恢复任一渠道，
-    将其 dict 复制到 providers_data 列表即可。
+    从 PROVIDER_REGISTRY 派生所有 provider，default_active=True 的写入为
+    is_active=True，其余写入为 is_active=False（前端可手动启用）。
     """
-    print("🚀 开始初始化大模型厂家数据...")
+    print("🚀 开始初始化大模型厂家数据（从 PROVIDER_REGISTRY 派生）...")
 
-    # 初始化数据库连接
     await init_db()
     db = get_mongo_db()
     providers_collection = db.llm_providers
 
-    # 当前启用的厂家（唯一：京东云）
-    providers_data = [
-        {
-            "name": "jdcloud",
-            "display_name": "京东云",
-            "description": "京东云言犀模型服务，提供 Kimi K2.5 等大模型，OpenAI 兼容接口。本项目默认渠道。",
-            "website": "https://modelservice.jdcloud.com/",
-            "api_doc_url": "https://modelservice.jdcloud.com/coding/openai/v1",
-            "default_base_url": "https://modelservice.jdcloud.com/coding/openai/v1",
-            "is_active": True,
-            "supported_features": ["chat", "completion", "function_calling", "streaming"]
-        },
-    ]
+    # 从注册表派生种子数据
+    providers_data = []
+    for canonical_name, meta in PROVIDER_REGISTRY.items():
+        extra = _PROVIDER_EXTRA_INFO.get(canonical_name, {})
+        entry = {
+            "name": canonical_name,
+            "display_name": meta.display_name or canonical_name,
+            "description": extra.get("description", f"{meta.display_name} LLM 服务"),
+            "website": extra.get("website", ""),
+            "api_doc_url": extra.get("api_doc_url", meta.default_url or ""),
+            "default_base_url": meta.default_url or "",
+            "is_active": meta.default_active,
+            "supported_features": ["chat", "completion", "function_calling", "streaming"],
+        }
+        aliases = canonical_aliases(canonical_name)
+        if aliases:
+            entry["aliases"] = aliases
+        providers_data.append(entry)
 
     # 清除现有数据
     await providers_collection.delete_many({})
     print("🧹 清除现有厂家数据")
-    
+
     # 插入新数据
+    active_count = 0
     for provider_data in providers_data:
         provider_data["created_at"] = datetime.utcnow()
         provider_data["updated_at"] = datetime.utcnow()
-        
         result = await providers_collection.insert_one(provider_data)
-        print(f"✅ 添加厂家: {provider_data['display_name']} (ID: {result.inserted_id})")
-    
-    print(f"🎉 成功初始化 {len(providers_data)} 个厂家数据")
+        status = "✅ 启用" if provider_data["is_active"] else "⬜ 未启用"
+        print(f"  {status} {provider_data['display_name']} ({provider_data['name']})")
+        if provider_data["is_active"]:
+            active_count += 1
 
+    print(f"🎉 成功初始化 {len(providers_data)} 个厂家（其中 {active_count} 个默认启用）")
 
-# ──────────────────────────────────────────────────────────────────────────────
-# 未启用渠道（项目当前只用京东云，以下数据保留以便日后恢复）
-# 恢复方法：将所需 dict 复制到上方 providers_data 列表后重新执行本脚本。
-# ──────────────────────────────────────────────────────────────────────────────
-_INACTIVE_PROVIDERS = [
-    {
-        "name": "openai",
-        "display_name": "OpenAI",
-        "description": "OpenAI是人工智能领域的领先公司，提供GPT系列模型",
-        "website": "https://openai.com",
-        "api_doc_url": "https://platform.openai.com/docs",
-        "default_base_url": "https://api.openai.com/v1",
-        "is_active": False,
-        "supported_features": ["chat", "completion", "embedding", "image", "vision", "function_calling", "streaming"]
-    },
-    {
-        "name": "anthropic",
-        "display_name": "Anthropic",
-        "description": "Anthropic专注于AI安全研究，提供Claude系列模型",
-        "website": "https://anthropic.com",
-        "api_doc_url": "https://docs.anthropic.com",
-        "default_base_url": "https://api.anthropic.com",
-        "is_active": False,
-        "supported_features": ["chat", "completion", "function_calling", "streaming"]
-    },
-    {
-        "name": "google",
-        "display_name": "Google AI",
-        "description": "Google的人工智能平台，提供Gemini系列模型",
-        "website": "https://ai.google.dev",
-        "api_doc_url": "https://ai.google.dev/docs",
-        "default_base_url": "https://generativelanguage.googleapis.com/v1beta",
-        "is_active": False,
-        "supported_features": ["chat", "completion", "embedding", "vision", "function_calling", "streaming"]
-    },
-    {
-        "name": "glm",
-        "display_name": "智谱AI",
-        "description": "智谱AI提供GLM系列中文大模型",
-        "website": "https://zhipuai.cn",
-        "api_doc_url": "https://open.bigmodel.cn/doc",
-        "default_base_url": "https://open.bigmodel.cn/api/paas/v4",
-        "aliases": canonical_aliases("glm"),
-        "is_active": False,
-        "supported_features": ["chat", "completion", "embedding", "function_calling", "streaming"]
-    },
-    {
-        "name": "deepseek",
-        "display_name": "DeepSeek",
-        "description": "DeepSeek提供高性能的AI推理服务",
-        "website": "https://www.deepseek.com",
-        "api_doc_url": "https://platform.deepseek.com/api-docs",
-        "default_base_url": "https://api.deepseek.com",
-        "is_active": False,
-        "supported_features": ["chat", "completion", "function_calling", "streaming"]
-    },
-    {
-        "name": "qwen",
-        "display_name": "阿里云百炼",
-        "description": "阿里云百炼大模型服务平台，提供通义千问等模型",
-        "website": "https://bailian.console.aliyun.com",
-        "api_doc_url": "https://help.aliyun.com/zh/dashscope/",
-        "default_base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "aliases": canonical_aliases("qwen"),
-        "is_active": False,
-        "supported_features": ["chat", "completion", "embedding", "function_calling", "streaming"]
-    },
-    {
-        "name": "siliconflow",
-        "display_name": "硅基流动",
-        "description": "硅基流动提供高性价比的AI推理服务，支持多种开源模型",
-        "website": "https://siliconflow.cn",
-        "api_doc_url": "https://docs.siliconflow.cn",
-        "default_base_url": "https://api.siliconflow.cn/v1",
-        "is_active": False,
-        "supported_features": ["chat", "completion", "embedding", "function_calling", "streaming"]
-    },
-    {
-        "name": "302ai",
-        "display_name": "302.AI",
-        "description": "302.AI是企业级AI聚合平台，提供多种主流大模型的统一接口",
-        "website": "https://302.ai",
-        "api_doc_url": "https://doc.302.ai",
-        "default_base_url": "https://api.302.ai/v1",
-        "is_active": False,
-        "supported_features": ["chat", "completion", "embedding", "image", "vision", "function_calling", "streaming"]
-    },
-    {
-        "name": "aihubmix",
-        "display_name": "AIHubMix",
-        "description": "AIHubMix 深度适配 OpenAI、Claude、Gemini、DeepSeek、智谱、千问 等全球顶级模型，多模型交叉验证，分析结论更可靠；无限并发永远在线，A股、港股、美股行情随时可分析，不卡顿不排队；内置 coding-glm-5.1-free 等多款免费模型，零成本体验 AI 分析；按量计费、价格透明，长期使用性价比远超单一厂商。",
-        "website": "https://aihubmix.com/?aff=2rIi",
-        "api_doc_url": "https://docs.aihubmix.com/cn/quick-start",
-        "default_base_url": "https://aihubmix.com/v1",
-        "is_active": False,
-        "supported_features": ["chat", "completion", "embedding", "vision", "function_calling", "streaming"]
-    },
-]
 
 if __name__ == "__main__":
     asyncio.run(init_providers())
