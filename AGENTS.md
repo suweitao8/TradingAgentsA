@@ -74,6 +74,7 @@
 - 规则、规范、文档、代理指引类请求，直接修改本文件，不走完整开发链路。
 - 修改本文件时，先通读全文，合并重复条目、删除冗余表述、统一术语和结构，再保存。
 - 动手前必须先用 `git rev-parse --show-toplevel` 和 `git worktree list` 双重确认当前 shell 是否在本次会话的隔离 worktree；若仍在主目录、仍在 `main` 分支、或 worktree list 里看不到本次会话的隔离 worktree，一律先创建/切换到 worktree 再允许任何代码写入。
+- **`git worktree add` 返回成功 ≠ worktree 已注册**：Windows 下存在 add 提示"HEAD is now at ... done"但实际未注册的情况，此时 shell 若停留在失效路径上，后续所有 git 命令会回退到主工作区 .git，`git rm`/`git add -A`/`git commit` 会作用在游离状态甚至误暂存主工作区的会话前改动。因此 `git worktree add` 之后必须**立即三重验证**：① `git worktree list` 能看到新 worktree；② `git -C <worktree路径> rev-parse --show-toplevel` 返回 worktree 路径；③ `git -C <worktree路径> branch --show-current` 返回新分支名。三项全过才允许后续任何 git 写操作；任一不过即停止，清理物理目录后重新 add。
 - 在通过上述检查之前，禁止执行任何会写代码文件的动作。
 - 仓库已配置工作区守卫：
   - **`.githooks/pre-commit` 守卫**：在主工作区、main 分支上提交**代码文件**会被直接拦截；worktree 内提交或只改配置/文档/规则文件放行。需执行 `git config core.hooksPath .githooks` 启用（每台机器一次性）。
@@ -247,9 +248,10 @@ cd .worktrees/<task-name>
 #       cmd //c "mklink /J .worktrees\<task-name>\frontend\node_modules ..\..\frontend\node_modules"
 #    b) 或在 worktree 内单独 yarn install（耗时但隔离）
 
-# 4. 确认在 worktree 内
-git rev-parse --show-toplevel   # 应显示 .worktrees\<task-name> 路径
-git worktree list               # 应能看到本次会话的 worktree
+# 4. 确认在 worktree 内（add 后必须立即三重验证，任一失败即停止、不可继续操作）
+git worktree list               # 应能看到本次会话的 worktree（add 返回成功也可能未注册）
+git -C .worktrees/<task-name> rev-parse --show-toplevel   # 应显示 .worktrees\<task-name> 路径
+git -C .worktrees/<task-name> branch --show-current        # 应显示 feat/<task-name>
 ```
 
 - Python 后端无需在 worktree 内重新 `pip install`（共享主仓库 venv 即可，依赖变更时在主仓库装一次）。
