@@ -208,32 +208,88 @@ def cmd_finish(args: argparse.Namespace) -> None:
 
     # 步骤5：推送
     if args.no_push:
-        warn("步骤5/9：跳过推送（--no-push）")
+        warn("步骤5/9：跳过推送（--no-push）→ ⚠️ 未推送到远程，保留 worktree 和分支以便后续推送")
+        ok(f"任务 {task} 本地收尾完成（仅合并到本地 main，未推送、未清理）")
+        info(f"后续推送：cd {REPO_ROOT} && git push origin main")
+        info(f"推送后再清理：python scripts/git/worktree.py finish {task}（不带 --no-push）")
+        return  # --no-push 模式只到合并为止，不删 worktree/分支，避免丢代码
     else:
         info("步骤5/9：git push origin main")
         run(["git", "push", "origin", "main"], cwd=REPO_ROOT)
         ok(f"推送成功")
 
     # 步骤6：删 worktree（删除前安全检查已在步骤1确认 status 干净、步骤4确认 merge、步骤5确认 push）
+    # 6.1 额外机械验证①：分支提交已全部在 main 上（防 merge 后某提交被遗漏）
+    info("步骤6.1：验证功能分支提交已全部进入 main")
+    ahead = run(
+        ["git", "rev-list", "--count", f"{branch}..main"],
+        cwd=REPO_ROOT, check=False
+    )
+    # branch..main 为空说明 main 包含 branch 的所有提交（main 领先于 branch，无遗漏）
+    # 更准确：检查 main..branch 是否有未合并提交（应为 0）
+    behind_check = run(
+        ["git", "rev-list", "--count", f"main..{branch}"],
+        cwd=REPO_ROOT, check=False
+    )
+    behind_count = int(behind_check.stdout.strip() or "0")
+    if behind_count > 0:
+        fail(f"步骤6.1失败：分支 {branch} 仍有 {behind_count} 个提交未进入 main，禁止删除（会丢代码）")
+
+    # 6.2 额外机械验证②：本地 main 与 origin/main 同步（防 push 假成功）
+    info("步骤6.2：验证本地 main 与 origin/main 同步")
+    run(["git", "fetch", "origin", "main"], cwd=REPO_ROOT, check=False)
+    sync_check = run(
+        ["git", "rev-list", "--left-right", "--count", "main...origin/main"],
+        cwd=REPO_ROOT, check=False
+    )
+    sync_parts = sync_check.stdout.strip().split()
+    local_ahead = int(sync_parts[0]) if len(sync_parts) >= 1 else -1
+    local_behind = int(sync_parts[1]) if len(sync_parts) >= 2 else -1
+    if local_ahead > 0:
+        fail(f"步骤6.2失败：本地 main 领先 origin/main {local_ahead} 个提交（推送未成功？），禁止删除")
+    if local_behind > 0:
+        warn(f"本地 main 落后 origin/main {local_behind} 个提交（远程有新提交），建议先 pull")
+
     info(f"步骤6/9：删除 worktree {wt_path.name}")
     # 先删 frontend/node_modules junction（Windows 文件锁会阻止 git worktree remove）
     frontend_nm = wt_path / "frontend" / "node_modules"
     if frontend_nm.exists():
         subprocess.run(["cmd", "/c", "rmdir", str(frontend_nm)],
                        capture_output=True, text=True, encoding="utf-8", errors="replace")
-    remove_result = run(["git", "worktree", "remove", str(wt_path), "--force"], cwd=REPO_ROOT, check=False)
+    # 先尝试非 force 删除（git 会对有未提交改动的 worktree 拒绝删除，这是保护）
+    remove_result = subprocess.run(
+        ["git", "worktree", "remove", str(wt_path)],
+        cwd=REPO_ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace"
+    )
     if remove_result.returncode != 0:
-        # Windows 上 git worktree remove 对含 junction 的目录常失败，回退到 shutil
-        info(f"git worktree remove 受限（{remove_result.stderr.strip()[:60]}），回退到手动删除")
-        try:
-            import shutil
-            shutil.rmtree(wt_path, ignore_errors=True)
-        except Exception:
-            pass
+        # 步骤1已确认干净 + 步骤6.1/6.2 已确认合并推送，此处用 force 升级（仅在此安全前提下允许）
+        warn(f"非 force 删除失败（{remove_result.stderr.strip()[:80]}），安全检查已过，升级为 --force")
+        remove_result2 = subprocess.run(
+            ["git", "worktree", "remove", str(wt_path), "--force"],
+            cwd=REPO_ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace"
+        )
+        if remove_result2.returncode != 0:
+            # Windows 上 git worktree remove 对含 junction 的目录常失败，回退到 shutil
+            info(f"git worktree remove 受限（{remove_result2.stderr.strip()[:60]}），回退到手动删除")
+            try:
+                import shutil
+                shutil.rmtree(wt_path, ignore_errors=True)
+            except Exception:
+                pass
 
-    # 步骤7：删功能分支
-    info(f"步骤7/9：删除分支 {branch}")
-    run(["git", "branch", "-d", branch], cwd=REPO_ROOT, check=False)
+    # 步骤7：删功能分支（不用 -D 强制删；-d 会拒绝删未合并分支，删失败必须中断）
+    info(f"步骤7/9：删除分支 {branch}（用 -d，git 自动拒绝删未合并分支）")
+    del_result = subprocess.run(
+        ["git", "branch", "-d", branch], cwd=REPO_ROOT,
+        capture_output=True, text=True, encoding="utf-8", errors="replace"
+    )
+    if del_result.returncode != 0:
+        fail(
+            f"步骤7失败：git branch -d {branch} 被拒绝（git 判定分支可能未完全合并）：\n"
+            f"  {del_result.stderr.strip()}\n"
+            f"  若确认已合并，请手动检查 git log 后用 git branch -D 强删；否则会丢代码。"
+        )
+    ok(f"分支 {branch} 已删除")
 
     # 步骤8：prune
     info("步骤8/9：git worktree prune")

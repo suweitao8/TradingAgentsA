@@ -276,6 +276,16 @@
 
 主工作区路径固定 `D:\Github\TradingAgentsA`，worktree 统一放 `D:\Github\TradingAgentsA\.worktrees\<task-name>`。
 
+#### 首选：脚本创建（强制）
+
+```bash
+cd D:\Github\TradingAgentsA
+python scripts/git/worktree.py create <task-name>
+# 脚本自动完成：建 worktree + 三重验证 + 软链 node_modules
+```
+
+#### 手动创建（仅当脚本失败时回退）
+
 ```bash
 # 1. 从 main 建隔离 worktree
 git worktree add .worktrees/<task-name> -b feat/<task-name> main
@@ -302,18 +312,46 @@ git -C .worktrees/<task-name> branch --show-current        # 应显示 feat/<tas
 ### 收尾清单（merge/push 后唯一权威顺序）
 
 > 这是 worktree 收尾的**唯一权威流程**，铁律第4条、工作流硬规则、开发流程第4步均指向此处。四步连续不可分割：**合并 → 推送 → 删 worktree → prune**。
+>
+> ⚠️ **禁止手敲收尾命令**（手敲易漏步骤、易误用 `-D` 强删分支导致丢代码）。收尾**必须用脚本**：`python scripts/git/worktree.py finish <task-name>`，脚本内置机械保护（见下）。仅当脚本失败且确认安全时才回退到手动流程。
+
+#### 首选：脚本收尾（强制）
+
+```bash
+# 在主工作区执行（脚本会自动处理切换、合并、推送、删除、prune）
+cd D:\Github\TradingAgentsA
+python scripts/git/worktree.py finish <task-name>
+```
+
+脚本 `finish` 子命令在删除前**强制三重机械验证**，任一不满足即中止（防止丢代码）：
+1. **worktree 干净**：`git status --porcelain` 无输出（有未提交改动 → 拒绝删）
+2. **提交已全部进 main**：`git rev-list --count main..feat/<task>` = 0（有未合并提交 → 拒绝删）
+3. **本地 main 与 origin/main 同步**：`git rev-list --count main...origin/main` 左侧 = 0（push 未成功 → 拒绝删）
+
+脚本其他保护：
+- 用 `git branch -d`（非 `-D`）删分支，git 自动拒绝删未合并分支；删除被拒即中止。
+- `--no-push` 模式只合并到本地 main，**不删 worktree、不删分支**（未推送就删 = 丢代码风险）。
+- 删 worktree 先非 force，失败才升级（保留 git 脏改动保护）。
+
+脚本成功输出包含「任务 <task> 收尾完成（合并+推送+清理全部成功）」才算完成。
+
+#### 手动收尾（仅当脚本失败时回退，必须逐步执行并核对）
 
 1. 在 worktree 内确认所有改动已提交（`git status` 干净）
 2. 切回主工作区：`cd D:\Github\TradingAgentsA`
 3. `git checkout main`
 4. `git merge --no-ff feat/<task-name>`（保留分支历史）
 5. `git push origin main`
-6. `git worktree remove .worktrees/<task-name>`（删 worktree 目录）
+6. **机械验证（防丢代码，不可跳过）**：
+   - `git rev-list --count main..feat/<task-name>` 应为 0（分支提交已全部进 main）
+   - `git rev-list --count main...origin/main` 左侧数字应为 0（本地已推送）
+   - 两条全过才继续；任一非 0 立即停止排查。
+7. `git worktree remove .worktrees/<task-name>`（删 worktree 目录）
    - **删除前安全检查**：① worktree 内 `git status` 干净；② 已成功 merge 到 main；③ 已成功 push。三条全满足才 remove。
    - 若 remove 报目录被占用（Windows 文件锁）：先删 `frontend/node_modules` junction（`cmd //c "rmdir frontend\node_modules"`），确认无进程占用（dev server / python），再重试或手动删。
-7. `git branch -d feat/<task-name>`（删功能分支）
-8. `git worktree prune`（清理残留）
-9. `git worktree list` 确认无残留 → 才能报告"已完成"
+8. `git branch -d feat/<task-name>`（删功能分支，**禁用 `-D` 强删**；`-d` 被拒说明 git 认为未合并，必须排查）
+9. `git worktree prune`（清理残留）
+10. `git worktree list` 确认无残留 → 才能报告"已完成"
 
 ### 任务完成标准（全部满足才能报告完成）
 
@@ -343,6 +381,11 @@ git -C .worktrees/<task-name> branch --show-current        # 应显示 feat/<tas
 ### 常用命令
 
 ```bash
+# worktree 管理（隔离开发流程，强制使用，见「worktree 管理」章节）
+python scripts/git/worktree.py create <task>   # 建隔离 worktree（三重验证+软链）
+python scripts/git/worktree.py finish <task>   # 收尾（合并→推送→删worktree→prune，含机械保护）
+python scripts/git/worktree.py status          # 查看所有 worktree 状态
+
 # Python 后端
 pip install -e .                # 或 uv pip install -e .，安装项目（开发模式）
 python -m uvicorn app.main:app --reload --port 8000   # 启动后端 dev server
@@ -411,6 +454,8 @@ mongodump --uri="$MONGODB_URI" --out=backups/backup_$(date +%Y-%m-%d_%H-%M-%S)
 - ❌ 跳过 Superpowers 流程直接在 main 改代码
 - ❌ 在 main 分支或主工作区直接改代码文件（配置/文档/规则除外）
 - ❌ `git worktree add` 后不三重验证就开始 git 写操作（可能游离操作污染主工作区）
+- ❌ **手敲 worktree 收尾命令**（必须用 `python scripts/git/worktree.py finish`，含机械保护；手敲易漏步骤/误用 `branch -D` 强删导致丢代码）
+- ❌ **用 `git branch -D` 强制删未验证合并的分支**（必须 `git branch -d`，git 会拒绝删未合并分支；`-D` 绕过保护会丢代码）
 - ❌ 合并推送后不删 worktree（`git worktree list` 残留）
 - ❌ 没有验证证据就声称完成（"编译通过"≠"完成"）
 - ❌ 服务端链路改动只跑单测不跑真实接口验证
