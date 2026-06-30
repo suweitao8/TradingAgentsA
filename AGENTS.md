@@ -28,7 +28,7 @@
 
 > 用户级 skills（`~/.agents/skills/`，37 个通用工作流 skill 如 tdd-workflow、systematic-debugging、git-workflow 等）全局可用，不在此重复列出。
 
-### 任务路由（按需读取领域知识）
+### 领域知识路由（按需读取 docs）
 
 | 任务关键词 | 必读 AGENTS.md 章节 | 按需读 docs/ 章节 | 可用 Skill |
 |------------|-------------------|-------------------------------|-----------|
@@ -45,11 +45,11 @@
 | 上游同步 | — | `docs/maintenance/upstream-sync.md`、`docs/maintenance/manual-upstream-absorption-checklist.md` | — |
 | 写测试/验证 | 验证与收尾 | `docs/development/DEVELOPMENT_SETUP.md` | `modern-python`（testing.md） |
 
-### 工作流硬规则（最高优先级）
+## 工作流硬规则（最高优先级）
 
 - 所有**代码**开发任务都必须先创建隔离 worktree；禁止在主工作区（`main` 分支）直接动手改代码。
 - **配置、文档、规则文件**（AGENTS.md / docs / .gitignore / Dockerfile 等）允许在 main 上直接修改。
-- worktree 内允许提交，但任何任务结束时都必须把提交合并回 `main`，然后删除当前 worktree 并执行 `git worktree prune`。
+- worktree 内允许提交，但任何任务结束时都必须完成**收尾清单**（见「worktree 管理 → 收尾清单」），合并回 main、删除 worktree。
 - 完成收尾前，回复只报告结果、验证证据和收尾状态，不主动追加可选建议。
 - 本节优先于下文任何历史残留措辞；凡与本节冲突的内容，一律以本节为准。
 
@@ -58,24 +58,22 @@
 1. **禁止在 main 分支或主工作区直接修改代码** — 仓库主工作区（`D:\Github\TradingAgentsA`）只允许只读检查、配置/文档/规则改动，与收尾阶段的合并/推送/清理确认；任何代码改动（`app/`、`tradingagents/`、`cli/`、`web/`、`scripts/`、`tests/`、`utils/`、`frontend/src/` 下的源码）都必须先进入独立 worktree，在 worktree 内完成
 2. **强制中文输出** — 所有对话、解释、计划、提交信息、注释必须使用中文（代码标识符用英文）
 3. **服务器永远不能停** — 用户正在浏览器中使用开发服务器（backend 8000 / frontend 3000），任何操作都不允许导致服务器长时间不可用
-4. **合并推送后立即删 worktree** — `git merge` → `git push origin main` → 立即删除本会话隔离 worktree → `git worktree prune`，四步连续执行不可分割；push 成功不等于完成，`git worktree list` 仍残留当前 worktree 就禁止报告"已完成"
-5. **没有验证证据不能声称完成** — 禁止"应该可以""理论上没问题"等措辞，必须实际运行验证
+4. **收尾四步连续不可分割** — `git merge` → `git push origin main` → 删除本会话隔离 worktree → `git worktree prune`，详见「worktree 管理 → 收尾清单」。push 成功不等于完成，`git worktree list` 仍残留当前 worktree 就禁止报告"已完成"
+5. **没有验证证据不能声称完成** — 禁止"应该可以""理论上没问题"等措辞，验证标准见「开发流程 → 统一验证清单」
 6. **开发完成后必须自我反思** — 将反复出现的同类问题通过修改本文件或 MEMORY.md 永久预防，反思在合并前执行
 7. **会话开始必读 MEMORY.md** — MEMORY.md 记录了 AI 反复犯错的具体操作和环境陷阱，跳过必读会重复浪费时间
 
 ## 基本约定
 
-- 所有对话、说明、总结、错误解释、代码注释和提交信息尽量使用中文；技术名词可保留英文，建议附中文解释。
-- 仓库内源码、配置与文档统一使用 UTF-8 编码。
 - **双许可证边界**：`app/`（FastAPI 后端）和 `frontend/`（Vue 前端）是**专有代码**（需商业授权）；`tradingagents/`、`cli/`、`web/`、`scripts/`、`tests/`、`utils/` 是 Apache 2.0 开源代码。改动 `app/`/`frontend/` 时注意许可证约束。
 - **依赖声明在 `pyproject.toml`**（不要用 `requirements.txt`，已废弃）。前端依赖在 `frontend/package.json`（用 yarn，不用 npm）。
 - **配置源是 `app/core/config.py` 的 `Settings`**（pydantic-settings 读 `.env`），不要在代码里硬编码密钥、端口、数据库连接串；新增配置项时同步更新 `.env.example`。
 - **数据库**：MongoDB（主库，motor 异步驱动）+ Redis（缓存/队列）。MongoDB 库名由主版本号 + 实例标签派生（`MONGODB_DATABASE_SCOPE`），改版本隔离逻辑要极其谨慎，详见 `docs/deployment/database/`。
+- 仓库内源码、配置与文档统一使用 UTF-8 编码。
 - 规则、规范、文档、代理指引类请求，直接修改本文件，不走完整开发链路。
 - 修改本文件时，先通读全文，合并重复条目、删除冗余表述、统一术语和结构，再保存。
-- 动手前必须先用 `git rev-parse --show-toplevel` 和 `git worktree list` 双重确认当前 shell 是否在本次会话的隔离 worktree；若仍在主目录、仍在 `main` 分支、或 worktree list 里看不到本次会话的隔离 worktree，一律先创建/切换到 worktree 再允许任何代码写入。
-- **`git worktree add` 返回成功 ≠ worktree 已注册**：Windows 下存在 add 提示"HEAD is now at ... done"但实际未注册的情况，此时 shell 若停留在失效路径上，后续所有 git 命令会回退到主工作区 .git，`git rm`/`git add -A`/`git commit` 会作用在游离状态甚至误暂存主工作区的会话前改动。因此 `git worktree add` 之后必须**立即三重验证**：① `git worktree list` 能看到新 worktree；② `git -C <worktree路径> rev-parse --show-toplevel` 返回 worktree 路径；③ `git -C <worktree路径> branch --show-current` 返回新分支名。三项全过才允许后续任何 git 写操作；任一不过即停止，清理物理目录后重新 add。
-- 在通过上述检查之前，禁止执行任何会写代码文件的动作。
+- **worktree 状态验证**（动手前 + 创建后两个时机）：见「worktree 管理 → 创建流程」的三重验证命令。未通过验证前，禁止执行任何会写代码文件的动作。
+- **`git worktree add` 返回成功 ≠ worktree 已注册**：Windows 下存在 add 提示"HEAD is now at ... done"但实际未注册的情况，此时 shell 若停留在失效路径上，后续所有 git 命令会回退到主工作区 .git，`git rm`/`git add -A`/`git commit` 会作用在游离状态甚至误暂存主工作区的会话前改动。因此 add 之后必须立即三重验证（见创建流程第4步），任一不过即停止、清理物理目录后重新 add。
 - 仓库已配置工作区守卫：
   - **`.githooks/pre-commit` 守卫**：在主工作区、main 分支上提交**代码文件**会被直接拦截；worktree 内提交或只改配置/文档/规则文件放行。需执行 `git config core.hooksPath .githooks` 启用（每台机器一次性）。
   - **`.claude/hooks/branch-guard-hook.js`**：Claude Code 的 Edit/Write 工具在 main 分支上写代码文件会被拦截（PreToolUse hook）。
@@ -90,7 +88,7 @@
 1. **规划** — 写计划文档（建 worktree 后在 worktree 内写，或直接用 EnterPlanMode）。明确改动范围、影响面、验证方式。
 2. **执行** — 在 worktree 分支内实现改动，手术式修改，最小改动量。
 3. **验证** — 跑统一验证清单（见下），收集验证证据。
-4. **收尾** — 合并回 main → push → 删 worktree → prune → 自我反思。
+4. **收尾** — 执行「worktree 管理 → 收尾清单」的完整流程，然后自我反思。
 
 > 简单任务（解释项目结构、查数据、单点查询、回答问题、改配置/文档/规则）：直接做，不需要走 worktree 流程。不确定复杂度时按开发任务处理（走 worktree），宁可多走流程。
 
@@ -175,13 +173,6 @@
 ### 5. 图片/视频识别
 模型不能直接"看"图片/视频。需要识别图片内容时，使用 `mcp__zai-mcp-server__*` 系列 MCP 工具（analyze_image / extract_text_from_screenshot 等），不要凭文件名猜测图片内容。
 
-## 验证与收尾
-
-- 每次完成必须给出验证证据（命令 + 输出），不接受"应该可以"。
-- 分层验证见上文「统一验证清单」。
-- 收尾流程见下文「worktree 管理 → 收尾总纲」。
-- 完成收尾前，回复只报告结果、验证证据、收尾状态，不主动追加可选建议。
-
 ## Token 节省规范（用户 token 预算有限，强制遵守）
 
 ### 1. 探索任务委派给 Explore subagent（省得最多）
@@ -248,8 +239,8 @@ cd .worktrees/<task-name>
 #       cmd //c "mklink /J .worktrees\<task-name>\frontend\node_modules ..\..\frontend\node_modules"
 #    b) 或在 worktree 内单独 yarn install（耗时但隔离）
 
-# 4. 确认在 worktree 内（add 后必须立即三重验证，任一失败即停止、不可继续操作）
-git worktree list               # 应能看到本次会话的 worktree（add 返回成功也可能未注册）
+# 4. add 后必须立即三重验证（add 返回成功也可能未注册），任一失败即停止、不可继续操作
+git worktree list               # 应能看到本次会话的 worktree
 git -C .worktrees/<task-name> rev-parse --show-toplevel   # 应显示 .worktrees\<task-name> 路径
 git -C .worktrees/<task-name> branch --show-current        # 应显示 feat/<task-name>
 ```
@@ -257,11 +248,9 @@ git -C .worktrees/<task-name> branch --show-current        # 应显示 feat/<tas
 - Python 后端无需在 worktree 内重新 `pip install`（共享主仓库 venv 即可，依赖变更时在主仓库装一次）。
 - 前端 `node_modules` 大，优先软链主仓库的，避免每个 worktree 都 yarn install。
 
-### 收尾总纲（最高优先级，不可跳过）
-
-任务完成后必须执行：**合并 → 推送 → 删 worktree → prune**，四步连续不可分割。
-
 ### 收尾清单（merge/push 后唯一权威顺序）
+
+> 这是 worktree 收尾的**唯一权威流程**，铁律第4条、工作流硬规则、开发流程第4步均指向此处。四步连续不可分割：**合并 → 推送 → 删 worktree → prune**。
 
 1. 在 worktree 内确认所有改动已提交（`git status` 干净）
 2. 切回主工作区：`cd D:\Github\TradingAgentsA`
@@ -269,24 +258,17 @@ git -C .worktrees/<task-name> branch --show-current        # 应显示 feat/<tas
 4. `git merge --no-ff feat/<task-name>`（保留分支历史）
 5. `git push origin main`
 6. `git worktree remove .worktrees/<task-name>`（删 worktree 目录）
+   - **删除前安全检查**：① worktree 内 `git status` 干净；② 已成功 merge 到 main；③ 已成功 push。三条全满足才 remove。
+   - 若 remove 报目录被占用（Windows 文件锁）：先删 `frontend/node_modules` junction（`cmd //c "rmdir frontend\node_modules"`），确认无进程占用（dev server / python），再重试或手动删。
 7. `git branch -d feat/<task-name>`（删功能分支）
 8. `git worktree prune`（清理残留）
 9. `git worktree list` 确认无残留 → 才能报告"已完成"
-
-### 删除步骤（安全检查）
-
-删 worktree 前三重确认：
-- worktree 内 `git status` 干净（无未提交改动）
-- 已成功 `git merge` 到 main
-- 已成功 `git push origin main`
-
-满足三条才执行 `git worktree remove`。若 remove 报目录被占用（Windows 文件锁），先确认无进程占用（dev server / python 进程），再重试或手动删。
 
 ### 任务完成标准（全部满足才能报告完成）
 
 - ✅ 代码已合并到 main 并 push 成功
 - ✅ worktree 已删除，`git worktree list` 无残留
-- ✅ 验证证据已提供（命令 + 输出）
+- ✅ 验证证据已提供（命令 + 输出，见「统一验证清单」）
 - ✅ 自我反思已完成（写入 MEMORY.md 或本文件）
 
 ## 质量与提交
@@ -294,7 +276,7 @@ git -C .worktrees/<task-name> branch --show-current        # 应显示 feat/<tas
 - 修 bug 前先定位根因，不要症状式修补（治标不治本）。
 - 改动最小化：只改需要改的，不顺便重构无关代码。
 - 提交前 `git fetch` + 检查是否有冲突。
-- 完成四条件：编译/类型检查通过 + 功能验证通过 + 无回归 + 验证证据已提供。
+- 完成判定：编译/类型检查通过 + 功能验证通过 + 无回归 + 验证证据已提供（详见「统一验证清单」与「任务完成标准」）。
 - rebase 冲突：先理解冲突原因再解决，不要盲目 accept current/Incoming。
 
 ## 项目常用规范
@@ -377,6 +359,7 @@ mongodump --uri="$MONGODB_URI" --out=backups/backup_$(date +%Y-%m-%d_%H-%M-%S)
 
 - ❌ 跳过 Superpowers 流程直接在 main 改代码
 - ❌ 在 main 分支或主工作区直接改代码文件（配置/文档/规则除外）
+- ❌ `git worktree add` 后不三重验证就开始 git 写操作（可能游离操作污染主工作区）
 - ❌ 合并推送后不删 worktree（`git worktree list` 残留）
 - ❌ 没有验证证据就声称完成（"编译通过"≠"完成"）
 - ❌ 服务端链路改动只跑单测不跑真实接口验证
