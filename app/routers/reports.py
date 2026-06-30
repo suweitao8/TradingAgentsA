@@ -121,7 +121,7 @@ async def get_reports_list(
     page: int = Query(1, ge=1, description="页码"),
     page_size: int = Query(20, ge=1, le=100, description="每页数量"),
     search_keyword: Optional[str] = Query(None, description="搜索关键词"),
-    market_filter: Optional[str] = Query(None, description="市场筛选（A股/港股/美股）"),
+    market_filter: Optional[str] = Query(None, description="市场筛选（A股/A股/A股）"),
     start_date: Optional[str] = Query(None, description="开始日期"),
     end_date: Optional[str] = Query(None, description="结束日期"),
     stock_code: Optional[str] = Query(None, description="股票代码"),
@@ -186,8 +186,8 @@ async def get_reports_list(
                 market_info = StockUtils.get_market_info(stock_code)
                 market_type_map = {
                     "china_a": "A股",
-                    "hong_kong": "港股",
-                    "us": "美股",
+                    "hong_kong": "A股",
+                    "us": "A股",
                     "unknown": "A股"
                 }
                 market_type = market_type_map.get(market_info.get("market", "unknown"), "A股")

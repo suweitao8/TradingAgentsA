@@ -55,41 +55,13 @@ def _get_company_name(ticker: str, market_info: dict) -> str:
                 logger.error(f"❌ [市场分析师] 所有方案都无法获取股票名称: {ticker}")
                 return f"股票代码{ticker}"
 
-        elif market_info['is_hk']:
-            # 港股：使用改进的港股工具
-            try:
-                from tradingagents.dataflows.providers.hk.improved_hk import get_hk_company_name_improved
-                company_name = get_hk_company_name_improved(ticker)
-                logger.debug(f"📊 [DEBUG] 使用改进港股工具获取名称: {ticker} -> {company_name}")
-                return company_name
-            except Exception as e:
-                logger.debug(f"📊 [DEBUG] 改进港股工具获取名称失败: {e}")
-                # 降级方案：生成友好的默认名称
-                clean_ticker = ticker.replace('.HK', '').replace('.hk', '')
-                return f"港股{clean_ticker}"
+        
 
-        elif market_info['is_us']:
-            # 美股：使用简单映射或返回代码
-            us_stock_names = {
-                'AAPL': '苹果公司',
-                'TSLA': '特斯拉',
-                'NVDA': '英伟达',
-                'MSFT': '微软',
-                'GOOGL': '谷歌',
-                'AMZN': '亚马逊',
-                'META': 'Meta',
-                'NFLX': '奈飞'
-            }
-
-            company_name = us_stock_names.get(ticker.upper(), f"美股{ticker}")
-            logger.debug(f"📊 [DEBUG] 美股名称映射: {ticker} -> {company_name}")
-            return company_name
-
-        else:
-            return f"股票{ticker}"
+        
+        return f"股票{ticker}"
 
     except Exception as e:
-        logger.error(f"❌ [DEBUG] 获取公司名称失败: {e}")
+        logger.error(f"❌ 获取公司名称失败: {e}")
         return f"股票{ticker}"
 
 

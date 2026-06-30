@@ -95,8 +95,6 @@ class MongoDBCacheAdapter:
 
             market_mapping = {
                 StockMarket.CHINA_A: 'a_shares',
-                StockMarket.US: 'us_stocks',
-                StockMarket.HONG_KONG: 'hk_stocks',
             }
             market_category = market_mapping.get(market)
             logger.info(f"📊 [数据源优先级] 股票代码: {symbol}, 市场分类: {market_category}")

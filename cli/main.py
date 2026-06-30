@@ -633,54 +633,24 @@ def get_user_selections():
 
 
 def select_market():
-    """选择股票市场"""
-    markets = {
-        "1": {
-            "name": "美股",
-            "name_en": "US Stock",
-            "default": "SPY",
-            "examples": ["SPY", "AAPL", "TSLA", "NVDA", "MSFT"],
-            "format": "直接输入代码 (如: AAPL)",
-            "pattern": r'^[A-Z]{1,5}$',
-            "data_source": "yahoo_finance"
-        },
-        "2": {
-            "name": "A股",
-            "name_en": "China A-Share",
-            "default": "600036",
-            "examples": ["000001 (平安银行)", "600036 (招商银行)", "000858 (五粮液)"],
-            "format": "6位数字代码 (如: 600036, 000001)",
-            "pattern": r'^\d{6}$',
-            "data_source": "china_stock"
-        },
-        "3": {
-            "name": "港股",
-            "name_en": "Hong Kong Stock",
-            "default": "0700.HK",
-            "examples": ["0700.HK (腾讯)", "09988.HK (阿里巴巴)", "03690.HK (美团)"],
-            "format": "代码.HK (如: 0700.HK, 09988.HK)",
-            "pattern": r'^\d{4,5}\.HK$',
-            "data_source": "yahoo_finance"
-        }
+    """选择股票市场（本项目仅支持A股）"""
+    market = {
+        "name": "A股",
+        "name_en": "China A-Share",
+        "default": "600036",
+        "examples": ["000001 (平安银行)", "600036 (招商银行)", "000858 (五粮液)"],
+        "format": "6位数字代码 (如: 600036, 000001)",
+        "pattern": r'^\d{6}$',
+        "data_source": "china_stock"
     }
 
-    console.print(f"\n[bold cyan]请选择股票市场 | Please select stock market:[/bold cyan]")
-    for key, market in markets.items():
-        examples_str = ", ".join(market["examples"][:3])
-        console.print(f"[cyan]{key}[/cyan]. 🌍 {market['name']} | {market['name_en']}")
-        console.print(f"   示例 | Examples: {examples_str}")
+    console.print(f"\n[bold cyan]股票市场: 🌍 {market['name']} | {market['name_en']}[/bold cyan]")
+    examples_str = ", ".join(market["examples"][:3])
+    console.print(f"   示例 | Examples: {examples_str}")
 
-    while True:
-        choice = typer.prompt("\n请选择市场 | Select market", default="2")
-        if choice in markets:
-            selected_market = markets[choice]
-            console.print(f"[green]✅ 已选择: {selected_market['name']} | Selected: {selected_market['name_en']}[/green]")
-            # 记录系统日志（只写入文件）
-            logger.info(f"用户选择市场: {selected_market['name']} ({selected_market['name_en']})")
-            return selected_market
-        else:
-            console.print(f"[red]❌ 无效选择，请输入 1、2 或 3 | Invalid choice, please enter 1, 2, or 3[/red]")
-            logger.warning(f"用户输入无效选择: {choice}")
+    console.print(f"[green]✅ 已选择: {market['name']} | Selected: {market['name_en']}[/green]")
+    logger.info(f"用户选择市场: {market['name']} ({market['name_en']})")
+    return market
 
 
 def get_ticker(market):
@@ -1167,29 +1137,8 @@ def run_analysis():
         try:
             from tradingagents.utils.stock_validator import prepare_stock_data
 
-            # 确定市场类型
-            market_type_map = {
-                "china_stock": "A股",
-                "yahoo_finance": "港股" if ".HK" in selections["ticker"] else "美股"
-            }
-
-            # 获取选定市场的数据源类型
-            selected_market = None
-            for choice, market in {
-                "1": {"data_source": "yahoo_finance"},
-                "2": {"data_source": "china_stock"},
-                "3": {"data_source": "yahoo_finance"}
-            }.items():
-                # 这里需要从用户选择中获取市场类型，暂时使用代码推断
-                pass
-
-            # 根据股票代码推断市场类型
-            if re.match(r'^\d{6}$', selections["ticker"]):
-                market_type = "A股"
-            elif ".HK" in selections["ticker"].upper():
-                market_type = "港股"
-            else:
-                market_type = "美股"
+            # 本项目仅支持A股
+            market_type = "A股"
 
             # 预获取股票数据（默认30天历史数据）
             preparation_result = prepare_stock_data(

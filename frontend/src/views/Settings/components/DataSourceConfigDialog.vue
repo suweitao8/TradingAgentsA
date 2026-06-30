@@ -51,7 +51,7 @@
           placeholder="请输入显示名称（用于界面展示）"
         />
         <div class="form-tip">
-          💡 显示名称可以自定义，用于在界面上展示，例如："Alpha Vantage - 美股数据"
+          💡 显示名称可以自定义，用于在界面上展示，例如："Alpha Vantage - 股票数据"
         </div>
       </el-form-item>
 
@@ -378,7 +378,7 @@ const dataSourceTypes = [
     register_guide: 'BaoStock 是开源免费的证券数据平台，无需注册即可使用。访问官网了解更多：'
   },
 
-  // 美股数据源
+  // 股票数据源
   {
     label: 'Finnhub',
     value: 'finnhub',

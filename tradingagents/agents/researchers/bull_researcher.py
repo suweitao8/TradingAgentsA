@@ -48,14 +48,7 @@ def create_bull_researcher(llm, memory):
                                 return name
                         except Exception as e:
                             logger.error(f"❌ [多头研究员] 降级方案也失败: {e}")
-                elif market_info_dict['is_hk']:
-                    try:
-                        from tradingagents.dataflows.providers.hk.improved_hk import get_hk_company_name_improved
-                        name = get_hk_company_name_improved(ticker_code)
-                        return name
-                    except Exception:
-                        clean_ticker = ticker_code.replace('.HK', '').replace('.hk', '')
-                        return f"港股{clean_ticker}"
+                
                 elif market_info_dict['is_us']:
                     us_stock_names = {
                         'AAPL': '苹果公司', 'TSLA': '特斯拉', 'NVDA': '英伟达',
@@ -68,8 +61,6 @@ def create_bull_researcher(llm, memory):
             return f"股票代码{ticker_code}"
 
         company_name = _get_company_name(ticker, market_info)
-        is_hk = market_info['is_hk']
-        is_us = market_info['is_us']
 
         currency = market_info['currency_name']
         currency_symbol = market_info['currency_symbol']
@@ -80,7 +71,7 @@ def create_bull_researcher(llm, memory):
         logger.debug(f"🐂 [DEBUG] - 基本面报告长度: {len(fundamentals_report)}")
         logger.debug(f"🐂 [DEBUG] - 基本面报告前200字符: {fundamentals_report[:200]}...")
         logger.debug(f"🐂 [DEBUG] - 股票代码: {ticker}, 公司名称: {company_name}, 类型: {market_info['market_name']}, 货币: {currency}")
-        logger.debug(f"🐂 [DEBUG] - 市场详情: 中国A股={is_china}, 港股={is_hk}, 美股={is_us}")
+        logger.debug(f"🐂 [DEBUG] - 市场详情: 中国A股={is_china}")
 
         curr_situation = f"{market_research_report}\n\n{news_report}\n\n{fundamentals_report}"
 
@@ -97,7 +88,7 @@ def create_bull_researcher(llm, memory):
 
         prompt = f"""你是一位看涨分析师，负责为股票 {company_name}（股票代码：{ticker}）的投资建立强有力的论证。
 
-⚠️ 重要提醒：当前分析的是 {'中国A股' if is_china else '海外股票'}，所有价格和估值请使用 {currency}（{currency_symbol}）作为单位。
+⚠️ 重要提醒：当前分析的是 中国A股，所有价格和估值请使用 {currency}（{currency_symbol}）作为单位。
 ⚠️ 在你的分析中，请始终使用公司名称"{company_name}"而不是股票代码"{ticker}"来称呼这家公司。
 
 你的任务是构建基于证据的强有力案例，强调增长潜力、竞争优势和积极的市场指标。利用提供的研究和数据来解决担忧并有效反驳看跌论点。

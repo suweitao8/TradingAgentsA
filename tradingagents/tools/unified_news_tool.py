@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 统一新闻分析工具
-整合A股、港股、美股等不同市场的新闻获取逻辑到一个工具函数中
+整合A股的新闻获取逻辑到一个工具函数中
 让大模型只需要调用一个工具就能获取所有类型股票的新闻数据
 """
 
@@ -45,14 +45,6 @@ class UnifiedNewsAnalyzer:
         # 根据股票类型调用相应的获取方法
         if stock_type == "A股":
             result = self._get_a_share_news(stock_code, max_news, model_info)
-        elif stock_type == "港股":
-            result = self._get_hk_share_news(stock_code, max_news, model_info)
-        elif stock_type == "美股":
-            result = self._get_us_share_news(stock_code, max_news, model_info)
-        else:
-            # 默认使用A股逻辑
-            result = self._get_a_share_news(stock_code, max_news, model_info)
-        
         # 🔍 添加详细的结果调试日志
         logger.info(f"[统一新闻工具] 📊 新闻获取完成，结果长度: {len(result)} 字符")
         logger.info(f"[统一新闻工具] 📋 返回结果预览 (前1000字符): {result[:1000]}")
@@ -65,30 +57,8 @@ class UnifiedNewsAnalyzer:
         return result
     
     def _identify_stock_type(self, stock_code: str) -> str:
-        """识别股票类型"""
-        stock_code = stock_code.upper().strip()
-        
-        # A股判断
-        if re.match(r'^(00|30|60|68)\d{4}$', stock_code):
-            return "A股"
-        elif re.match(r'^(SZ|SH)\d{6}$', stock_code):
-            return "A股"
-        
-        # 港股判断
-        elif re.match(r'^\d{4,5}\.HK$', stock_code):
-            return "港股"
-        elif re.match(r'^\d{4,5}$', stock_code) and len(stock_code) <= 5:
-            return "港股"
-        
-        # 美股判断
-        elif re.match(r'^[A-Z]{1,5}$', stock_code):
-            return "美股"
-        elif '.' in stock_code and not stock_code.endswith('.HK'):
-            return "美股"
-        
-        # 默认按A股处理
-        else:
-            return "A股"
+        """识别股票类型（本项目仅支持A股）"""
+        return "A股"
 
     def _get_news_from_database(self, stock_code: str, max_news: int = 10) -> str:
         """
@@ -118,7 +88,7 @@ class UnifiedNewsAnalyzer:
 
             # 标准化股票代码（去除后缀）
             clean_code = stock_code.replace('.SH', '').replace('.SZ', '').replace('.SS', '')\
-                                   .replace('.XSHE', '').replace('.XSHG', '').replace('.HK', '')
+                                   .replace('.XSHE', '').replace('.XSHG', '')
 
             # 查询最近30天的新闻（扩大时间范围）
             thirty_days_ago = datetime.now() - timedelta(days=30)
@@ -202,7 +172,7 @@ class UnifiedNewsAnalyzer:
 
             # 标准化股票代码（去除后缀）
             clean_code = stock_code.replace('.SH', '').replace('.SZ', '').replace('.SS', '')\
-                                   .replace('.XSHE', '').replace('.XSHG', '').replace('.HK', '')
+                                   .replace('.XSHE', '').replace('.XSHG', '')
 
             logger.info(f"[统一新闻工具] 🔄 开始同步 {clean_code} 的新闻...")
 
@@ -349,112 +319,8 @@ class UnifiedNewsAnalyzer:
                     return self._format_news_result(result, "Google新闻", model_info)
         except Exception as e:
             logger.warning(f"[统一新闻工具] Google新闻获取失败: {e}")
-        
-        # 优先级3: OpenAI全球新闻
-        try:
-            if hasattr(self.toolkit, 'get_global_news_openai'):
-                logger.info(f"[统一新闻工具] 尝试OpenAI全球新闻...")
-                # 使用LangChain工具的正确调用方式：.invoke()方法和字典参数
-                result = self.toolkit.get_global_news_openai.invoke({"curr_date": curr_date})
-                if result and len(result.strip()) > 50:
-                    logger.info(f"[统一新闻工具] ✅ OpenAI新闻获取成功: {len(result)} 字符")
-                    return self._format_news_result(result, "OpenAI全球新闻", model_info)
-        except Exception as e:
-            logger.warning(f"[统一新闻工具] OpenAI新闻获取失败: {e}")
-        
+
         return "❌ 无法获取A股新闻数据，所有新闻源均不可用"
-    
-    def _get_hk_share_news(self, stock_code: str, max_news: int, model_info: str = "") -> str:
-        """获取港股新闻"""
-        logger.info(f"[统一新闻工具] 获取港股 {stock_code} 新闻")
-        
-        # 获取当前日期
-        curr_date = datetime.now().strftime("%Y-%m-%d")
-        
-        # 优先级1: Google新闻（港股搜索）
-        try:
-            if hasattr(self.toolkit, 'get_google_news'):
-                logger.info(f"[统一新闻工具] 尝试Google港股新闻...")
-                query = f"{stock_code} 港股 香港股票 新闻"
-                # 使用LangChain工具的正确调用方式：.invoke()方法和字典参数
-                result = self.toolkit.get_google_news.invoke({"query": query, "curr_date": curr_date})
-                if result and len(result.strip()) > 50:
-                    logger.info(f"[统一新闻工具] ✅ Google港股新闻获取成功: {len(result)} 字符")
-                    return self._format_news_result(result, "Google港股新闻", model_info)
-        except Exception as e:
-            logger.warning(f"[统一新闻工具] Google港股新闻获取失败: {e}")
-        
-        # 优先级2: OpenAI全球新闻
-        try:
-            if hasattr(self.toolkit, 'get_global_news_openai'):
-                logger.info(f"[统一新闻工具] 尝试OpenAI港股新闻...")
-                # 使用LangChain工具的正确调用方式：.invoke()方法和字典参数
-                result = self.toolkit.get_global_news_openai.invoke({"curr_date": curr_date})
-                if result and len(result.strip()) > 50:
-                    logger.info(f"[统一新闻工具] ✅ OpenAI港股新闻获取成功: {len(result)} 字符")
-                    return self._format_news_result(result, "OpenAI港股新闻", model_info)
-        except Exception as e:
-            logger.warning(f"[统一新闻工具] OpenAI港股新闻获取失败: {e}")
-        
-        # 优先级3: 实时新闻（如果支持港股）
-        try:
-            if hasattr(self.toolkit, 'get_realtime_stock_news'):
-                logger.info(f"[统一新闻工具] 尝试实时港股新闻...")
-                # 使用LangChain工具的正确调用方式：.invoke()方法和字典参数
-                result = self.toolkit.get_realtime_stock_news.invoke({"ticker": stock_code, "curr_date": curr_date})
-                if result and len(result.strip()) > 100:
-                    logger.info(f"[统一新闻工具] ✅ 实时港股新闻获取成功: {len(result)} 字符")
-                    return self._format_news_result(result, "实时港股新闻", model_info)
-        except Exception as e:
-            logger.warning(f"[统一新闻工具] 实时港股新闻获取失败: {e}")
-        
-        return "❌ 无法获取港股新闻数据，所有新闻源均不可用"
-    
-    def _get_us_share_news(self, stock_code: str, max_news: int, model_info: str = "") -> str:
-        """获取美股新闻"""
-        logger.info(f"[统一新闻工具] 获取美股 {stock_code} 新闻")
-        
-        # 获取当前日期
-        curr_date = datetime.now().strftime("%Y-%m-%d")
-        
-        # 优先级1: OpenAI全球新闻
-        try:
-            if hasattr(self.toolkit, 'get_global_news_openai'):
-                logger.info(f"[统一新闻工具] 尝试OpenAI美股新闻...")
-                # 使用LangChain工具的正确调用方式：.invoke()方法和字典参数
-                result = self.toolkit.get_global_news_openai.invoke({"curr_date": curr_date})
-                if result and len(result.strip()) > 50:
-                    logger.info(f"[统一新闻工具] ✅ OpenAI美股新闻获取成功: {len(result)} 字符")
-                    return self._format_news_result(result, "OpenAI美股新闻", model_info)
-        except Exception as e:
-            logger.warning(f"[统一新闻工具] OpenAI美股新闻获取失败: {e}")
-        
-        # 优先级2: Google新闻（英文搜索）
-        try:
-            if hasattr(self.toolkit, 'get_google_news'):
-                logger.info(f"[统一新闻工具] 尝试Google美股新闻...")
-                query = f"{stock_code} stock news earnings financial"
-                # 使用LangChain工具的正确调用方式：.invoke()方法和字典参数
-                result = self.toolkit.get_google_news.invoke({"query": query, "curr_date": curr_date})
-                if result and len(result.strip()) > 50:
-                    logger.info(f"[统一新闻工具] ✅ Google美股新闻获取成功: {len(result)} 字符")
-                    return self._format_news_result(result, "Google美股新闻", model_info)
-        except Exception as e:
-            logger.warning(f"[统一新闻工具] Google美股新闻获取失败: {e}")
-        
-        # 优先级3: FinnHub新闻（如果可用）
-        try:
-            if hasattr(self.toolkit, 'get_finnhub_news'):
-                logger.info(f"[统一新闻工具] 尝试FinnHub美股新闻...")
-                # 使用LangChain工具的正确调用方式：.invoke()方法和字典参数
-                result = self.toolkit.get_finnhub_news.invoke({"symbol": stock_code, "max_results": min(max_news, 50)})
-                if result and len(result.strip()) > 50:
-                    logger.info(f"[统一新闻工具] ✅ FinnHub美股新闻获取成功: {len(result)} 字符")
-                    return self._format_news_result(result, "FinnHub美股新闻", model_info)
-        except Exception as e:
-            logger.warning(f"[统一新闻工具] FinnHub美股新闻获取失败: {e}")
-        
-        return "❌ 无法获取美股新闻数据，所有新闻源均不可用"
     
     def _format_news_result(self, news_content: str, source: str, model_info: str = "") -> str:
         """格式化新闻结果"""
@@ -558,7 +424,7 @@ def create_unified_news_tool(toolkit):
         统一新闻获取工具
         
         Args:
-            stock_code (str): 股票代码 (支持A股如000001、港股如0700.HK、美股如AAPL)
+            stock_code (str): 股票代码 (支持A股如000001、600036)
             max_news (int): 最大新闻数量，默认100
             model_info (str): 当前使用的模型信息，用于特殊处理
         
@@ -576,11 +442,9 @@ def create_unified_news_tool(toolkit):
 统一新闻获取工具 - 根据股票代码自动获取相应市场的新闻
 
 功能:
-- 自动识别股票类型（A股/港股/美股）
+- 自动识别股票类型（A股）
 - 根据股票类型选择最佳新闻源
 - A股: 优先东方财富 -> Google中文 -> OpenAI
-- 港股: 优先Google -> OpenAI -> 实时新闻
-- 美股: 优先OpenAI -> Google英文 -> FinnHub
 - 返回格式化的新闻内容
 - 支持Google模型的特殊长度控制
 """

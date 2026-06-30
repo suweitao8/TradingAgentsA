@@ -51,26 +51,7 @@ class DataSourceConfig:
             "cache_ttl": self._get_int_env("BAOSTOCK_CACHE_TTL", 1800),
         }
         
-        # Yahoo Finance配置
-        self._configs["yahoo"] = {
-            "enabled": self._get_bool_env("YAHOO_ENABLED", False),
-            "timeout": self._get_int_env("YAHOO_TIMEOUT", 30),
-            "rate_limit": self._get_float_env("YAHOO_RATE_LIMIT", 0.5),
-            "max_retries": self._get_int_env("YAHOO_MAX_RETRIES", 3),
-            "cache_enabled": self._get_bool_env("YAHOO_CACHE_ENABLED", True),
-            "cache_ttl": self._get_int_env("YAHOO_CACHE_TTL", 300),
-        }
         
-        # Finnhub配置
-        self._configs["finnhub"] = {
-            "enabled": self._get_bool_env("FINNHUB_ENABLED", False),
-            "api_key": os.getenv("FINNHUB_API_KEY", ""),
-            "timeout": self._get_int_env("FINNHUB_TIMEOUT", 30),
-            "rate_limit": self._get_float_env("FINNHUB_RATE_LIMIT", 1.0),
-            "max_retries": self._get_int_env("FINNHUB_MAX_RETRIES", 3),
-            "cache_enabled": self._get_bool_env("FINNHUB_CACHE_ENABLED", True),
-            "cache_ttl": self._get_int_env("FINNHUB_CACHE_TTL", 300),
-        }
         
         # 通达信配置 - 已移除
         # TDX 数据源已不再支持

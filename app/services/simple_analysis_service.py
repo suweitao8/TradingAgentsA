@@ -2528,24 +2528,6 @@ class SimpleAnalysisService:
                         except Exception as fallback_e:
                             logger.error(f"❌ 降级方案也失败: {fallback_e}")
 
-                elif market_info.get("market") == "hong_kong":
-                    # 港股：使用改进的港股工具
-                    try:
-                        from tradingagents.dataflows.providers.hk.improved_hk import get_hk_company_name_improved
-                        stock_name = get_hk_company_name_improved(stock_symbol)
-                        logger.info(f"📊 获取港股名称: {stock_symbol} -> {stock_name}")
-                    except Exception:
-                        clean_ticker = stock_symbol.replace('.HK', '').replace('.hk', '')
-                        stock_name = f"港股{clean_ticker}"
-                elif market_info.get("market") == "us":
-                    # 美股：使用简单映射
-                    us_stock_names = {
-                        'AAPL': '苹果公司', 'TSLA': '特斯拉', 'NVDA': '英伟达',
-                        'MSFT': '微软', 'GOOGL': '谷歌', 'AMZN': '亚马逊',
-                        'META': 'Meta', 'NFLX': '奈飞'
-                    }
-                    stock_name = us_stock_names.get(stock_symbol.upper(), f"美股{stock_symbol}")
-                    logger.info(f"📊 获取美股名称: {stock_symbol} -> {stock_name}")
             except Exception as e:
                 logger.warning(f"⚠️ 获取股票名称失败: {stock_symbol} - {e}")
                 stock_name = stock_symbol
