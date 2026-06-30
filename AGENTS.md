@@ -92,6 +92,17 @@
 
 > 简单任务（解释项目结构、查数据、单点查询、回答问题、改配置/文档/规则）：直接做，不需要走 worktree 流程。不确定复杂度时按开发任务处理（走 worktree），宁可多走流程。
 
+### 改动规模与流程开销匹配（分层执行，避免过度流程）
+
+不同改动按规模走不同流程，不强制每个改动都走完整 Superpowers 四步（规划→执行→验证→收尾）：
+
+| 改动规模 | 流程 | 说明 |
+|---------|------|------|
+| **纯工具函数**（`utils/` 正则/字符串/字段映射） | worktree → `py_compile` + 单测 → 收尾 | 省去计划文档，单测覆盖即可 |
+| **单文件 bug 修复**（改一个 router/一个 service） | worktree → py_compile → curl API 验证 → 收尾 | 不需要写计划，但服务端链路必须真实接口验证 |
+| **新功能/多文件/架构改动** | 完整 Superpowers 四步流程 | 规划→执行→验证→收尾 |
+| **规则/规范/文档** | 直接在 main 改，不走 worktree | 符合工作流硬规则豁免 |
+
 ### 任务路由
 
 | 用户说什么 | 起始动作 |
@@ -103,19 +114,31 @@
 
 ### 统一验证清单
 
-按改动类型分层验证（**Python 适配，取代旧的 tsc/npm build**）：
+按改动类型分层验证（**Python 适配，取代旧的 tsc/npm build**）。主验证必须做、补充验证按需、禁止列明确什么手段不能用：
 
-| 改动类型 | 验证命令 | 说明 |
-|---------|---------|------|
-| Python 后端（`app/`、`tradingagents/`） | `python -m py_compile <file>` 或 `python -m pytest tests/ -x -q` | 语法检查 + 单测（集成测试默认跳过） |
-| 服务端 API 链路 | `curl http://localhost:8000/api/health` + 实际接口调用 | 必须跑真实服务端验证，不能只靠单测 |
-| 前端 Vue（`frontend/src/`） | `cd frontend && yarn type-check` | vue-tsc 类型检查 |
-| 前端构建 | `cd frontend && yarn build` | 仅大改动或发版前 |
-| 前端样式/交互 | 浏览器实际查看 | 需 dev server 在跑 |
-| 数据库/Mongo | `mongosh` 连接查询确认 | 改 schema 后必须验证 |
+| 改动类型 | 主验证（必须做） | 补充验证 | 禁止 |
+|---------|---------|---------|------|
+| **Python 纯函数/工具**（`utils/`、数据转换、正则、字段映射） | `python -m py_compile <file>` | `python -m pytest tests/xxx.py -q`（有对应单测时） | ❌ 起服务验证纯函数 |
+| **服务端 API 链路**（`app/routers/`、`app/services/`、`tradingagents/` 数据源/分析流程） | **curl 真实 API**（`http://localhost:8000/api/...`）+ **mongosh 直查落库结果** | `python -m py_compile`（辅助语法检查） | ❌ 用浏览器验证服务端逻辑；❌ 只 py_compile 就声称完成 |
+| **前端 Vue 逻辑/类型**（`frontend/src/` 数据绑定、props、composable） | `cd frontend && yarn type-check` | HMR（用户浏览器实时看到） | ❌ AI 主动开浏览器自动化截图验证 |
+| **前端视觉/CSS/布局/交互** | `cd frontend && yarn type-check`（确保不破坏类型） | **默认不开浏览器**，用户反馈问题后再排查 | ❌ AI 主动开浏览器做前端验证 |
+| **前端构建**（发版/大改动） | `cd frontend && yarn build` | — | ❌ 小改动也跑全量 build |
+| **数据库 schema/Mongo** | `mongosh` 连接查询确认 | — | ❌ 只看代码不查库确认 |
+
+**核心原则：本项目服务端逻辑（API/分析/数据源）占比大，默认走 curl API + mongosh 直查；前端改动只跑 type-check，UI 问题等用户反馈再排查，AI 不主动开浏览器。**
 
 - 集成测试：`python -m pytest -m integration tests/`（需真实环境，默认跳过）。
-- **禁止"编译通过就声称完成"**：服务端链路改动必须用真实接口调用验证。
+
+### 强制规则：服务端链路改动必须跑真实服务端验证（不只停在 py_compile）
+
+`py_compile` 只能验证语法，验证不了"集成到真实流程后是否生效"。因此：
+
+- 改动涉及服务端链路（`app/routers/`、`app/services/`、`tradingagents/` 数据源、分析流程、API 路由）时，改完必须**调一次真实服务端功能验证**，不能只 py_compile 就声称完成。
+- **标准验证方式**：backend 在端口 8000 运行，用 `curl`（中文参数用 Python `urllib` 避免 URL 编码问题）调用对应 API，再用 `mongosh` 直查落库结果确认改动生效。
+- `py_compile` 只能作辅助（确认语法/导入路径），不能替代真实服务端调用。
+- 纯工具函数改动（如 `utils/` 下正则、字符串处理）允许只用 `python -m pytest` 单测，不需要起服务。
+
+（具体的"禁止"手段见上方验证分层表的"禁止"列。）
 
 ### Subagent-Driven 子任务卡住时的处理
 
@@ -133,20 +156,29 @@
 
 ## 自我反思与流程优化（每次开发后强制执行）
 
+**目标：每个 bug 只允许出现一次。同类问题第二次出现，必须修改本文件或 MEMORY.md 永久预防；第三次视为严重流程缺陷。**
+
 ### 强制卡点：反思必须在合并之前
 
-合并回 main 之前，必须完成自我反思。反思结果写入 MEMORY.md（操作陷阱）或本文件（工作流规则）。
+执行顺序（硬约束）：
+1. 代码改完 + 验证通过
+2. **执行必答六问**（必须实际输出，不能跳过）
+3. 反思结论有优化项 → 修改 AGENTS.md / MEMORY.md（与本次改动一起提交）
+4. 反思结论无优化项 → 在 commit message 写明 `自我反思 - 本次无流程优化项`
+5. **然后才能** `git merge` + `git push`
 
 ### 必答六问
 
 每次开发完成后回答：
 
 1. **根因** — 这次问题/改动的根本原因是什么？
-2. **历史** — 是否是反复出现的同类问题？（查 MEMORY.md）
+2. **历史** — 是否是反复出现的同类问题？（查 MEMORY.md，反复出现是第几次？）
 3. **流程** — 现有流程是否有漏洞导致这次问题？
 4. **预防** — 能否通过加一条规则永久避免？
-5. **浪费** — 这次有没有浪费时间的操作？（无效命令、绕弯路）
-6. **Token** — 有没有浪费 token 的模式？（通读大文件、重复搜索）
+5. **浪费** — 这次有没有浪费时间的操作？（无效命令、绕弯路，必须列出具体步骤）
+6. **Token** — 有没有浪费 token 的模式？（通读大文件、重复搜索，必须列出具体步骤）
+
+**判断标准**：第 5 问（浪费）和第 6 问（Token）必须列出本次开发的具体步骤和优化动作。列不出具体步骤，说明反思不充分，需重新反思。
 
 ### 改完规则文件必须审查（强制闭环）
 
@@ -193,9 +225,27 @@
 大段工具输出（搜索结果、日志、JSON）用 `mcp__headroom__headroom_compress` 压缩后存引用，后续用 `headroom_retrieve` 取回。
 
 ### 6. Bug 诊断的最短路径（禁止绕弯）
-- 先看报错信息本身，定位到文件:行号，再决定下一步。不要一上来就通读整个模块。
-- 复现优先：先稳定复现，再定位根因，再修复。不要在不能复现的情况下盲改。
-- 改一处验证一处，不要攒一堆改动一起验证（出问题无法定位是哪处）。
+
+**通用前置**：先看报错信息本身，定位到文件:行号，再决定下一步。不要一上来就通读整个模块。复现优先：先稳定复现，再定位根因，再修复。改一处验证一处，不要攒一堆改动一起验证。
+
+**类型 A：前端数据不显示/不更新类 bug**（"页面空白""数据不刷新""列表为空"）
+1. 委派 Explore agent 定位代码 → 拿到数据流（store/composable/API 调用链）
+2. `curl` 直测后端 API → 确认后端数据是否正常返回
+3. 后端正常 → 读前端 store/composable 的响应式依赖，80% 的"不刷新"根因是依赖项缺失或响应式追踪断裂
+4. 后端异常 → `mongosh` 查对应集合数据，确认是数据问题还是查询逻辑问题
+
+**禁止**：❌ 写 Python 脚本查 MongoDB（curl API 能确认的事不走 DB 直查）；❌ 在确定根因前开浏览器自动化逐项试；❌ 写多个诊断脚本逐个跑。
+
+**类型 B：环境/工具类问题**（命令找不到、模块导入失败、端口冲突）
+- 先用一条命令确认环境状态（`where python` / `pip show <pkg>` / `netstat -ano | findstr :8000`），**不要试了才知道不行**
+- Windows Git Bash 下 `grep`/`ls`/`test` 部分版本行为与 Linux 不同，确认命令可用性再批量用
+
+**类型 C：LLM 调用失败类**（provider 报错、超时、空响应）
+- 先看 `.env` 对应 provider 的 `API_KEY` 和 `*_BASE_URL` 是否配置
+- 看 backend 日志（`docker-compose logs backend` 或本地日志）确认是鉴权失败、限频还是网络问题
+- 注意 Tushare 低积分账号会把"频率超限(40203)"包装成"token 不对"，见 MEMORY.md 验证类 #1
+
+**通用原则：能 curl / 能读代码确认的，绝不写诊断脚本。**
 
 ## 服务器管理
 
@@ -235,8 +285,9 @@ cd .worktrees/<task-name>
 #    （直接用主仓库 .venv 的解释器，或在 worktree 内建独立 venv）
 
 # 3. 前端：worktree 内 node_modules 较大，二选一
-#    a) 软链主仓库 node_modules（Windows 用 junction）：
-#       cmd //c "mklink /J .worktrees\<task-name>\frontend\node_modules ..\..\frontend\node_modules"
+#    a) 软链主仓库 node_modules（Windows 用 junction，必须用绝对路径）：
+#       cmd //c "mklink /J .worktrees\<task-name>\frontend\node_modules D:\Github\TradingAgentsA\frontend\node_modules"
+#       ⚠️ 相对路径（..\..\frontend\node_modules）会解析到错误位置，必须用绝对路径
 #    b) 或在 worktree 内单独 yarn install（耗时但隔离）
 
 # 4. add 后必须立即三重验证（add 返回成功也可能未注册），任一失败即停止、不可继续操作
@@ -363,6 +414,7 @@ mongodump --uri="$MONGODB_URI" --out=backups/backup_$(date +%Y-%m-%d_%H-%M-%S)
 - ❌ 合并推送后不删 worktree（`git worktree list` 残留）
 - ❌ 没有验证证据就声称完成（"编译通过"≠"完成"）
 - ❌ 服务端链路改动只跑单测不跑真实接口验证
+- ❌ 用浏览器验证服务端逻辑 / 主动开浏览器自动化验证前端 UI（应 curl API + mongosh 直查；前端只跑 type-check，UI 问题等用户反馈）
 - ❌ 在代码里硬编码密钥、端口、数据库连接串（应走 `.env` + Settings）
 - ❌ 用 `requirements.txt` 声明依赖（已废弃，用 `pyproject.toml`）
 - ❌ 前端用 npm（本项目用 yarn）
