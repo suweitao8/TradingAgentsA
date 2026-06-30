@@ -188,7 +188,7 @@ PS（TTM） = 2243.32 / 1357.81 = 1.65倍 ✅ 正确
 ### 2. 测试验证
 - [x] 单元测试（`scripts/test_ttm_calculation_logic.py`）
 - [x] 集成测试（`scripts/test_akshare_ttm_calculation.py`）
-- [x] 实际数据验证（`scripts/verify_ttm_calculation_000001.py`）
+- [x] 实际数据验证（`scripts/verify_ttm_calculation_000001.py`，一次性验证脚本已清理）
 - [ ] 批量数据验证（多只股票）
 - [ ] 实时 API 调用测试
 
@@ -207,7 +207,7 @@ PS（TTM） = 2243.32 / 1357.81 = 1.65倍 ✅ 正确
 ### 新增的文件
 - `scripts/test_ttm_calculation_logic.py` - TTM 计算逻辑测试
 - `scripts/test_akshare_ttm_calculation.py` - AKShare TTM 测试
-- `scripts/verify_ttm_calculation_000001.py` - 实际数据验证
+- `scripts/verify_ttm_calculation_000001.py` - 实际数据验证（一次性脚本，已清理）
 - `scripts/test_ps_calculation_verification.py` - PS 计算验证
 - `docs/bugfix/2025-10-26-ps-calculation-fix.md` - PS 修复文档
 - `docs/bugfix/2025-10-26-realtime-api-ttm-issues.md` - 实时 API 问题文档
