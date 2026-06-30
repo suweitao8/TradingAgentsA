@@ -40,10 +40,6 @@
           <el-button @click="openTagManager">
             标签管理
           </el-button>
-          <el-button type="primary" @click="showAddDialog">
-            <el-icon><Plus /></el-icon>
-            添加自选股
-          </el-button>
           <el-button type="success" @click="showBatchImportDialog">
             <el-icon><Upload /></el-icon>
             批量导入
@@ -211,69 +207,13 @@
       <!-- 空状态 -->
       <div v-if="!loading && favorites.length === 0" class="empty-state">
         <el-empty description="暂无自选股">
-          <el-button type="primary" @click="showAddDialog">
-            添加第一只自选股
+          <el-button type="primary" @click="showBatchImportDialog">
+            批量导入自选股
           </el-button>
         </el-empty>
       </div>
     </el-card>
 
-    <!-- 添加自选股对话框 -->
-    <el-dialog
-      v-model="addDialogVisible"
-      title="添加自选股"
-      width="500px"
-    >
-      <el-form :model="addForm" :rules="addRules" ref="addFormRef" label-width="100px">
-        <el-form-item label="股票代码" prop="stock_code">
-          <el-input
-            v-model="addForm.stock_code"
-            placeholder="请输入6位数字代码，如：000001"
-            @blur="fetchStockInfo"
-          />
-          <div style="font-size: 12px; color: #909399; margin-top: 4px;">
-            输入代码后失焦，将自动填充股票名称
-          </div>
-        </el-form-item>
-
-        <el-form-item label="股票名称" prop="stock_name">
-          <el-input v-model="addForm.stock_name" placeholder="股票名称" />
-        </el-form-item>
-
-        <el-form-item label="标签">
-          <el-select
-            v-model="addForm.tags"
-            multiple
-            filterable
-            allow-create
-            placeholder="选择或创建标签"
-          >
-            <el-option v-for="tag in userTags" :key="tag" :label="tag" :value="tag">
-              <span :style="{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }">
-                <span>{{ tag }}</span>
-                <span :style="{ display:'inline-block', width:'12px', height:'12px', border:'1px solid #ddd', borderRadius:'2px', marginLeft:'8px', background: getTagColor(tag) }"></span>
-              </span>
-            </el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="备注">
-          <el-input
-            v-model="addForm.notes"
-            type="textarea"
-            :rows="2"
-            placeholder="可选：添加备注信息"
-          />
-        </el-form-item>
-      </el-form>
-
-      <template #footer>
-        <el-button @click="addDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleAddFavorite" :loading="addLoading">
-          添加
-        </el-button>
-      </template>
-    </el-dialog>
     <!-- 编辑自选股对话框 -->
     <el-dialog
       v-model="editDialogVisible"
@@ -558,7 +498,6 @@ import { useRouter } from 'vue-router'
 import {
   Search,
   Refresh,
-  Plus,
   Download,
   Upload
 } from '@element-plus/icons-vue'
@@ -566,7 +505,6 @@ import { favoritesApi } from '@/api/favorites'
 import { tagsApi } from '@/api/tags'
 import { stockSyncApi } from '@/api/stockSync'
 import { normalizeMarketForAnalysis } from '@/utils/market'
-import { ApiClient } from '@/api/request'
 
 import type { FavoriteItem } from '@/api/favorites'
 
@@ -627,18 +565,6 @@ const singleSyncForm = ref({
   days: 365
 })
 
-// 添加对话框
-const addDialogVisible = ref(false)
-const addLoading = ref(false)
-const addFormRef = ref()
-const addForm = ref({
-  stock_code: '',
-  stock_name: '',
-  market: 'A股',
-  tags: [],
-  notes: ''
-})
-
 // 批量导入对话框
 const batchImportDialogVisible = ref(false)
 const batchImportLoading = ref(false)
@@ -650,37 +576,6 @@ const batchImportResult = ref<{
   existed: number
   failed: string[]
 } | null>(null)
-
-// 股票代码验证器
-const validateStockCode = (_rule: any, value: any, callback: any) => {
-  if (!value) {
-    callback(new Error('请输入股票代码'))
-    return
-  }
-
-  const code = value.trim()
-  const market = addForm.value.market
-
-  if (market === 'A股') {
-    // A股：6位数字
-    if (!/^\d{6}$/.test(code)) {
-      callback(new Error('A股代码必须是6位数字，如：000001'))
-      return
-    }
-  }
-
-  callback()
-}
-
-const addRules = {
-  stock_code: [
-    { required: true, message: '请输入股票代码', trigger: 'blur' },
-    { validator: validateStockCode, trigger: 'blur' }
-  ],
-  stock_name: [
-    { required: true, message: '请输入股票名称', trigger: 'blur' }
-  ]
-}
 
 // 编辑对话框
 const editDialogVisible = ref(false)
@@ -884,64 +779,6 @@ const deleteTag = async (row: any) => {
 const refreshData = () => {
   loadFavorites()
   loadUserTags()
-}
-
-const showAddDialog = () => {
-  addForm.value = {
-    stock_code: '',
-    stock_name: '',
-    market: 'A股',
-    tags: [],
-    notes: ''
-  }
-  addDialogVisible.value = true
-}
-
-// 市场类型切换时清空股票代码和名称
-const fetchStockInfo = async () => {
-  if (!addForm.value.stock_code) return
-
-  try {
-    const symbol = addForm.value.stock_code.trim()
-    const market = addForm.value.market
-
-    // 🔥 只有A股支持自动获取股票名称
-    if (market === 'A股') {
-      // 从后台获取股票基础信息
-      const res = await ApiClient.get(`/api/stock-data/basic-info/${symbol}`)
-
-      if ((res as any)?.success && (res as any)?.data) {
-        const stockInfo = (res as any).data
-        // 自动填充股票名称
-        if (stockInfo.name) {
-          addForm.value.stock_name = stockInfo.name
-          ElMessage.success(`已自动填充股票名称: ${stockInfo.name}`)
-        }
-      } else {
-        ElMessage.warning('未找到该股票信息，请手动输入股票名称')
-      }
-    }  } catch (error: any) {
-    console.error('获取股票信息失败:', error)
-    ElMessage.warning('获取股票信息失败，请手动输入股票名称')
-  }
-}
-
-const handleAddFavorite = async () => {
-  try {
-    await addFormRef.value.validate()
-    addLoading.value = true
-    const payload = { ...addForm.value }
-    const res = await favoritesApi.add(payload as any)
-    if ((res as any)?.success === false) throw new Error((res as any)?.message || '添加失败')
-    ElMessage.success('添加成功')
-    addDialogVisible.value = false
-    await loadFavorites()
-  } catch (error: any) {
-    console.error('添加自选股失败:', error)
-    ElMessage.error(error.message || '添加失败')
-  } finally {
-    addLoading.value = false
-  }
 }
 
 // ========== 批量导入 ==========
