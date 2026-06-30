@@ -25,29 +25,18 @@
           </el-input>
         </el-col>
 
-        <el-col :span="4">
-          <el-select v-model="selectedMarket" placeholder="市场" clearable>
-            <el-option label="A股" value="A股" />          </el-select>
-        </el-col>
-
-        <el-col :span="4">
-          <el-select v-model="selectedBoard" placeholder="板块" clearable>
-            <el-option label="主板" value="主板" />
-            <el-option label="创业板" value="创业板" />
-            <el-option label="科创板" value="科创板" />
-            <el-option label="北交所" value="北交所" />
+        <el-col :span="5">
+          <el-select v-model="selectedIndustry" placeholder="行业" clearable filterable>
+            <el-option
+              v-for="ind in industryOptions"
+              :key="ind"
+              :label="ind"
+              :value="ind"
+            />
           </el-select>
         </el-col>
 
-        <el-col :span="4">
-          <el-select v-model="selectedExchange" placeholder="交易所" clearable>
-            <el-option label="上海证券交易所" value="上海证券交易所" />
-            <el-option label="深圳证券交易所" value="深圳证券交易所" />
-            <el-option label="北京证券交易所" value="北京证券交易所" />
-          </el-select>
-        </el-col>
-
-        <el-col :span="4">
+        <el-col :span="5">
           <el-select v-model="selectedTag" placeholder="标签" clearable>
             <el-option
               v-for="tag in userTags"
@@ -119,19 +108,18 @@
         </el-table-column>
 
         <el-table-column prop="stock_name" label="股票名称" width="150" />
-        <el-table-column prop="market" label="市场" width="80">
+
+        <el-table-column prop="industry" label="行业" width="150">
           <template #default="{ row }">
-            {{ row.market || 'A股' }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="board" label="板块" width="100">
-          <template #default="{ row }">
-            {{ row.board || '-' }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="exchange" label="交易所" width="140">
-          <template #default="{ row }">
-            {{ row.exchange || '-' }}
+            <el-tag
+              v-if="row.industry && row.industry !== '-'"
+              size="small"
+              effect="plain"
+              type="info"
+            >
+              {{ row.industry }}
+            </el-tag>
+            <span v-else>-</span>
           </template>
         </el-table-column>
 
@@ -149,6 +137,27 @@
               :class="getChangeClass(row.change_percent)"
             >
               {{ formatPercent(row.change_percent) }}
+            </span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="turnover_rate" label="换手率" width="100">
+          <template #default="{ row }">
+            <span v-if="row.turnover_rate !== null && row.turnover_rate !== undefined">
+              {{ Number(row.turnover_rate).toFixed(2) }}%
+            </span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="volume_ratio" label="量比" width="90">
+          <template #default="{ row }">
+            <span
+              v-if="row.volume_ratio !== null && row.volume_ratio !== undefined"
+              :class="{ 'text-danger': row.volume_ratio >= 2, 'text-warning': row.volume_ratio >= 1 && row.volume_ratio < 2 }"
+            >
+              {{ Number(row.volume_ratio).toFixed(2) }}
             </span>
             <span v-else>-</span>
           </template>
@@ -230,27 +239,19 @@
       width="500px"
     >
       <el-form :model="addForm" :rules="addRules" ref="addFormRef" label-width="100px">
-        <el-form-item label="市场类型" prop="market">
-          <el-select v-model="addForm.market" @change="handleMarketChange">
-            <el-option label="A股" value="A股" />          </el-select>
-        </el-form-item>
-
         <el-form-item label="股票代码" prop="stock_code">
           <el-input
             v-model="addForm.stock_code"
-            :placeholder="getStockCodePlaceholder()"
+            placeholder="请输入6位数字代码，如：000001"
             @blur="fetchStockInfo"
           />
           <div style="font-size: 12px; color: #909399; margin-top: 4px;">
-            {{ getStockCodeHint() }}
+            输入代码后失焦，将自动填充股票名称
           </div>
         </el-form-item>
 
         <el-form-item label="股票名称" prop="stock_name">
           <el-input v-model="addForm.stock_name" placeholder="股票名称" />
-          <div v-if="addForm.market !== 'A股'" style="font-size: 12px; color: #E6A23C; margin-top: 4px;">
-            {{ addForm.market }}不支持自动获取，请手动输入股票名称
-          </div>
         </el-form-item>
 
         <el-form-item label="标签">
@@ -295,7 +296,7 @@
     >
       <el-form :model="editForm" ref="editFormRef" label-width="100px">
         <el-form-item label="股票">
-          <div>{{ editForm.stock_code }}｜{{ editForm.stock_name }}（{{ editForm.market }}）</div>
+          <div>{{ editForm.stock_code }}｜{{ editForm.stock_name }}<span v-if="editForm.industry && editForm.industry !== '-'" style="color: #909399; margin-left: 8px;">{{ editForm.industry }}</span></div>
         </el-form-item>
 
         <el-form-item label="标签">
@@ -604,9 +605,7 @@ const getTagColor = (name: string) => tagColorMap.value[name] || ''
 
 const searchKeyword = ref('')
 const selectedTag = ref('')
-const selectedMarket = ref('')
-const selectedBoard = ref('')
-const selectedExchange = ref('')
+const selectedIndustry = ref('')
 
 // 批量选择
 const selectedStocks = ref<FavoriteItem[]>([])
@@ -679,9 +678,6 @@ const validateStockCode = (_rule: any, value: any, callback: any) => {
 }
 
 const addRules = {
-  market: [
-    { required: true, message: '请选择市场类型', trigger: 'change' }
-  ],
   stock_code: [
     { required: true, message: '请输入股票代码', trigger: 'blur' },
     { validator: validateStockCode, trigger: 'blur' }
@@ -699,6 +695,7 @@ const editForm = ref({
   stock_code: '',
   stock_name: '',
   market: 'A股',
+  industry: '-',
   tags: [] as string[],
   notes: ''
 })
@@ -717,24 +714,10 @@ const filteredFavorites = computed<FavoriteItem[]>(() => {
     )
   }
 
-  // 市场筛选
-  if (selectedMarket.value) {
+  // 行业筛选
+  if (selectedIndustry.value) {
     result = result.filter((item: FavoriteItem) =>
-      item.market === selectedMarket.value
-    )
-  }
-
-  // 板块筛选
-  if (selectedBoard.value) {
-    result = result.filter((item: FavoriteItem) =>
-      item.board === selectedBoard.value
-    )
-  }
-
-  // 交易所筛选
-  if (selectedExchange.value) {
-    result = result.filter((item: FavoriteItem) =>
-      item.exchange === selectedExchange.value
+      (item.industry || '-') === selectedIndustry.value
     )
   }
 
@@ -746,6 +729,18 @@ const filteredFavorites = computed<FavoriteItem[]>(() => {
   }
 
   return result
+})
+
+// 行业下拉选项（从已加载的自选股中动态聚合）
+const industryOptions = computed(() => {
+  const set = new Set<string>()
+  favorites.value.forEach((item: FavoriteItem) => {
+    const ind = item.industry
+    if (ind && ind !== '-') {
+      set.add(ind)
+    }
+  })
+  return Array.from(set).sort()
 })
 
 // 判断是否有A股自选股
@@ -934,31 +929,6 @@ const showAddDialog = () => {
 }
 
 // 市场类型切换时清空股票代码和名称
-const handleMarketChange = () => {
-  addForm.value.stock_code = ''
-  addForm.value.stock_name = ''
-  // 清除验证错误
-  if (addFormRef.value) {
-    addFormRef.value.clearValidate(['stock_code', 'stock_name'])
-  }
-}
-
-// 获取股票代码输入提示
-const getStockCodePlaceholder = () => {
-  const market = addForm.value.market
-  if (market === 'A股') {
-    return '请输入6位数字代码，如：000001'
-  }  return '请输入股票代码'
-}
-
-// 获取股票代码输入提示文字
-const getStockCodeHint = () => {
-  const market = addForm.value.market
-  if (market === 'A股') {
-    return '输入代码后失焦，将自动填充股票名称'
-  }  return ''
-}
-
 const fetchStockInfo = async () => {
   if (!addForm.value.stock_code) return
 
@@ -1127,6 +1097,7 @@ const editFavorite = (row: any) => {
     stock_code: row.stock_code,
     stock_name: row.stock_name,
     market: row.market || 'A股',
+    industry: row.industry || '-',
     tags: Array.isArray(row.tags) ? [...row.tags] : [],
     notes: row.notes || ''
   }

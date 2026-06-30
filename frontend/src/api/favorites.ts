@@ -5,8 +5,7 @@ export interface FavoriteItem {
   stock_code?: string  // 兼容字段（已废弃）
   stock_name: string
   market: string
-  board?: string
-  exchange?: string
+  industry?: string  // AI 识别的细分行业赛道
   added_at?: string
   tags?: string[]
   notes?: string
@@ -14,7 +13,8 @@ export interface FavoriteItem {
   alert_price_low?: number | null
   current_price?: number | null
   change_percent?: number | null
-  volume?: number | null
+  turnover_rate?: number | null  // 换手率(%)
+  volume_ratio?: number | null   // 量比
 }
 
 export interface AddFavoriteReq {

@@ -41,6 +41,7 @@ class FavoriteStockResponse(BaseModel):
     stock_code: str
     stock_name: str
     market: str
+    industry: str = "-"
     added_at: str
     tags: List[str]
     notes: str
@@ -49,7 +50,8 @@ class FavoriteStockResponse(BaseModel):
     # 实时数据
     current_price: Optional[float] = None
     change_percent: Optional[float] = None
-    volume: Optional[int] = None
+    turnover_rate: Optional[float] = None
+    volume_ratio: Optional[float] = None
 
 
 @router.get("/", response_model=dict)

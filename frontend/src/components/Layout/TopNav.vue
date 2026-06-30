@@ -246,8 +246,6 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  max-width: 1600px;
-  margin: 0 auto;
 }
 
 // ---- Logo 区 ----

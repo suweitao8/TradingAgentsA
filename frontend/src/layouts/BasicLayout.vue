@@ -36,8 +36,7 @@ import TopNav from '@/components/Layout/TopNav.vue'
   min-height: calc(100vh - 60px); // 减去 TopNav 高度
 
   .content-wrapper {
-    max-width: 1400px;
-    margin: 0 auto;
+    width: 100%;
   }
 }
 

@@ -51,7 +51,9 @@ class FavoritesService:
             # 行情占位，稍后填充
             "current_price": None,
             "change_percent": None,
-            "volume": None,
+            "turnover_rate": None,
+            "volume_ratio": None,
+            "industry": "-",
         }
 
     async def get_user_favorites(self, user_id: str) -> List[Dict[str, Any]]:
@@ -115,7 +117,10 @@ class FavoritesService:
         if codes:
             try:
                 coll = db["market_quotes"]
-                cursor = coll.find({"code": {"$in": codes}}, {"code": 1, "close": 1, "pct_chg": 1, "amount": 1})
+                cursor = coll.find(
+                    {"code": {"$in": codes}},
+                    {"code": 1, "close": 1, "pct_chg": 1, "amount": 1, "turnover_rate": 1, "volume_ratio": 1},
+                )
                 docs = await cursor.to_list(length=None)
                 quotes_map = {str(d.get("code")).zfill(6): d for d in (docs or [])}
                 for it in items:
@@ -124,22 +129,57 @@ class FavoritesService:
                     if q:
                         it["current_price"] = q.get("close")
                         it["change_percent"] = q.get("pct_chg")
-                # 兜底：对未命中的代码使用在线源补齐（可选）
-                missing = [c for c in codes if c not in quotes_map]
-                if missing:
-                    try:
-                        quotes_online = await get_quotes_service().get_quotes(missing)
-                        for it in items:
-                            code = it.get("stock_code")
-                            if it.get("current_price") is None:
-                                q2 = quotes_online.get(code, {}) if quotes_online else {}
-                                it["current_price"] = q2.get("close")
-                                it["change_percent"] = q2.get("pct_chg")
-                    except Exception:
-                        pass
+                        it["turnover_rate"] = q.get("turnover_rate")
+                        it["volume_ratio"] = q.get("volume_ratio")
+                # 兜底：用东方财富实时快照补齐行情（market_quotes 可能缺换手率/量比，
+                # 或某些代码未入库）。quotes_service 自带 30 秒内存缓存，不会重复请求。
+                try:
+                    quotes_online = await get_quotes_service().get_quotes(codes)
+                    for it in items:
+                        code = it.get("stock_code")
+                        q2 = quotes_online.get(code, {}) if quotes_online else {}
+                        if not q2:
+                            continue
+                        # 价格/涨跌幅：market_quotes 没有时用在线补齐
+                        if it.get("current_price") is None:
+                            it["current_price"] = q2.get("close")
+                        if it.get("change_percent") is None:
+                            it["change_percent"] = q2.get("pct_chg")
+                        # 换手率/量比：在线源（东方财富 spot）字段更全，优先采用
+                        if q2.get("turnover_rate") is not None:
+                            it["turnover_rate"] = q2.get("turnover_rate")
+                        if q2.get("volume_ratio") is not None:
+                            it["volume_ratio"] = q2.get("volume_ratio")
+                except Exception:
+                    pass
             except Exception:
                 # 查询失败时保持占位 None，避免影响基础功能
                 pass
+
+        # 批量识别行业（用大模型细分赛道）
+        # 策略：先同步从 DB 取已识别的行业（毫秒级），未命中的后台异步 LLM 识别，
+        # 不阻塞当前请求（下次刷新时填充）。这样列表加载不会被 LLM 耗时拖慢。
+        if codes:
+            try:
+                from app.services.industry_service import get_industry_service
+                svc = get_industry_service()
+                # 同步层：只从 DB 快速取（不触发 LLM）
+                industry_map = await svc.get_cached_industries(codes)
+                missing_codes = [c for c in codes if c not in industry_map or not industry_map[c] or industry_map[c] == "-"]
+                for it in items:
+                    code = it.get("stock_code")
+                    it["industry"] = industry_map.get(code, "-")
+                # 后台异步识别未命中的（不 await，不阻塞）
+                if missing_codes:
+                    import asyncio
+                    # 带上股票名称，提升 LLM 识别准确率
+                    name_map = {it.get("stock_code"): it.get("stock_name", "") for it in items}
+                    asyncio.create_task(svc.identify_industries(missing_codes, name_map=name_map))
+            except Exception as e:
+                # 行业识别失败不阻塞列表加载
+                for it in items:
+                    if "industry" not in it:
+                        it["industry"] = "-"
 
         return items
 
