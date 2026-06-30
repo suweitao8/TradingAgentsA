@@ -25,7 +25,7 @@ export interface AppState {
   // 当前路由信息
   currentRoute: RouteLocationNormalized | null
 
-  // 用户偏好
+  // 用户偏好（本地缓存，轻量级）
   preferences: {
     defaultMarket: 'A股' | '美股' | '港股'
     defaultDepth: '1' | '2' | '3' | '4' | '5'  // 1-5级分析深度
@@ -33,6 +33,9 @@ export interface AppState {
     refreshInterval: number
     showWelcome: boolean
   }
+
+  // 服务端偏好（从后端加载的完整偏好，供设置页读写）
+  serverPreferences: UserPreferences | null
 
   // 系统信息
   version: string
@@ -71,6 +74,8 @@ export const useAppStore = defineStore('app', {
     currentRoute: null,
 
     preferences: (useStorage<AppPreferences>('user-preferences', defaultPreferences).value || defaultPreferences) as AppPreferences,
+
+    serverPreferences: null,
 
     version: '0.1.16',
     buildTime: new Date().toISOString(),
@@ -146,7 +151,7 @@ export const useAppStore = defineStore('app', {
       // 更新meta标签
       const themeColorMeta = document.querySelector('meta[name="theme-color"]')
       if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', isDark ? '#1f2937' : '#409EFF')
+        themeColorMeta.setAttribute('content', isDark ? '#1f2937' : '#2f7bff')
       }
     },
     
@@ -187,6 +192,56 @@ export const useAppStore = defineStore('app', {
       this.preferences = { ...this.preferences, ...preferences }
       // 同步到 localStorage
       localStorage.setItem('user-preferences', JSON.stringify(this.preferences))
+    },
+
+    // 从后端加载偏好设置
+    async fetchPreferences() {
+      try {
+        const res = await ApiClient.get('/api/settings/preferences')
+        if (res.success && res.data) {
+          this.serverPreferences = res.data
+          this.applyServerPreferences(res.data)
+        }
+      } catch (error) {
+        console.warn('⚠️ 加载偏好设置失败，使用默认值', error)
+      }
+    },
+
+    // 保存偏好设置到后端
+    async savePreferences(prefs: UserPreferences): Promise<boolean> {
+      try {
+        const res = await ApiClient.put('/api/settings/preferences', prefs)
+        if (res.success && res.data) {
+          this.serverPreferences = res.data
+          this.applyServerPreferences(res.data)
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error('保存偏好设置失败:', error)
+        return false
+      }
+    },
+
+    // 将后端偏好同步到本地状态（theme/sidebar/language/preferences）
+    applyServerPreferences(prefs: UserPreferences) {
+      if (prefs.ui_theme) {
+        this.setTheme(prefs.ui_theme as 'light' | 'dark' | 'auto')
+      }
+      if (prefs.sidebar_width) {
+        this.setSidebarWidth(prefs.sidebar_width)
+      }
+      if (prefs.language) {
+        this.setLanguage(prefs.language as 'zh-CN' | 'en-US')
+      }
+      if (prefs.default_market || prefs.default_depth || prefs.auto_refresh !== undefined || prefs.refresh_interval) {
+        this.updatePreferences({
+          defaultMarket: (prefs.default_market as any) || this.preferences.defaultMarket,
+          defaultDepth: (prefs.default_depth as any) || this.preferences.defaultDepth,
+          autoRefresh: prefs.auto_refresh ?? this.preferences.autoRefresh,
+          refreshInterval: prefs.refresh_interval ?? this.preferences.refreshInterval,
+        })
+      }
     },
     
     // 重置偏好设置

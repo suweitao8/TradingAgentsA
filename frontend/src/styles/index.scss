@@ -1,6 +1,9 @@
-// 全局样式文件
+/**
+ * 全局样式 — glassmorphism 主题
+ * 基于 tokens.scss 的设计令牌，为 Element Plus 组件统一玻璃拟态外观。
+ */
 
-// 重置样式
+// ===== 重置 =====
 * {
   box-sizing: border-box;
 }
@@ -9,93 +12,207 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--glass-page-bg);
+  color: var(--glass-text-primary);
 }
 
-// 优化标题样式（浅色主题）
+// ===== 标题 =====
 h1, h2, h3, h4, h5, h6 {
-  color: #1a202c;
+  color: var(--glass-text-primary);
   font-weight: 600;
 }
 
-h1 {
-  font-size: 32px;
-}
+h1 { font-size: 28px; }
+h2 { font-size: 24px; }
+h3 { font-size: 20px; }
+h4 { font-size: 18px; }
+h5 { font-size: 16px; }
+h6 { font-size: 14px; }
 
-h2 {
-  font-size: 28px;
-}
-
-h3 {
-  font-size: 24px;
-}
-
-h4 {
-  font-size: 20px;
-}
-
-h5 {
-  font-size: 18px;
-}
-
-h6 {
-  font-size: 16px;
-}
-
-// 优化卡片标题
-.el-card__header {
-  h1, h2, h3, h4, h5, h6 {
-    color: #1a202c;
-    font-weight: 600;
-    margin: 0;
-  }
-}
-
-// 优化页面标题
+// ===== 页面标题工具类（令牌驱动，无需 !important）=====
 .page-title,
 .section-title,
 .card-title {
-  color: #1a202c !important;
-  font-weight: 600 !important;
+  color: var(--glass-text-primary);
+  font-weight: 600;
 }
 
-// 全局工具类
-.text-center {
-  text-align: center;
-}
+// ===== Element Plus 组件玻璃拟态增强 =====
 
-.text-left {
-  text-align: left;
-}
+// 卡片
+.el-card {
+  background: var(--glass-bg-surface);
+  backdrop-filter: blur(var(--glass-blur-md)) saturate(1.08);
+  -webkit-backdrop-filter: blur(var(--glass-blur-md)) saturate(1.08);
+  border: 1px solid var(--glass-stroke-base);
+  border-radius: var(--glass-radius-lg);
+  box-shadow: var(--glass-shadow-sm);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
 
-.text-right {
-  text-align: right;
-}
-
-.flex {
-  display: flex;
-}
-
-.flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.flex-between {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-// 响应式工具类
-@media (max-width: 768px) {
-  .mobile-hidden {
-    display: none !important;
+  // hover 阴影增强（仅对有 shadow 属性的卡片）
+  &.is-hover-shadow:hover,
+  &[class*="shadow-hover"]:hover {
+    box-shadow: var(--glass-shadow-md);
   }
+
+  .el-card__header {
+    background: transparent;
+    border-bottom: 1px solid var(--glass-stroke-base);
+    color: var(--glass-text-primary);
+    font-weight: 600;
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--glass-text-primary);
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+}
+
+// 对话框
+.el-dialog {
+  background: var(--glass-bg-surface-strong);
+  backdrop-filter: blur(var(--glass-blur-lg)) saturate(1.08);
+  -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(1.08);
+  border: 1px solid var(--glass-stroke-base);
+  border-radius: var(--glass-radius-lg);
+  box-shadow: var(--glass-shadow-lg);
+
+  .el-dialog__header {
+    .el-dialog__title {
+      color: var(--glass-text-primary);
+      font-weight: 600;
+    }
+  }
+
+  .el-dialog__body {
+    color: var(--glass-text-secondary);
+  }
+}
+
+// 抽屉
+.el-drawer {
+  background: var(--glass-bg-surface-strong);
+  backdrop-filter: blur(var(--glass-blur-lg)) saturate(1.08);
+  -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(1.08);
+
+  .el-drawer__header {
+    color: var(--glass-text-primary);
+    font-weight: 600;
+
+    .el-drawer__title {
+      color: var(--glass-text-primary);
+    }
+  }
+}
+
+// 输入框
+.el-input__wrapper,
+.el-textarea__inner {
+  background: var(--glass-bg-surface) !important;
+  box-shadow: 0 0 0 1px var(--glass-stroke-base) inset !important;
+  border-radius: var(--glass-radius-sm) !important;
+  transition: box-shadow 0.2s ease !important;
+
+  &:hover {
+    box-shadow: 0 0 0 1px var(--glass-stroke-strong) inset !important;
+  }
+
+  &.is-focus,
+  &:focus-within {
+    box-shadow: 0 0 0 1px var(--el-color-primary) inset,
+                0 0 0 3px rgba(47, 123, 255, 0.12) !important;
+  }
+}
+
+.el-textarea__inner {
+  &:focus {
+    box-shadow: 0 0 0 1px var(--el-color-primary) inset,
+                0 0 0 3px rgba(47, 123, 255, 0.12) !important;
+  }
+}
+
+// 下拉菜单
+.el-dropdown-menu {
+  background: var(--glass-bg-surface-strong);
+  backdrop-filter: blur(var(--glass-blur-lg));
+  -webkit-backdrop-filter: blur(var(--glass-blur-lg));
+  border: 1px solid var(--glass-stroke-base);
+  border-radius: var(--glass-radius-md);
+  box-shadow: var(--glass-shadow-md);
+}
+
+// 表格
+.el-table {
+  background: transparent;
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: rgba(0, 0, 0, 0.02);
+
+  th.el-table__cell {
+    background-color: rgba(0, 0, 0, 0.02) !important;
+    color: var(--glass-text-secondary);
+    font-weight: 600;
+  }
+}
+
+// 标签页
+.el-tabs__nav-wrap::after {
+  background-color: var(--glass-stroke-base);
+}
+
+// 按钮 primary 增强
+.el-button--primary {
+  background: var(--glass-brand-gradient);
+  border: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(47, 123, 255, 0.25);
+  }
+}
+
+// ===== 滚动条美化 =====
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--glass-stroke-strong);
+  border-radius: 999px;
+
+  &:hover {
+    background: var(--glass-text-tertiary);
+  }
+}
+
+// Firefox
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-stroke-strong) transparent;
+}
+
+// ===== 工具类 =====
+.text-center { text-align: center; }
+.text-left   { text-align: left; }
+.text-right  { text-align: right; }
+
+.flex        { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+
+@media (max-width: 768px) {
+  .mobile-hidden { display: none !important; }
 }
 
 @media (min-width: 769px) {
-  .desktop-hidden {
-    display: none !important;
-  }
+  .desktop-hidden { display: none !important; }
 }

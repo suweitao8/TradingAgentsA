@@ -323,7 +323,7 @@ const renderModelChart = () => {
         data: data.map(item => item.value),
         type: 'bar',
         itemStyle: {
-          color: '#409EFF'
+          color: '#2f7bff'
         }
       }
     ]

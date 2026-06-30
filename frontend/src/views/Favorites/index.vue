@@ -193,7 +193,7 @@
               type="text"
               size="small"
               @click="showSingleSyncDialog(row)"
-              style="color: #409EFF;"
+              style="color: #2f7bff;"
             >
               同步
             </el-button>
@@ -593,7 +593,7 @@ import type { FavoriteItem } from '@/api/favorites'
 
 // 颜色可选项（20种预设颜色）
 const COLOR_PALETTE = [
-  '#409EFF', '#1677FF', '#2F88FF', '#52C41A', '#67C23A',
+  '#2f7bff', '#1677FF', '#2F88FF', '#52C41A', '#67C23A',
   '#13C2C2', '#FA8C16', '#E6A23C', '#F56C6C', '#EB2F96',
   '#722ED1', '#8E44AD', '#00BFBF', '#1F2D3D', '#606266',
   '#909399', '#C0C4CC', '#FF7F50', '#A0CFFF', '#2C3E50'
@@ -844,7 +844,7 @@ const loadUserTags = async () => {
 const tagDialogVisible = ref(false)
 const tagLoading = ref(false)
 const tagList = ref<any[]>([])
-const newTag = ref({ name: '', color: '#409EFF', sort_order: 0 })
+const newTag = ref({ name: '', color: '#2f7bff', sort_order: 0 })
 
 const loadTagList = async () => {
   tagLoading.value = true
@@ -872,7 +872,7 @@ const createTag = async () => {
   try {
     await tagsApi.create({ ...newTag.value })
     ElMessage.success('创建成功')
-    newTag.value = { name: '', color: '#409EFF', sort_order: 0 }
+    newTag.value = { name: '', color: '#2f7bff', sort_order: 0 }
     await loadTagList()
     await loadUserTags()
   } catch (e: any) {

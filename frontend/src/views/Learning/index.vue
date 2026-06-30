@@ -103,12 +103,21 @@
         </el-col>
       </el-row>
     </div>
+
+    <!-- 分类弹窗 -->
+    <LearningDialog
+      v-model="dialogVisible"
+      :category="dialogCategory"
+      :article-id="dialogArticleId"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import LearningDialog from './LearningDialog.vue'
+import { isExternalArticle, externalMap, findCategoryByArticle } from './data'
 
 const router = useRouter()
 
@@ -152,36 +161,48 @@ const recommendedArticles = ref<RecommendedArticle[]>([
   }
 ])
 
+// ---- 分类弹窗 ----
+const dialogVisible = ref(false)
+const dialogCategory = ref('')
+const dialogArticleId = ref<string | undefined>(undefined)
+
+// 点击分类卡片：打开弹窗
 const navigateTo = (category: string) => {
-  router.push(`/learning/${category}`)
+  dialogCategory.value = category
+  dialogArticleId.value = undefined
+  dialogVisible.value = true
 }
 
+// 点击推荐文章：定位到文章所属分类的弹窗
 const openArticle = (articleId: string) => {
   // 外链文章直接在新标签打开
-  const externalMap: Record<string, string> = {
-    'getting-started': 'https://mp.weixin.qq.com/s/uAk4RevdJHMuMvlqpdGUEw',
-    'usage-guide-preview': 'https://mp.weixin.qq.com/s/ppsYiBncynxlsfKFG8uEbw'
-  }
-  const external = externalMap[articleId]
-  if (external) {
-    window.open(external, '_blank')
+  if (isExternalArticle(articleId)) {
+    window.open(externalMap[articleId], '_blank')
     return
   }
-  router.push(`/learning/article/${articleId}`)
+  // 本地文章：找到所属分类，打开弹窗并定位到该文章
+  const category = findCategoryByArticle(articleId)
+  if (category) {
+    dialogCategory.value = category
+    dialogArticleId.value = articleId
+    dialogVisible.value = true
+  } else {
+    // fallback：无分类信息时走路由
+    router.push(`/learning/article/${articleId}`)
+  }
 }
 </script>
 
 <style scoped lang="scss">
 .learning-center {
   padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
 
   .learning-header {
     text-align: center;
     margin-bottom: 48px;
     padding: 40px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--glass-brand-gradient);
     border-radius: 16px;
     color: white;
 
