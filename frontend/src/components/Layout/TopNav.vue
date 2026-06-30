@@ -4,12 +4,11 @@
       <!-- 左侧：Logo + 版本 -->
       <div class="nav-brand">
         <router-link to="/dashboard" class="brand-link">
-          <img src="/logo.svg" alt="TradingAgentsA" class="brand-logo" />
-          <span class="brand-text">TradingAgentsA</span>
+          <span class="brand-text">股票分析</span>
         </router-link>
-        <span class="version-badge">
+        <span class="version-badge" v-if="appStore.apiVersion">
           <el-icon><MagicStick /></el-icon>
-          v{{ appStore.version }}
+          {{ appStore.apiVersion }}
         </span>
       </div>
 
@@ -238,11 +237,6 @@ onUnmounted(() => {
     align-items: center;
     gap: 10px;
     text-decoration: none;
-  }
-
-  .brand-logo {
-    width: 28px;
-    height: 28px;
   }
 
   .brand-text {

@@ -5,7 +5,7 @@
       <div class="welcome-content">
         <h1 class="welcome-title">
           欢迎使用 TradingAgentsA
-          <span class="version-badge">v1.0.1</span>
+          <span class="version-badge">{{ versionLabel }}</span>
         </h1>
         <p class="welcome-subtitle">
           现代化的多智能体股票分析学习平台，辅助你掌握更全面的市场视角分析股票
@@ -226,8 +226,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAppStore } from '@/stores/app'
 import {
   TrendCharts,
   Search,
@@ -246,6 +247,9 @@ import { analysisApi } from '@/api/analysis'
 import { newsApi } from '@/api/news'
 
 const router = useRouter()
+const appStore = useAppStore()
+// 版本号统一来自后端 /api/health（VERSION 文件），apiVersion 为空时兜底
+const versionLabel = computed(() => appStore.apiVersion || 'v1.0.1')
 
 // 响应式数据
 const userStats = ref({

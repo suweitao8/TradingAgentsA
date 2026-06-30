@@ -269,9 +269,11 @@ export const useAppStore = defineStore('app', {
     // 检查API连接状态
     // 容错策略：单次失败不立即判断连，连续失败 2 次才报"后端连接失败"，
     // 避免后端偶发慢响应/瞬时抖动导致误报。成功立即恢复。
+    // 同时从 /api/health 响应中提取 version，统一版本号来源（后端 VERSION 文件）。
     async checkApiConnection() {
       // 单次健康探测：8s 超时（原 3s 过短，后端偶发慢响应即误报）
-      const probe = async (): Promise<boolean> => {
+      // 返回 [是否成功, 版本号]
+      const probe = async (): Promise<[boolean, string]> => {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 8000)
         try {
@@ -279,25 +281,30 @@ export const useAppStore = defineStore('app', {
             method: 'GET',
             signal: controller.signal
           })
-          return response.ok
+          if (!response.ok) return [false, '']
+          const json = await response.json()
+          // 后端返回结构 { success, data: { version, ... }, message }
+          const ver = json?.data?.version || ''
+          return [true, ver]
         } catch {
-          return false
+          return [false, '']
         } finally {
           clearTimeout(timeoutId)
         }
       }
 
       // 第一次探测
-      let ok = await probe()
+      let [ok, ver] = await probe()
       // 失败则立即重试一次（覆盖瞬时抖动）
       if (!ok) {
-        ok = await probe()
+        ;[ok, ver] = await probe()
       }
 
       if (ok) {
-        // 成功：清零计数并恢复连接状态
+        // 成功：清零计数并恢复连接状态；同步版本号（后端 VERSION 文件单一来源）
         this.apiFailCount = 0
         this.setApiConnected(true)
+        if (ver) this.apiVersion = ver
         return true
       }
 
@@ -313,32 +320,11 @@ export const useAppStore = defineStore('app', {
       return false
     },
 
-    // 获取API版本信息
+    // 获取API版本信息（已合并到 checkApiConnection，保留方法供兼容调用）
     async fetchApiVersion() {
-      try {
-        // 使用 AbortController 实现超时
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 3000) // 3秒超时
-
-        const response = await fetch('/api/health', {
-          signal: controller.signal
-        })
-
-        clearTimeout(timeoutId)
-
-        if (response.ok) {
-          const data = await response.json()
-          this.apiVersion = data.version || 'unknown'
-          this.setApiConnected(true)
-        } else {
-          this.setApiConnected(false)
-        }
-      } catch (error) {
-        this.apiVersion = 'unknown'
-        this.setApiConnected(false)
-      }
+      await this.checkApiConnection()
     },
-    
+
     // 重置应用状态
     resetAppState() {
       this.loading = false
