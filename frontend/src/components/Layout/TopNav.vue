@@ -26,22 +26,6 @@
           <span>{{ link.label }}</span>
         </router-link>
 
-        <!-- 股票分析下拉 -->
-        <el-dropdown trigger="hover" :hide-on-click="false" @command="onNavCommand">
-          <div class="nav-link dropdown-trigger" :class="{ active: isAnalysisActive }">
-            <el-icon><TrendCharts /></el-icon>
-            <span>股票分析</span>
-            <el-icon class="caret"><ArrowDown /></el-icon>
-          </div>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="/analysis/single">单股分析</el-dropdown-item>
-              <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
-              <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-
         <!-- 更多下拉 -->
         <el-dropdown trigger="hover" :hide-on-click="false" @command="onNavCommand">
           <div class="nav-link dropdown-trigger" :class="{ active: isMoreActive }">
@@ -51,7 +35,12 @@
           </div>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="/learning">学习中心</el-dropdown-item>
+              <el-dropdown-item command="/dashboard">仪表板</el-dropdown-item>
+              <el-dropdown-item command="/analysis/single" divided>单股分析</el-dropdown-item>
+              <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
+              <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
+              <el-dropdown-item command="/tasks" divided>任务中心</el-dropdown-item>
+              <el-dropdown-item command="/learning" divided>学习中心</el-dropdown-item>
               <el-dropdown-item command="/about">关于</el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -142,11 +131,8 @@ import { useAppStore } from '@/stores/app'
 import { useNotificationStore } from '@/stores/notifications'
 import { storeToRefs } from 'pinia'
 import {
-  Odometer,
-  List,
   Star,
   DataAnalysis,
-  TrendCharts,
   ArrowDown,
   MoreFilled,
   Menu,
@@ -165,8 +151,6 @@ const { unreadCount, items } = storeToRefs(notifStore)
 
 // ---- 导航链接 ----
 const navLinks = [
-  { path: '/dashboard', label: '仪表板', icon: Odometer },
-  { path: '/tasks', label: '任务中心', icon: List },
   { path: '/favorites', label: '我的自选股', icon: Star },
   { path: '/data-collection', label: '数据采集', icon: DataAnalysis }
 ]
@@ -175,12 +159,16 @@ const isActive = (link: { path: string }) => {
   return route.path === link.path || route.path.startsWith(link.path + '/')
 }
 
-const isAnalysisActive = computed(() => {
-  return route.path.startsWith('/analysis') || route.path.startsWith('/reports')
-})
-
+// 「更多」下拉涵盖了仪表板/分析/报告/任务中心/学习中心/关于
 const isMoreActive = computed(() => {
-  return route.path.startsWith('/learning') || route.path.startsWith('/about')
+  return (
+    route.path.startsWith('/dashboard') ||
+    route.path.startsWith('/analysis') ||
+    route.path.startsWith('/reports') ||
+    route.path.startsWith('/tasks') ||
+    route.path.startsWith('/learning') ||
+    route.path.startsWith('/about')
+  )
 })
 
 const onNavCommand = (command: string) => {
