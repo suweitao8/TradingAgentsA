@@ -1,18 +1,8 @@
 <template>
   <div class="favorites">
-    <!-- 操作栏：搜索框 + 所有按钮同一行 -->
+    <!-- 操作栏：按钮在左，搜索在右 -->
     <el-card class="action-card" shadow="never">
       <div class="action-bar">
-        <el-input
-          v-model="searchKeyword"
-          placeholder="搜索股票代码或名称"
-          clearable
-          class="search-input"
-        >
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-        </el-input>
         <div class="action-buttons">
           <el-button @click="refreshData">
             <el-icon><Refresh /></el-icon>
@@ -33,6 +23,16 @@
             批量导入
           </el-button>
         </div>
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索股票代码或名称"
+          clearable
+          class="search-input"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
       </div>
     </el-card>
 
@@ -813,19 +813,17 @@ onMounted(() => {
       display: flex;
       align-items: center;
       gap: 12px;
-      flex-wrap: wrap;
     }
 
     .search-input {
-      flex: 1 1 240px;
-      min-width: 200px;
+      width: 240px;
+      margin-left: auto;
     }
 
     .action-buttons {
       display: flex;
       gap: 8px;
       flex-shrink: 0;
-      flex-wrap: wrap;
     }
   }
 

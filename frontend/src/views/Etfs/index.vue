@@ -3,16 +3,6 @@
     <!-- 操作栏 -->
     <el-card class="action-card" shadow="never">
       <div class="action-bar">
-        <el-input
-          v-model="searchKeyword"
-          placeholder="搜索 ETF 代码或名称"
-          clearable
-          class="search-input"
-        >
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-        </el-input>
         <div class="action-buttons">
           <el-button @click="refreshData" :loading="loading">
             <el-icon><Refresh /></el-icon>
@@ -27,6 +17,16 @@
             批量导入
           </el-button>
         </div>
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索 ETF 代码或名称"
+          clearable
+          class="search-input"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
       </div>
     </el-card>
 
@@ -377,12 +377,14 @@ onMounted(loadEtfs)
 }
 
 .search-input {
-  max-width: 320px;
+  width: 240px;
+  margin-left: auto;
 }
 
 .action-buttons {
   display: flex;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .etfs-list-card {
