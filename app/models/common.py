@@ -44,3 +44,15 @@ class FavoriteStock(BaseModel):
     notes: str = Field(default="", description="用户备注")
     alert_price_high: Optional[float] = Field(None, description="价格上限提醒")
     alert_price_low: Optional[float] = Field(None, description="价格下限提醒")
+
+
+class FavoriteETF(BaseModel):
+    """自选 ETF 信息"""
+    fund_code: str = Field(..., description="ETF 代码（6位）")
+    fund_name: str = Field(..., description="ETF 名称")
+    fund_type: str = Field(default="主题", description="ETF 类型：宽基/行业/主题/跨境")
+    added_at: datetime = Field(default_factory=now_tz, description="添加时间")
+    tags: List[str] = Field(default_factory=list, description="用户标签")
+    notes: str = Field(default="", description="用户备注")
+    alert_price_high: Optional[float] = Field(None, description="价格上限提醒")
+    alert_price_low: Optional[float] = Field(None, description="价格下限提醒")

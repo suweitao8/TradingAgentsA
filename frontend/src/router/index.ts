@@ -115,6 +115,28 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/etfs',
+    name: 'Etfs',
+    component: () => import('@/layouts/BasicLayout.vue'),
+    meta: {
+      title: '我的ETF',
+      icon: 'TrendCharts',
+      requiresAuth: true,
+      transition: 'slide-up'
+    },
+    children: [
+      {
+        path: '',
+        name: 'EtfsHome',
+        component: () => import('@/views/Etfs/index.vue'),
+        meta: {
+          title: '我的ETF',
+          requiresAuth: true
+        }
+      }
+    ]
+  },
+  {
     path: '/learning',
     name: 'Learning',
     component: () => import('@/layouts/BasicLayout.vue'),
