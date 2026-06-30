@@ -59,33 +59,7 @@ class RealtimeNewsAggregator:
         start_time = datetime.now(ZoneInfo(get_timezone_name()))
         all_news = []
 
-        # 1. FinnHub实时新闻 (最高优先级)
-        logger.info(f"[新闻聚合器] 尝试从 FinnHub 获取 {ticker} 的新闻")
-        finnhub_start = datetime.now(ZoneInfo(get_timezone_name()))
-        finnhub_news = self._get_finnhub_realtime_news(ticker, hours_back)
-        finnhub_time = (datetime.now(ZoneInfo(get_timezone_name())) - finnhub_start).total_seconds()
-
-        if finnhub_news:
-            logger.info(f"[新闻聚合器] 成功从 FinnHub 获取 {len(finnhub_news)} 条新闻，耗时: {finnhub_time:.2f}秒")
-        else:
-            logger.info(f"[新闻聚合器] FinnHub 未返回新闻，耗时: {finnhub_time:.2f}秒")
-
-        all_news.extend(finnhub_news)
-
-        # 2. Alpha Vantage新闻
-        logger.info(f"[新闻聚合器] 尝试从 Alpha Vantage 获取 {ticker} 的新闻")
-        av_start = datetime.now(ZoneInfo(get_timezone_name()))
-        av_news = self._get_alpha_vantage_news(ticker, hours_back)
-        av_time = (datetime.now(ZoneInfo(get_timezone_name())) - av_start).total_seconds()
-
-        if av_news:
-            logger.info(f"[新闻聚合器] 成功从 Alpha Vantage 获取 {len(av_news)} 条新闻，耗时: {av_time:.2f}秒")
-        else:
-            logger.info(f"[新闻聚合器] Alpha Vantage 未返回新闻，耗时: {av_time:.2f}秒")
-
-        all_news.extend(av_news)
-
-        # 3. NewsAPI (如果配置了)
+        # 1. NewsAPI (如果配置了)
         if self.newsapi_key:
             logger.info(f"[新闻聚合器] 尝试从 NewsAPI 获取 {ticker} 的新闻")
             newsapi_start = datetime.now(ZoneInfo(get_timezone_name()))
@@ -101,7 +75,7 @@ class RealtimeNewsAggregator:
         else:
             logger.info(f"[新闻聚合器] NewsAPI 密钥未配置，跳过此新闻源")
 
-        # 4. 中文财经新闻源
+        # 2. 中文财经新闻源
         logger.info(f"[新闻聚合器] 尝试获取 {ticker} 的中文财经新闻")
         chinese_start = datetime.now(ZoneInfo(get_timezone_name()))
         chinese_news = self._get_chinese_finance_news(ticker, hours_back)
