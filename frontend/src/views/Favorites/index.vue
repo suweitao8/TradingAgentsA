@@ -37,9 +37,6 @@
             <el-icon><Download /></el-icon>
             批量同步数据
           </el-button>
-          <el-button @click="openTagManager">
-            标签管理
-          </el-button>
           <el-button type="success" @click="showBatchImportDialog">
             <el-icon><Upload /></el-icon>
             批量导入
@@ -119,21 +116,6 @@
               {{ Number(row.volume_ratio).toFixed(2) }}
             </span>
             <span v-else>-</span>
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="tags" label="标签" width="150">
-          <template #default="{ row }">
-            <el-tag
-              v-for="tag in row.tags"
-              :key="tag"
-              size="small"
-              :color="getTagColor(tag)"
-              effect="dark"
-              :style="{ marginRight: '4px' }"
-            >
-              {{ tag }}
-            </el-tag>
           </template>
         </el-table-column>
 
@@ -225,17 +207,6 @@
           <div>{{ editForm.stock_code }}｜{{ editForm.stock_name }}<span v-if="editForm.industry && editForm.industry !== '-'" style="color: #909399; margin-left: 8px;">{{ editForm.industry }}</span></div>
         </el-form-item>
 
-        <el-form-item label="标签">
-          <el-select v-model="editForm.tags" multiple filterable allow-create placeholder="选择或创建标签">
-            <el-option v-for="tag in userTags" :key="tag" :label="tag" :value="tag">
-              <span :style="{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }">
-                <span>{{ tag }}</span>
-                <span :style="{ display:'inline-block', width:'12px', height:'12px', border:'1px solid #ddd', borderRadius:'2px', marginLeft:'8px', background: getTagColor(tag) }"></span>
-              </span>
-            </el-option>
-          </el-select>
-        </el-form-item>
-
         <el-form-item label="备注">
           <el-input v-model="editForm.notes" type="textarea" :rows="2" placeholder="可选：添加备注信息" />
         </el-form-item>
@@ -244,84 +215,6 @@
       <template #footer>
         <el-button @click="editDialogVisible = false">取消</el-button>
         <el-button type="primary" :loading="editLoading" @click="handleUpdateFavorite">保存</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 标签管理对话框 -->
-    <el-dialog v-model="tagDialogVisible" title="标签管理" width="560px">
-      <el-table :data="tagList" v-loading="tagLoading" size="small" style="width: 100%; margin-bottom: 12px;">
-        <el-table-column label="名称" min-width="220">
-          <template #default="{ row }">
-            <template v-if="row._editing">
-              <el-input v-model="row._name" placeholder="标签名称" size="small" />
-            </template>
-            <template v-else>
-              <el-tag :color="row.color" effect="dark" style="margin-right:6px"></el-tag>
-              {{ row.name }}
-            </template>
-          </template>
-        </el-table-column>
-        <el-table-column label="颜色" width="140">
-          <template #default="{ row }">
-            <template v-if="row._editing">
-              <el-select v-model="row._color" placeholder="选择颜色" size="small" style="width: 200px">
-                <el-option v-for="c in COLOR_PALETTE" :key="c" :label="c" :value="c">
-                  <span :style="{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }">
-                    <span>{{ c }}</span>
-                    <span :style="{ display: 'inline-block', width: '12px', height: '12px', border: '1px solid #ddd', borderRadius: '2px', marginLeft: '8px', background: c }"></span>
-                  </span>
-                </el-option>
-              </el-select>
-              <span class="color-dot-preview" :style="{ background: row._color }"></span>
-            </template>
-            <template v-else>
-              <span :style="{display:'inline-block',width:'14px',height:'14px',background: row.color,border:'1px solid #ddd',marginRight:'6px'}"></span>
-              {{ row.color }}
-
-            </template>
-          </template>
-        </el-table-column>
-        <el-table-column label="排序" width="100" align="center">
-          <template #default="{ row }">
-            <template v-if="row._editing">
-              <el-input v-model.number="row._sort" type="number" size="small" />
-            </template>
-            <template v-else>
-              {{ row.sort_order }}
-            </template>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="160" fixed="right">
-          <template #default="{ row }">
-            <template v-if="row._editing">
-              <el-button type="text" size="small" @click="saveTag(row)">保存</el-button>
-              <el-button type="text" size="small" @click="cancelEditTag(row)">取消</el-button>
-            </template>
-            <template v-else>
-              <el-button type="text" size="small" @click="editTag(row)">编辑</el-button>
-              <el-button type="text" size="small" style="color:#f56c6c" @click="deleteTag(row)">删除</el-button>
-            </template>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div style="display:flex; gap:8px; align-items:center;">
-        <el-input v-model="newTag.name" placeholder="新标签名" style="flex:1" />
-        <el-select v-model="newTag.color" placeholder="选择颜色" style="width:200px">
-          <el-option v-for="c in COLOR_PALETTE" :key="c" :label="c" :value="c">
-            <span :style="{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }">
-              <span>{{ c }}</span>
-              <span :style="{ display: 'inline-block', width: '12px', height: '12px', border: '1px solid #ddd', borderRadius: '2px', marginLeft: '8px', background: c }"></span>
-            </span>
-          </el-option>
-        </el-select>
-        <span class="color-dot-preview" :style="{ background: newTag.color }"></span>
-        <el-input v-model.number="newTag.sort_order" type="number" placeholder="排序" style="width:120px" />
-        <el-button type="primary" @click="createTag" :loading="tagLoading">新增</el-button>
-      </div>
-
-      <template #footer>
-        <el-button @click="tagDialogVisible=false">关闭</el-button>
       </template>
     </el-dialog>
 
@@ -502,29 +395,54 @@ import {
   Upload
 } from '@element-plus/icons-vue'
 import { favoritesApi } from '@/api/favorites'
-import { tagsApi } from '@/api/tags'
 import { stockSyncApi } from '@/api/stockSync'
 import { normalizeMarketForAnalysis } from '@/utils/market'
 
 import type { FavoriteItem } from '@/api/favorites'
-
-
-// 颜色可选项（20种预设颜色）
-const COLOR_PALETTE = [
-  '#2f7bff', '#1677FF', '#2F88FF', '#52C41A', '#67C23A',
-  '#13C2C2', '#FA8C16', '#E6A23C', '#F56C6C', '#EB2F96',
-  '#722ED1', '#8E44AD', '#00BFBF', '#1F2D3D', '#606266',
-  '#909399', '#C0C4CC', '#FF7F50', '#A0CFFF', '#2C3E50'
-]
 
 const router = useRouter()
 
 // 响应式数据
 const loading = ref(false)
 const favorites = ref<FavoriteItem[]>([])
-const userTags = ref<string[]>([])
-const tagColorMap = ref<Record<string, string>>({})
-const getTagColor = (name: string) => tagColorMap.value[name] || ''
+
+// 行业优先级映射：数字越小排越前；未列出的行业统一归到 999（末尾），'-' / 空值归到 1000（最末尾）
+// 行业值由 LLM 动态生成（细分赛道），这里按 A 股主赛道重要性固定排序，无需手动操作
+const INDUSTRY_ORDER: Record<string, number> = {
+  // 核心科技
+  '半导体': 1, '半导体设备': 1, '芯片': 1, '集成电路': 1, '光刻胶': 1, 'EDA': 1,
+  '消费电子': 2, '电子元件': 2, 'PCB': 2, '面板': 2, '光学光电子': 2,
+  '人工智能': 3, 'AI': 3, '算力': 3, '数据中心': 3, '云计算': 3,
+  '通信设备': 4, '通信服务': 4, '5G': 4,
+  '软件': 5, '软件开发': 5, 'IT服务': 5, '计算机设备': 5,
+  // 新能源
+  '锂电池': 10, '电池': 10, '新能源': 10, '光伏': 11, '风电': 12, '储能': 13,
+  '新能源汽车': 14, '汽车零部件': 15, '汽车': 15,
+  // 医药生物
+  '医药生物': 20, '医疗器械': 20, '化学制药': 21, '生物制品': 22, '中药': 23, '医疗服务': 24,
+  // 高端制造
+  '军工': 30, '国防军工': 30, '航空航天': 30,
+  '机械设备': 31, '工业母机': 31, '机器人': 32, '自动化设备': 32,
+  '电力设备': 33, '电网': 33,
+  // 消费
+  '食品饮料': 40, '白酒': 40, '家电': 41, '纺织服装': 42, '商贸零售': 43, '社会服务': 44, '美容护理': 45,
+  '传媒': 46, '游戏': 46, '教育': 47,
+  // 周期/材料
+  '化工': 50, '化学原料': 50, '化学制品': 50,
+  '钢铁': 51, '有色金属': 52, '小金属': 52, '贵金属': 52,
+  '建筑材料': 53, '建筑装饰': 54, '房地产': 55,
+  '煤炭': 56, '石油石化': 57, '环保': 58,
+  // 金融
+  '银行': 60, '证券': 61, '保险': 62, '多元金融': 63,
+  // 基础设施
+  '交通运输': 70, '公用事业': 71, '农林牧渔': 72,
+}
+
+// 取行业优先级：未命中映射返回 999（末尾），'-' 或空值返回 1000（最末尾）
+const getIndustryOrder = (industry: string | undefined | null): number => {
+  if (!industry || industry === '-') return 1000
+  return INDUSTRY_ORDER[industry] ?? 999
+}
 
 const searchKeyword = ref('')
 
@@ -586,7 +504,6 @@ const editForm = ref({
   stock_name: '',
   market: 'A股',
   industry: '-',
-  tags: [] as string[],
   notes: ''
 })
 
@@ -604,7 +521,15 @@ const filteredFavorites = computed<FavoriteItem[]>(() => {
     )
   }
 
-  return result
+  // 按行业优先级固定排序（同行业再按股票代码排，保证稳定）
+  return [...result].sort((a, b) => {
+    const ia = a.industry || '-'
+    const ib = b.industry || '-'
+    const orderDiff = getIndustryOrder(ia) - getIndustryOrder(ib)
+    if (orderDiff !== 0) return orderDiff
+    if (ia !== ib) return ia.localeCompare(ib, 'zh-CN')
+    return (a.stock_code || '').localeCompare(b.stock_code || '')
+  })
 })
 
 // 判断是否有A股自选股
@@ -660,125 +585,8 @@ const syncAllRealtime = async () => {
   }
 }
 
-const loadUserTags = async () => {
-  try {
-    const res = await tagsApi.list()
-    const list = (res as any)?.data
-    if (Array.isArray(list)) {
-      userTags.value = list.map((t: any) => t.name)
-      tagColorMap.value = list.reduce((acc: Record<string, string>, t: any) => {
-        acc[t.name] = t.color
-        return acc
-      }, {})
-    } else {
-      userTags.value = []
-      tagColorMap.value = {}
-    }
-  } catch (error) {
-    console.error('加载标签失败:', error)
-    userTags.value = []
-    tagColorMap.value = {}
-  }
-}
-
-// 标签管理对话框 - 脚本
-const tagDialogVisible = ref(false)
-const tagLoading = ref(false)
-const tagList = ref<any[]>([])
-const newTag = ref({ name: '', color: '#2f7bff', sort_order: 0 })
-
-const loadTagList = async () => {
-  tagLoading.value = true
-  try {
-    const res = await tagsApi.list()
-    tagList.value = (res as any)?.data || []
-  } catch (e) {
-    console.error('加载标签列表失败:', e)
-  } finally {
-    tagLoading.value = false
-  }
-}
-
-const openTagManager = async () => {
-  tagDialogVisible.value = true
-  await loadTagList()
-}
-
-const createTag = async () => {
-  if (!newTag.value.name || !newTag.value.name.trim()) {
-    ElMessage.warning('请输入标签名')
-    return
-  }
-  tagLoading.value = true
-  try {
-    await tagsApi.create({ ...newTag.value })
-    ElMessage.success('创建成功')
-    newTag.value = { name: '', color: '#2f7bff', sort_order: 0 }
-    await loadTagList()
-    await loadUserTags()
-  } catch (e: any) {
-    console.error('创建标签失败:', e)
-    ElMessage.error(e?.message || '创建失败')
-  } finally {
-    tagLoading.value = false
-  }
-}
-
-const editTag = (row: any) => {
-  row._editing = true
-  row._name = row.name
-  row._color = row.color
-  row._sort = row.sort_order
-}
-
-const cancelEditTag = (row: any) => {
-  row._editing = false
-}
-
-const saveTag = async (row: any) => {
-  tagLoading.value = true
-  try {
-    await tagsApi.update(row.id, {
-      name: row._name ?? row.name,
-      color: row._color ?? row.color,
-      sort_order: row._sort ?? row.sort_order,
-    })
-    ElMessage.success('保存成功')
-    row._editing = false
-    await loadTagList()
-    await loadUserTags()
-  } catch (e: any) {
-    console.error('保存标签失败:', e)
-    ElMessage.error(e?.message || '保存失败')
-  } finally {
-    tagLoading.value = false
-  }
-}
-
-const deleteTag = async (row: any) => {
-  try {
-    await ElMessageBox.confirm(`确定删除标签 ${row.name} 吗？`, '删除标签', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-    tagLoading.value = true
-    await tagsApi.remove(row.id)
-    ElMessage.success('已删除')
-    await loadTagList()
-    await loadUserTags()
-  } catch (e) {
-    // 用户取消或失败
-  } finally {
-    tagLoading.value = false
-  }
-}
-
-
-
 const refreshData = () => {
   loadFavorites()
-  loadUserTags()
 }
 
 // ========== 批量导入 ==========
@@ -881,7 +689,6 @@ const handleUpdateFavorite = async () => {
   try {
     editLoading.value = true
     const payload = {
-      tags: editForm.value.tags,
       notes: editForm.value.notes
     }
     const res = await favoritesApi.update(editForm.value.stock_code, payload as any)
@@ -904,7 +711,6 @@ const editFavorite = (row: any) => {
     stock_name: row.stock_name,
     market: row.market || 'A股',
     industry: row.industry || '-',
-    tags: Array.isArray(row.tags) ? [...row.tags] : [],
     notes: row.notes || ''
   }
   editDialogVisible.value = true
@@ -1116,7 +922,6 @@ const formatDate = (dateStr: string) => {
 // 生命周期
 onMounted(() => {
   loadFavorites()
-  loadUserTags()
 })
 </script>
 
