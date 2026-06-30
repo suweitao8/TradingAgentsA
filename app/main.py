@@ -615,7 +615,7 @@ _cors_origins = settings.ALLOWED_ORIGINS
 _cors_allow_credentials = settings.CORS_ALLOW_CREDENTIALS
 if "*" in _cors_origins and _cors_allow_credentials:
     _cors_allow_credentials = False
-    logger.warning(
+    logging.warning(
         "CORS: ALLOWED_ORIGINS 含通配符 '*'，已自动将 allow_credentials 降级为 False "
         "（CORS 规范禁止 '*' 与 credentials=True 同时使用）。"
         "如需携带 cookie，请在 .env 显式配置具体 ALLOWED_ORIGINS。"
@@ -671,9 +671,9 @@ app.add_middleware(ErrorHandlerMiddleware)
 if settings.RATE_LIMIT_ENABLED:
     from app.middleware.rate_limit import RateLimitMiddleware
     app.add_middleware(RateLimitMiddleware, default_rate_limit=settings.DEFAULT_RATE_LIMIT)
-    logger.info(f"速率限制已启用（全局默认 {settings.DEFAULT_RATE_LIMIT} 次/分钟）")
+    logging.getLogger("app.main").info(f"速率限制已启用（全局默认 {settings.DEFAULT_RATE_LIMIT} 次/分钟）")
 else:
-    logger.info("速率限制未启用（RATE_LIMIT_ENABLED=false）")
+    logging.getLogger("app.main").info("速率限制未启用（RATE_LIMIT_ENABLED=false）")
 
 
 @app.exception_handler(HTTPException)
