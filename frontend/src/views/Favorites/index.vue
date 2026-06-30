@@ -5,15 +5,12 @@
         <el-icon><Star /></el-icon>
         我的自选股
       </h1>
-      <p class="page-description">
-        管理您关注的股票
-      </p>
     </div>
 
     <!-- 操作栏 -->
     <el-card class="action-card" shadow="never">
       <el-row :gutter="16" align="middle" style="margin-bottom: 16px;">
-        <el-col :span="8">
+        <el-col :span="24">
           <el-input
             v-model="searchKeyword"
             placeholder="搜索股票代码或名称"
@@ -23,28 +20,6 @@
               <el-icon><Search /></el-icon>
             </template>
           </el-input>
-        </el-col>
-
-        <el-col :span="5">
-          <el-select v-model="selectedIndustry" placeholder="行业" clearable filterable>
-            <el-option
-              v-for="ind in industryOptions"
-              :key="ind"
-              :label="ind"
-              :value="ind"
-            />
-          </el-select>
-        </el-col>
-
-        <el-col :span="5">
-          <el-select v-model="selectedTag" placeholder="标签" clearable>
-            <el-option
-              v-for="tag in userTags"
-              :key="tag"
-              :label="tag"
-              :value="tag"
-            />
-          </el-select>
         </el-col>
       </el-row>
 
@@ -604,8 +579,6 @@ const tagColorMap = ref<Record<string, string>>({})
 const getTagColor = (name: string) => tagColorMap.value[name] || ''
 
 const searchKeyword = ref('')
-const selectedTag = ref('')
-const selectedIndustry = ref('')
 
 // 批量选择
 const selectedStocks = ref<FavoriteItem[]>([])
@@ -714,33 +687,7 @@ const filteredFavorites = computed<FavoriteItem[]>(() => {
     )
   }
 
-  // 行业筛选
-  if (selectedIndustry.value) {
-    result = result.filter((item: FavoriteItem) =>
-      (item.industry || '-') === selectedIndustry.value
-    )
-  }
-
-  // 标签筛选
-  if (selectedTag.value) {
-    result = result.filter((item: FavoriteItem) =>
-      (item.tags || []).includes(selectedTag.value)
-    )
-  }
-
   return result
-})
-
-// 行业下拉选项（从已加载的自选股中动态聚合）
-const industryOptions = computed(() => {
-  const set = new Set<string>()
-  favorites.value.forEach((item: FavoriteItem) => {
-    const ind = item.industry
-    if (ind && ind !== '-') {
-      set.add(ind)
-    }
-  })
-  return Array.from(set).sort()
 })
 
 // 判断是否有A股自选股
@@ -1327,11 +1274,6 @@ onMounted(() => {
       font-weight: 600;
       color: var(--el-text-color-primary);
       margin: 0 0 8px 0;
-    }
-
-    .page-description {
-      color: var(--el-text-color-regular);
-      margin: 0;
     }
   }
 
