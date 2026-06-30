@@ -230,6 +230,9 @@ class AKShareAdapter(DataSourceAdapter):
             low_col = next((c for c in ["最低", "low"] if c in df.columns), None)
             pre_close_col = next((c for c in ["昨收", "昨收(元)", "pre_close", "昨收价", "settlement"] if c in df.columns), None)
             volume_col = next((c for c in ["成交量", "成交量(手)", "volume", "成交量(股)", "vol"] if c in df.columns), None)
+            # 换手率/量比：东方财富 spot 接口含这两列，新浪接口可能无
+            turnover_col = next((c for c in ["换手率", "换手率(%)", "turnover_rate", "turnover"] if c in df.columns), None)
+            volume_ratio_col = next((c for c in ["量比", "volume_ratio", "量比(%)"] if c in df.columns), None)
 
             if not code_col or not price_col:
                 logger.error(f"AKShare {source} 缺少必要列: code={code_col}, price={price_col}, columns={list(df.columns)}")
@@ -269,6 +272,8 @@ class AKShareAdapter(DataSourceAdapter):
                 lo = self._safe_float(row.get(low_col)) if low_col else None
                 pre = self._safe_float(row.get(pre_close_col)) if pre_close_col else None
                 vol = self._safe_float(row.get(volume_col)) if volume_col else None
+                turnover = self._safe_float(row.get(turnover_col)) if turnover_col else None
+                vol_ratio = self._safe_float(row.get(volume_ratio_col)) if volume_ratio_col else None
 
                 # 🔥 日志：记录AKShare返回的成交量
                 if code in ["300750", "000001", "600000"]:  # 只记录几个示例股票
@@ -282,7 +287,9 @@ class AKShareAdapter(DataSourceAdapter):
                     "open": op,
                     "high": hi,
                     "low": lo,
-                    "pre_close": pre
+                    "pre_close": pre,
+                    "turnover_rate": turnover,
+                    "volume_ratio": vol_ratio,
                 }
 
             logger.info(f"✅ AKShare {source} 获取到 {len(result)} 只股票的实时行情")

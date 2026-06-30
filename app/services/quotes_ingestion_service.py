@@ -396,6 +396,8 @@ class QuotesIngestionService:
                         "high": q.get("high"),
                         "low": q.get("low"),
                         "pre_close": q.get("pre_close"),
+                        "turnover_rate": q.get("turnover_rate"),
+                        "volume_ratio": q.get("volume_ratio"),
                         "trade_date": trade_date,
                         "updated_at": updated_at,
                     }},

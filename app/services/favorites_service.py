@@ -113,7 +113,7 @@ class FavoritesService:
                     it["board"] = "-"
                     it["exchange"] = "-"
 
-        # 批量获取行情（优先使用入库的 market_quotes，30秒更新）
+        # 批量获取行情（优先使用入库的 market_quotes，6分钟更新）
         if codes:
             try:
                 coll = db["market_quotes"]
@@ -131,27 +131,33 @@ class FavoritesService:
                         it["change_percent"] = q.get("pct_chg")
                         it["turnover_rate"] = q.get("turnover_rate")
                         it["volume_ratio"] = q.get("volume_ratio")
-                # 兜底：用东方财富实时快照补齐行情（market_quotes 可能缺换手率/量比，
-                # 或某些代码未入库）。quotes_service 自带 30 秒内存缓存，不会重复请求。
-                try:
-                    quotes_online = await get_quotes_service().get_quotes(codes)
-                    for it in items:
-                        code = it.get("stock_code")
-                        q2 = quotes_online.get(code, {}) if quotes_online else {}
-                        if not q2:
-                            continue
-                        # 价格/涨跌幅：market_quotes 没有时用在线补齐
-                        if it.get("current_price") is None:
-                            it["current_price"] = q2.get("close")
-                        if it.get("change_percent") is None:
-                            it["change_percent"] = q2.get("pct_chg")
-                        # 换手率/量比：在线源（东方财富 spot）字段更全，优先采用
-                        if q2.get("turnover_rate") is not None:
-                            it["turnover_rate"] = q2.get("turnover_rate")
-                        if q2.get("volume_ratio") is not None:
-                            it["volume_ratio"] = q2.get("volume_ratio")
-                except Exception:
-                    pass
+                # 兜底：仅当 market_quotes 未覆盖到某些代码（价格为空）时，
+                # 才调在线快照补齐 —— 避免每次刷新都拉全市场（58秒）。
+                # 换手率/量比已由入库任务写入 market_quotes，不再作为在线兜底触发条件。
+                missing_codes = [
+                    it.get("stock_code") for it in items
+                    if it.get("stock_code") and it.get("current_price") is None
+                ]
+                if missing_codes:
+                    try:
+                        quotes_online = await get_quotes_service().get_quotes(missing_codes)
+                        for it in items:
+                            code = it.get("stock_code")
+                            if code not in missing_codes:
+                                continue
+                            q2 = quotes_online.get(code, {}) if quotes_online else {}
+                            if not q2:
+                                continue
+                            if it.get("current_price") is None:
+                                it["current_price"] = q2.get("close")
+                            if it.get("change_percent") is None:
+                                it["change_percent"] = q2.get("pct_chg")
+                            if it.get("turnover_rate") is None and q2.get("turnover_rate") is not None:
+                                it["turnover_rate"] = q2.get("turnover_rate")
+                            if it.get("volume_ratio") is None and q2.get("volume_ratio") is not None:
+                                it["volume_ratio"] = q2.get("volume_ratio")
+                    except Exception:
+                        pass
             except Exception:
                 # 查询失败时保持占位 None，避免影响基础功能
                 pass
