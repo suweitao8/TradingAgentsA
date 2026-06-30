@@ -25,27 +25,6 @@
           <el-icon><component :is="link.icon" /></el-icon>
           <span>{{ link.label }}</span>
         </router-link>
-
-        <!-- 更多下拉 -->
-        <el-dropdown trigger="hover" :hide-on-click="false" @command="onNavCommand">
-          <div class="nav-link dropdown-trigger" :class="{ active: isMoreActive }">
-            <el-icon><MoreFilled /></el-icon>
-            <span>更多</span>
-            <el-icon class="caret"><ArrowDown /></el-icon>
-          </div>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="/dashboard">仪表板</el-dropdown-item>
-              <el-dropdown-item command="/analysis/single" divided>单股分析</el-dropdown-item>
-              <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
-              <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
-              <el-dropdown-item command="/tasks" divided>任务中心</el-dropdown-item>
-              <el-dropdown-item command="/data-collection">数据采集</el-dropdown-item>
-              <el-dropdown-item command="/learning" divided>学习中心</el-dropdown-item>
-              <el-dropdown-item command="/about">关于</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
       </div>
 
       <!-- 移动端汉堡菜单 -->
@@ -70,6 +49,25 @@
 
       <!-- 右侧：操作按钮 -->
       <div class="nav-actions">
+        <!-- 更多下拉 -->
+        <el-dropdown trigger="hover" :hide-on-click="false" @command="onNavCommand">
+          <button class="action-btn" :class="{ active: isMoreActive }">
+            <el-icon><MoreFilled /></el-icon>
+          </button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="/dashboard">仪表板</el-dropdown-item>
+              <el-dropdown-item command="/analysis/single" divided>单股分析</el-dropdown-item>
+              <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
+              <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
+              <el-dropdown-item command="/tasks" divided>任务中心</el-dropdown-item>
+              <el-dropdown-item command="/data-collection">数据采集</el-dropdown-item>
+              <el-dropdown-item command="/learning" divided>学习中心</el-dropdown-item>
+              <el-dropdown-item command="/about">关于</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+
         <!-- 通知 -->
         <el-tooltip content="通知" placement="bottom">
           <el-badge :value="unreadCount" :hidden="unreadCount === 0">
@@ -77,16 +75,6 @@
               <el-icon><Bell /></el-icon>
             </button>
           </el-badge>
-        </el-tooltip>
-
-        <!-- 主题切换 -->
-        <el-tooltip :content="themeTooltip" placement="bottom">
-          <button class="action-btn" @click="toggleTheme">
-            <el-icon>
-              <Sunny v-if="appStore.isDarkTheme" />
-              <Moon v-else />
-            </el-icon>
-          </button>
         </el-tooltip>
 
         <!-- 设置 -->
@@ -133,12 +121,9 @@ import { useNotificationStore } from '@/stores/notifications'
 import { storeToRefs } from 'pinia'
 import {
   Star,
-  ArrowDown,
   MoreFilled,
   Menu,
   Bell,
-  Sunny,
-  Moon,
   Setting,
   MagicStick
 } from '@element-plus/icons-vue'
@@ -176,13 +161,6 @@ const onNavCommand = (command: string) => {
 }
 
 // ---- 操作按钮 ----
-const themeTooltip = computed(() => {
-  const map: Record<string, string> = { light: '浅色（点击切换）', dark: '深色（点击切换）', auto: '跟随系统（点击切换）' }
-  return map[appStore.theme] || '切换主题'
-})
-
-const toggleTheme = () => { appStore.toggleTheme() }
-
 const goSettings = () => {
   router.push('/settings')
 }
@@ -333,13 +311,6 @@ onUnmounted(() => {
   &.active {
     color: var(--el-color-primary);
     background: var(--el-color-primary-light-9);
-  }
-
-  &.dropdown-trigger {
-    .caret {
-      font-size: 12px;
-      margin-left: -2px;
-    }
   }
 }
 
