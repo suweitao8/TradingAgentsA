@@ -415,7 +415,6 @@ import { ElMessage } from 'element-plus'
 import { useAppStore } from '@/stores/app'
 import type { UserPreferences } from '@/types/preferences'
 import {
-import { showError } from '@/utils/message'
   Setting,
   User,
   Reading,
@@ -428,6 +427,7 @@ import { showError } from '@/utils/message'
   Refresh,
   DataAnalysis
 } from '@element-plus/icons-vue'
+import { showError } from '@/utils/message'
 
 const router = useRouter()
 const route = useRoute()

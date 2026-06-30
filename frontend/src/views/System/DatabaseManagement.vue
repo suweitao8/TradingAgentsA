@@ -289,7 +289,6 @@ import {
 } from '@element-plus/icons-vue'
 
 import {
-import { showError } from '@/utils/message'
   databaseApi,
   formatBytes,
   formatDateTime,
@@ -297,6 +296,7 @@ import { showError } from '@/utils/message'
   type DatabaseStatus,
   type DatabaseStats
 } from '@/api/database'
+import { showError } from '@/utils/message'
 
 // 响应式数据
 const loading = ref(false)

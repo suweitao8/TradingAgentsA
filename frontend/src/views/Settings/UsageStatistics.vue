@@ -143,13 +143,13 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { DataAnalysis, Refresh, Document, Upload, Download, Money } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import {
-import { showError } from '@/utils/message'
   getUsageRecords,
   getUsageStatistics,
   deleteOldRecords,
   type UsageRecord,
   type UsageStatistics
 } from '@/api/usage'
+import { showError } from '@/utils/message'
 
 // 数据
 const selectedDays = ref(7)

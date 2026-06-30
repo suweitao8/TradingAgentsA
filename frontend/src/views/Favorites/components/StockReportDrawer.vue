@@ -124,10 +124,10 @@ import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
 import {
-import { showError } from '@/utils/message'
   favoriteReportsApi,
   type StockReportsResp,
 } from '@/api/favorites'
+import { showError } from '@/utils/message'
 
 const props = defineProps<{
   modelValue: boolean

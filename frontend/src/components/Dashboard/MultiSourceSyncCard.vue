@@ -125,13 +125,13 @@ import {
   Refresh 
 } from '@element-plus/icons-vue'
 import { 
-import { showError } from '@/utils/message'
   getSyncStatus, 
   getDataSourcesStatus, 
   runStockBasicsSync,
   type SyncStatus, 
   type DataSourceStatus 
 } from '@/api/sync'
+import { showError } from '@/utils/message'
 
 // 路由
 const router = useRouter()

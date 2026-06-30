@@ -112,11 +112,11 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-import { showError } from '@/utils/message'
   configApi, 
   type MarketCategory, 
   type DataSourceGrouping 
 } from '@/api/config'
+import { showError } from '@/utils/message'
 
 // Props
 interface Props {

@@ -94,13 +94,13 @@ import { ElMessage } from 'element-plus'
 import { Download, Clock, View, Reading, Loading, Document } from '@element-plus/icons-vue'
 import { marked } from 'marked'
 import {
-import { showError } from '@/utils/message'
   categoryMap,
   articlesDatabase,
   registry,
   externalMap,
   isExternalArticle
 } from './data'
+import { showError } from '@/utils/message'
 
 const props = defineProps<{
   modelValue: boolean

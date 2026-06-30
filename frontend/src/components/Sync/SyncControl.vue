@@ -184,7 +184,6 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh, RefreshRight, Delete } from '@element-plus/icons-vue'
 import { 
-import { showError } from '@/utils/message'
   getSyncStatus, 
   runStockBasicsSync, 
   clearSyncCache,
@@ -192,6 +191,7 @@ import { showError } from '@/utils/message'
   type SyncStatus, 
   type DataSourceStatus 
 } from '@/api/sync'
+import { showError } from '@/utils/message'
 
 type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
 

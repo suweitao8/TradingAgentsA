@@ -261,11 +261,11 @@ import { ElMessage } from 'element-plus'
 import { Link } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import {
-import { showError } from '@/utils/message'
   configApi,
   type DataSourceConfig,
   type MarketCategory
 } from '@/api/config'
+import { showError } from '@/utils/message'
 
 // Props
 interface Props {
