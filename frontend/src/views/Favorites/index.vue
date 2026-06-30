@@ -58,7 +58,7 @@
         @row-contextmenu="handleRowContextMenu"
       >
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="stock_code" label="股票代码" width="120">
+        <el-table-column prop="stock_code" label="股票代码" min-width="120">
           <template #default="{ row }">
             <el-link type="primary" @click="viewStockDetail(row)">
               {{ row.stock_code }}
@@ -66,9 +66,9 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="stock_name" label="股票名称" width="150" />
+        <el-table-column prop="stock_name" label="股票名称" min-width="150" />
 
-        <el-table-column prop="industry" label="行业" width="150">
+        <el-table-column prop="industry" label="行业" min-width="150">
           <template #default="{ row }">
             <el-tag
               v-if="row.industry && row.industry !== '-'"
@@ -82,14 +82,14 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="current_price" label="当前价格" width="100">
+        <el-table-column prop="current_price" label="当前价格" min-width="100">
           <template #default="{ row }">
             <span v-if="row.current_price !== null && row.current_price !== undefined">¥{{ formatPrice(row.current_price) }}</span>
             <span v-else>-</span>
           </template>
         </el-table-column>
 
-        <el-table-column prop="change_percent" label="涨跌幅" width="100">
+        <el-table-column prop="change_percent" label="涨跌幅" min-width="100">
           <template #default="{ row }">
             <span
               v-if="row.change_percent !== null && row.change_percent !== undefined"
@@ -101,7 +101,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="turnover_rate" label="换手率" width="100">
+        <el-table-column prop="turnover_rate" label="换手率" min-width="100">
           <template #default="{ row }">
             <span v-if="row.turnover_rate !== null && row.turnover_rate !== undefined">
               {{ Number(row.turnover_rate).toFixed(2) }}%
@@ -110,7 +110,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="volume_ratio" label="量比" width="90">
+        <el-table-column prop="volume_ratio" label="量比" min-width="90">
           <template #default="{ row }">
             <span
               v-if="row.volume_ratio !== null && row.volume_ratio !== undefined"
@@ -122,7 +122,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="tags" label="标签" width="150">
+        <el-table-column prop="tags" label="标签" min-width="150">
           <template #default="{ row }">
             <el-tag
               v-for="tag in row.tags"
@@ -137,7 +137,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="added_at" label="添加时间" width="120">
+        <el-table-column prop="added_at" label="添加时间" min-width="120">
           <template #default="{ row }">
             {{ formatDate(row.added_at) }}
           </template>
