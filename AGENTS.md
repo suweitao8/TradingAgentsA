@@ -245,6 +245,11 @@
 - 看 backend 日志（`docker-compose logs backend` 或本地日志）确认是鉴权失败、限频还是网络问题
 - 注意 Tushare 低积分账号会把"频率超限(40203)"包装成"token 不对"，见 MEMORY.md 验证类 #1
 
+**类型 D：前端一直转圈/加载不出来的性能卡顿**
+- 第一步：`curl -w "%{time_total}s"` 直接测对应 API 耗时。耗时 > 5s 即后端慢，耗时 < 1s 则查前端响应式/loading 状态
+- 第二步（后端慢）：看 backend 日志该请求内部触发了什么耗时操作（全市场拉取、LLM 调用、大量 DB 查询），`grep` 请求 trace_id 追踪
+- **设计红线：列表/查询类接口禁止同步触发"拉全市场/全量"级外部请求**（如东方财富 5868 条快照），必须走入库缓存（market_quotes 等）或按需精确查询；兜底补字段只能针对"库中真正缺失的少数项"，不能因个别字段缺失就重新拉全量
+
 **通用原则：能 curl / 能读代码确认的，绝不写诊断脚本。**
 
 ## 服务器管理
@@ -271,6 +276,22 @@
 - 前端 dev server 代理 `/api` 到后端 8000（见 `frontend/vite.config.ts`）。
 
 ## worktree 管理
+
+### 多对话并行开发
+
+支持多个对话同时开发，每个对话各自 `create` 独立 worktree。隔离边界：
+
+- **开发阶段完全隔离**：每个 worktree 有独立工作目录、分支、暂存区、HEAD，文件编辑与提交互不可见、互不影响。
+- **共享只读资源无冲突**：venv、`node_modules`（junction 软链）共享只读，不构成竞争。
+- **收尾阶段是共享瓶颈**：所有对话的 `finish` 都要在主工作区 `checkout main → merge → push origin main`，远程 `main` 是单一串行点。
+
+**收尾必须错开执行**（防止 push 冲突与主工作区竞争，也是历史丢代码事故的根因，见 MEMORY.md 二.6）：
+
+- 一次只让一个对话进入 `finish`；其他对话先在各自 worktree 内 `git commit` 改动，等前一个收尾完成再开始自己的。
+- 批量收尾可改用 `python scripts/git/worktree.py finish <task> --no-push`：先只合并到本地 main（不删 worktree、不推送），攒完后串行 `git push origin main` 一次推完，再逐个跑不带 `--no-push` 的 finish 清理 worktree。
+- 并发 `git push origin main` 会因 non-fast-forward 失败（脚本中断，不丢代码），失败方需 `git pull --rebase` 合并远程后重试 push。
+
+**禁止**：一个对话去 `finish` 或 `git worktree remove` 另一个对话尚未收尾的 worktree。随时可用 `python scripts/git/worktree.py status` 查看全局在跑的 worktree，避免误判。
 
 ### 创建流程
 
