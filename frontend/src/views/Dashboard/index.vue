@@ -156,8 +156,10 @@
               class="news-item"
               @click="openNewsUrl(news.url)"
             >
-              <div class="news-title">{{ news.title }}</div>
-              <div class="news-time">{{ formatTime(news.time) }}</div>
+              <div class="news-content">
+                <span class="news-title">{{ news.title }}</span>
+                <span class="news-time">{{ formatTime(news.time) }}</span>
+              </div>
             </div>
           </div>
           <div v-else class="empty-state">
@@ -448,7 +450,8 @@ const loadMarketNews = async () => {
     if (response.success && response.data) {
       marketNews.value = response.data.news.map((item: any) => ({
         id: item.id || item.title,
-        title: item.title,
+        // 剥离财经新闻源自带的 <em> 关键词高亮标签，避免字面量显示在页面上
+        title: (item.title || '').replace(/<[^>]+>/g, ''),
         time: item.publish_time,
         url: item.url,
         source: item.source
@@ -697,16 +700,26 @@ onMounted(async () => {
           border-radius: 4px;
         }
 
+        .news-content {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
+        }
+
         .news-title {
+          flex: 1;
           font-size: 14px;
           color: var(--el-text-color-primary);
-          margin-bottom: 4px;
-          line-height: 1.4;
+          line-height: 1.5;
         }
 
         .news-time {
+          flex-shrink: 0;
           font-size: 12px;
           color: var(--el-text-color-placeholder);
+          white-space: nowrap;
+          padding-top: 2px;
         }
       }
     }
