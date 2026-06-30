@@ -154,7 +154,6 @@
 
             <!-- 临时测试按钮 -->
 
-
             <el-button
               size="large"
               type="success"
@@ -185,6 +184,7 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh, RefreshRight, Delete } from '@element-plus/icons-vue'
 import { 
+import { showError } from '@/utils/message'
   getSyncStatus, 
   runStockBasicsSync, 
   clearSyncCache,
@@ -282,11 +282,11 @@ const startSync = async () => {
         ElMessage.info(`同步状态: ${responseStatus}`)
       }
     } else {
-      ElMessage.error(`同步启动失败: ${response.message}`)
+      showError(`同步启动失败: ${response.message}`)
     }
   } catch (err: any) {
     console.error('启动同步失败:', err)
-    ElMessage.error(`同步启动失败: ${err.message}`)
+    showError(`同步启动失败: ${err.message}`)
   } finally {
     syncing.value = false
   }
@@ -318,12 +318,12 @@ const clearCache = async () => {
     if (response.success) {
       ElMessage.success('缓存已清空')
     } else {
-      ElMessage.error(`清空缓存失败: ${response.message}`)
+      showError(`清空缓存失败: ${response.message}`)
     }
   } catch (err: any) {
     if (err !== 'cancel') {
       console.error('清空缓存失败:', err)
-      ElMessage.error(`清空缓存失败: ${err.message}`)
+      showError(`清空缓存失败: ${err.message}`)
     }
   } finally {
     clearingCache.value = false
@@ -509,8 +509,6 @@ const formatTime = (isoString: string) => {
     return isoString
   }
 }
-
-
 
 // 强制重新同步
 const forceSync = async () => {

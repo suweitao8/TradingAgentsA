@@ -96,6 +96,7 @@ import { ElMessage } from 'element-plus'
 import { Connection, Refresh, Operation } from '@element-plus/icons-vue'
 import { getDataSourcesStatus, testDataSources, type DataSourceStatus, type DataSourceTestResult } from '@/api/sync'
 import { testApiConnection } from '@/api/request'
+import { showError } from '@/utils/message'
 
 // 响应式数据
 const loading = ref(false)
@@ -194,14 +195,14 @@ const testSingleSource = async (sourceName: string) => {
         }
       }
     } else {
-      ElMessage.error(`测试失败: ${response.message}`)
+      showError(`测试失败: ${response.message}`)
     }
   } catch (err: any) {
     console.error('测试数据源失败:', err)
     if (err.code === 'ECONNABORTED') {
-      ElMessage.error(`测试超时: ${sourceName.toUpperCase()} 测试时间过长，请稍后重试`)
+      showError(`测试超时: ${sourceName.toUpperCase()} 测试时间过长，请稍后重试`)
     } else {
-      ElMessage.error(`测试失败: ${err.message}`)
+      showError(`测试失败: ${err.message}`)
     }
   } finally {
     testingSource.value = ''

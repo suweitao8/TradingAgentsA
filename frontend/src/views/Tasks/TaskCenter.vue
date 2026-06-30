@@ -53,7 +53,6 @@
       </el-col>
     </el-row>
 
-
     <el-card class="list-card" shadow="never">
       <div class="action-bar">
         <el-input v-model="keyword" placeholder="搜索股票代码/名称" clearable class="search-input" />
@@ -122,7 +121,6 @@
       @view-report="openReport(currentRow)"
     />
 
-
     <!-- 报告详情弹窗组件化（预留） -->
     <TaskReportDialog v-model="reportVisible" :sections="reportSections" @close="reportVisible=false" />
 
@@ -154,7 +152,6 @@ const filters = ref<{ dateRange: string[]; market: string; status: string; stock
   dateRange: [], market: '', status: '', stock: ''
 })
 const stats = ref({ total: 0, completed: 0, failed: 0, uniqueStocks: 0 })
-
 
 // WebSocket 连接管理
 let wsConnections: Map<string, WebSocket> = new Map()
@@ -288,7 +285,7 @@ const loadList = async () => {
     const uniqueStocks = new Set(tasks.map((x:any) => x.stock_code || x.stock_symbol)).size
     stats.value = { total: tasks.length, completed, failed, uniqueStocks }
   } catch (e:any) {
-    ElMessage.error(e?.message || '加载失败')
+    showError(e?.message || '加载失败')
   } finally {
     loading.value = false
   }
@@ -337,7 +334,7 @@ const openResult = async (row:any) => {
     currentResult.value = body
     resultVisible.value = true
   } catch (e:any) {
-    ElMessage.error('获取结果失败')
+    showError('获取结果失败')
   }
 }
 
@@ -357,7 +354,7 @@ const showErrorDetail = async (row: any) => {
   try {
     const taskId = row.task_id || row.analysis_id || row.id
     if (!taskId) {
-      ElMessage.error('任务ID不存在')
+      showError('任务ID不存在')
       return
     }
 
@@ -384,7 +381,7 @@ const showErrorDetail = async (row: any) => {
     )
   } catch (e: any) {
     if (e !== 'cancel' && e !== 'close') {
-      ElMessage.error(e?.message || '获取错误详情失败')
+      showError(e?.message || '获取错误详情失败')
     }
   }
 }
@@ -404,7 +401,7 @@ const markAsFailed = async (row: any) => {
 
     const taskId = row.task_id || row.analysis_id || row.id
     if (!taskId) {
-      ElMessage.error('任务ID不存在')
+      showError('任务ID不存在')
       return
     }
 
@@ -414,7 +411,7 @@ const markAsFailed = async (row: any) => {
     await loadList()
   } catch (e: any) {
     if (e !== 'cancel') {
-      ElMessage.error(e?.message || '标记失败')
+      showError(e?.message || '标记失败')
     }
   } finally {
     loading.value = false
@@ -436,7 +433,7 @@ const deleteTask = async (row: any) => {
 
     const taskId = row.task_id || row.analysis_id || row.id
     if (!taskId) {
-      ElMessage.error('任务ID不存在')
+      showError('任务ID不存在')
       return
     }
 
@@ -446,7 +443,7 @@ const deleteTask = async (row: any) => {
     await loadList()
   } catch (e: any) {
     if (e !== 'cancel') {
-      ElMessage.error(e?.message || '删除失败')
+      showError(e?.message || '删除失败')
     }
   } finally {
     loading.value = false
@@ -468,7 +465,7 @@ const exportSelected = () => {
     URL.revokeObjectURL(url)
     ElMessage.success('导出成功')
   } catch {
-    ElMessage.error('导出失败')
+    showError('导出失败')
   }
 }
 
@@ -505,6 +502,7 @@ const getStatusType = (status:string): 'success' | 'info' | 'warning' | 'danger'
   return map[status] || 'info'
 }
 import { formatDateTime } from '@/utils/datetime'
+import { showError } from '@/utils/message'
 
 const getStatusText = (status:string) => ({ pending:'等待中', processing:'处理中', completed:'已完成', failed:'失败', cancelled:'已取消' } as any)[status] || status
 const formatTime = (t:string) => t ? formatDateTime(t) : '-'

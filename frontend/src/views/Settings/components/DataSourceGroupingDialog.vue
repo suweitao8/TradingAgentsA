@@ -112,6 +112,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
+import { showError } from '@/utils/message'
   configApi, 
   type MarketCategory, 
   type DataSourceGrouping 
@@ -170,7 +171,7 @@ const loadData = async () => {
     })
   } catch (error) {
     console.error('加载数据失败:', error)
-    ElMessage.error('加载数据失败')
+    showError('加载数据失败')
   }
 }
 
@@ -191,7 +192,7 @@ const addToCategory = async (categoryId: string) => {
     ElMessage.success('添加到分类成功')
   } catch (error) {
     console.error('添加到分类失败:', error)
-    ElMessage.error('添加到分类失败')
+    showError('添加到分类失败')
   }
 }
 
@@ -218,7 +219,7 @@ const removeFromCategory = async (categoryId: string) => {
   } catch (error) {
     if (error !== 'cancel') {
       console.error('移除失败:', error)
-      ElMessage.error('移除失败')
+      showError('移除失败')
     }
   }
 }
@@ -237,7 +238,7 @@ const toggleGrouping = async (grouping: DataSourceGrouping) => {
     ElMessage.success(`分组已${newEnabled ? '启用' : '禁用'}`)
   } catch (error) {
     console.error('切换分组状态失败:', error)
-    ElMessage.error('切换分组状态失败')
+    showError('切换分组状态失败')
   }
 }
 
@@ -251,7 +252,7 @@ const updateGroupingPriority = async (grouping: DataSourceGrouping) => {
     )
   } catch (error) {
     console.error('更新优先级失败:', error)
-    ElMessage.error('更新优先级失败')
+    showError('更新优先级失败')
   }
 }
 

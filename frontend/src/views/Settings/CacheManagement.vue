@@ -211,6 +211,7 @@ import {
 } from '@element-plus/icons-vue'
 import * as cacheApi from '@/api/cache'
 import type { CacheDetailItem, CacheStats } from '@/api/cache'
+import { showError } from '@/utils/message'
 
 type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
 
@@ -289,7 +290,7 @@ const refreshStats = async () => {
     ElMessage.success('缓存统计已刷新')
   } catch (error: any) {
     console.error('刷新缓存统计失败:', error)
-    ElMessage.error(error.message || '刷新缓存统计失败')
+    showError(error.message || '刷新缓存统计失败')
   } finally {
     statsLoading.value = false
   }
@@ -314,7 +315,7 @@ const cleanupOldCache = async () => {
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('清理缓存失败:', error)
-      ElMessage.error(error.message || '清理缓存失败')
+      showError(error.message || '清理缓存失败')
     }
   } finally {
     cleanupLoading.value = false
@@ -344,7 +345,7 @@ const clearAllCache = async () => {
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('清空缓存失败:', error)
-      ElMessage.error(error.message || '清空缓存失败')
+      showError(error.message || '清空缓存失败')
     }
   } finally {
     clearAllLoading.value = false
@@ -361,7 +362,7 @@ const loadCacheDetails = async () => {
     totalItems.value = data.total || 0
   } catch (error: any) {
     console.error('加载缓存详情失败:', error)
-    ElMessage.error(error.message || '加载缓存详情失败')
+    showError(error.message || '加载缓存详情失败')
   } finally {
     detailsLoading.value = false
   }
@@ -384,7 +385,7 @@ const deleteCacheItem = async (item: any) => {
     
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('删除缓存项失败')
+      showError('删除缓存项失败')
     }
   }
 }

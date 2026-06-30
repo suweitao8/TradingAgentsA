@@ -120,6 +120,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Clock, Refresh, SuccessFilled, CircleCloseFilled, Warning } from '@element-plus/icons-vue'
 import { getSyncHistory, type SyncStatus } from '@/api/sync'
+import { showError } from '@/utils/message'
 
 type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'
 
@@ -179,7 +180,7 @@ const fetchHistory = async (page = 1) => {
 
     // 如果是第一页加载失败，显示错误信息
     if (page === 1) {
-      ElMessage.error(`获取同步历史失败: ${err.message}`)
+      showError(`获取同步历史失败: ${err.message}`)
     }
   } finally {
     loading.value = false

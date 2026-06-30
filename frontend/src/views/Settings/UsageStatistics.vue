@@ -143,6 +143,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { DataAnalysis, Refresh, Document, Upload, Download, Money } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import {
+import { showError } from '@/utils/message'
   getUsageRecords,
   getUsageStatistics,
   deleteOldRecords,
@@ -206,7 +207,7 @@ const loadStatistics = async () => {
     }
   } catch (error) {
     console.error('加载统计数据失败:', error)
-    ElMessage.error('加载统计数据失败')
+    showError('加载统计数据失败')
   }
 }
 
@@ -223,7 +224,7 @@ const loadRecords = async () => {
     }
   } catch (error) {
     console.error('加载使用记录失败:', error)
-    ElMessage.error('加载使用记录失败')
+    showError('加载使用记录失败')
   } finally {
     loading.value = false
   }
@@ -394,7 +395,7 @@ const handleDeleteOldRecords = async () => {
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('删除旧记录失败:', error)
-      ElMessage.error('删除旧记录失败')
+      showError('删除旧记录失败')
     }
   }
 }

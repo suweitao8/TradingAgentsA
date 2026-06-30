@@ -132,6 +132,7 @@ import DataSourceStatus from '@/components/Sync/DataSourceStatus.vue'
 import SyncControl from '@/components/Sync/SyncControl.vue'
 import SyncRecommendations from '@/components/Sync/SyncRecommendations.vue'
 import SyncHistory from '@/components/Sync/SyncHistory.vue'
+import { showError } from '@/utils/message'
 
 // 响应式数据
 const testing = ref(false)
@@ -153,14 +154,14 @@ const runFullTest = async () => {
       const availableCount = testResults.value.filter(r => r.available).length
       ElMessage.success(`全面测试完成: ${availableCount}/${testResults.value.length} 数据源可用`)
     } else {
-      ElMessage.error(`测试失败: ${response.message}`)
+      showError(`测试失败: ${response.message}`)
     }
   } catch (err: any) {
     console.error('全面测试失败:', err)
     if (err.code === 'ECONNABORTED') {
-      ElMessage.error('测试超时，请稍后重试。请确保网络连接稳定。')
+      showError('测试超时，请稍后重试。请确保网络连接稳定。')
     } else {
-      ElMessage.error(`测试失败: ${err.message}`)
+      showError(`测试失败: ${err.message}`)
     }
   } finally {
     testing.value = false

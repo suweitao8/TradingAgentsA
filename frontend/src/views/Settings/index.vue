@@ -230,7 +230,6 @@
               </el-checkbox-group>
             </el-form-item>
 
-
             
             <el-form-item label="自动刷新">
               <el-switch v-model="analysisSettings.autoRefresh" />
@@ -283,8 +282,6 @@
             </el-form-item>
           </el-form>
         </el-card>
-
-
 
         <!-- 配置管理 -->
         <el-card v-show="activeTab === 'config'" class="settings-content" shadow="never">
@@ -406,7 +403,6 @@
           </div>
         </el-card>
 
-
       </el-col>
     </el-row>
   </div>
@@ -419,6 +415,7 @@ import { ElMessage } from 'element-plus'
 import { useAppStore } from '@/stores/app'
 import type { UserPreferences } from '@/types/preferences'
 import {
+import { showError } from '@/utils/message'
   Setting,
   User,
   Reading,
@@ -604,7 +601,7 @@ const saveGeneralSettings = async () => {
     }
   } catch (error) {
     console.error('保存通用设置失败:', error)
-    ElMessage.error('保存通用设置失败')
+    showError('保存通用设置失败')
   }
 }
 
@@ -634,7 +631,7 @@ const saveAnalysisSettings = async () => {
     }
   } catch (error) {
     console.error('保存分析偏好失败:', error)
-    ElMessage.error('保存分析偏好失败')
+    showError('保存分析偏好失败')
   }
 }
 
@@ -655,7 +652,7 @@ const saveNotificationSettings = async () => {
     }
   } catch (error) {
     console.error('保存通知设置失败:', error)
-    ElMessage.error('保存通知设置失败')
+    showError('保存通知设置失败')
   }
 }
 
@@ -739,8 +736,6 @@ const goToOperationLogs = () => {
 const goToMultiSourceSync = () => {
   router.push('/settings/sync')
 }
-
-
 
 // 生命周期
 onMounted(() => {

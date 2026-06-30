@@ -2,6 +2,7 @@ import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
 import { useAppStore } from '@/stores/app'
+import { showError } from '@/utils/message'
 
 // API响应接口
 export interface ApiResponse<T = any> {
@@ -22,32 +23,10 @@ export interface RequestConfig extends AxiosRequestConfig {
   retryDelay?: number  // 重试延迟（毫秒）
 }
 
-// 消息去重：记录最近显示的错误消息
-const recentMessages = new Map<string, number>()
-const MESSAGE_THROTTLE_TIME = 3000 // 3秒内相同消息不重复显示
-
-// 消息去重：记录最近显示的错误消息
+// 错误提示统一走左下角通知（避免顶部横条遮挡页面操作区），
+// 去重逻辑已下沉到 utils/message.ts 的 showError。
 const showErrorMessage = (message: string) => {
-  const now = Date.now()
-  const lastTime = recentMessages.get(message)
-
-  // 如果3秒内已经显示过相同消息，则跳过
-  if (lastTime && now - lastTime < MESSAGE_THROTTLE_TIME) {
-    return
-  }
-
-  // 记录消息显示时间
-  recentMessages.set(message, now)
-
-  // 清理过期的消息记录（保持Map不会无限增长）
-  if (recentMessages.size > 50) {
-    const entries = Array.from(recentMessages.entries())
-    entries.sort((a, b) => a[1] - b[1])
-    // 删除最旧的25条记录
-    entries.slice(0, 25).forEach(([key]) => recentMessages.delete(key))
-  }
-
-  ElMessage.error(message)
+  showError(message)
 }
 
 // 创建axios实例

@@ -80,6 +80,7 @@ import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { configApi, type MarketCategory } from '@/api/config'
+import { showError } from '@/utils/message'
 
 // Props
 interface Props {
@@ -191,7 +192,7 @@ const handleSubmit = async () => {
     handleClose()
   } catch (error) {
     console.error('保存市场分类失败:', error)
-    ElMessage.error('保存市场分类失败')
+    showError('保存市场分类失败')
   } finally {
     loading.value = false
   }

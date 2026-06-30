@@ -382,6 +382,7 @@ import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Plus, Refresh, Document } from '@element-plus/icons-vue'
 import { configApi, type FetchProviderModelsRequest, type LLMProvider } from '@/api/config'
+import { showError } from '@/utils/message'
 
 // 数据
 const loading = ref(false)
@@ -477,7 +478,7 @@ const loadCatalogs = async () => {
     catalogs.value = sortCatalogsByNewest(response)
   } catch (error) {
     console.error('加载模型目录失败:', error)
-    ElMessage.error('加载模型目录失败')
+    showError('加载模型目录失败')
   } finally {
     loading.value = false
   }
@@ -505,7 +506,7 @@ const loadProviders = async (showSuccessMessage = false) => {
     }
   } catch (error) {
     console.error('❌ 加载厂家列表失败:', error)
-    ElMessage.error('加载厂家列表失败')
+    showError('加载厂家列表失败')
   } finally {
     providersLoading.value = false
   }
@@ -569,7 +570,7 @@ const handleDelete = async (row: any) => {
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('删除失败:', error)
-      ElMessage.error('删除失败')
+      showError('删除失败')
     }
   }
 }
@@ -601,7 +602,7 @@ const handleFetchModelsFromAPI = async () => {
     // 获取厂家信息
     const provider = availableProviders.value.find(p => p.name === formData.value.provider)
     if (!provider) {
-      ElMessage.error('未找到厂家信息')
+      showError('未找到厂家信息')
       return
     }
 
@@ -620,7 +621,7 @@ const handleFetchModelsFromAPI = async () => {
     if (error !== 'cancel') {
       console.error('获取模型列表失败:', error)
       const errorMsg = error.response?.data?.detail || error.message || '获取模型列表失败'
-      ElMessage.error(errorMsg)
+      showError(errorMsg)
     }
   } finally {
     fetchingModels.value = false
@@ -700,12 +701,12 @@ const handleRunFetchModels = async () => {
     } else {
       fetchedModels.value = []
       selectedFetchedModels.value = []
-      ElMessage.error(response.message || '获取模型列表失败或列表为空')
+      showError(response.message || '获取模型列表失败或列表为空')
     }
   } catch (error: any) {
     console.error('获取模型列表失败:', error)
     const errorMsg = error.response?.data?.detail || error.message || '获取模型列表失败'
-    ElMessage.error(errorMsg)
+    showError(errorMsg)
   } finally {
     fetchingModels.value = false
   }
@@ -878,7 +879,7 @@ const handleSave = async () => {
       await loadCatalogs()
     } catch (error) {
       console.error('保存失败:', error)
-      ElMessage.error('保存失败')
+      showError('保存失败')
     } finally {
       saving.value = false
     }

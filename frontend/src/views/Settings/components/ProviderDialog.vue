@@ -182,6 +182,7 @@ import { ElMessage } from 'element-plus'
 import { Link } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { configApi, type LLMProvider } from '@/api/config'
+import { showError } from '@/utils/message'
 
 // 表单数据类型（扩展 LLMProvider，添加临时字段）
 interface ProviderFormData extends Partial<LLMProvider> {
@@ -468,7 +469,7 @@ const handleSubmit = async () => {
     handleClose()
   } catch (error) {
     console.error('提交失败:', error)
-    ElMessage.error(isEdit.value ? '更新失败' : '添加失败')
+    showError(isEdit.value ? '更新失败' : '添加失败')
   } finally {
     submitting.value = false
   }

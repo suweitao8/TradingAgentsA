@@ -286,6 +286,7 @@ import {
   Coin
 } from '@element-plus/icons-vue'
 import axios from 'axios'
+import { showError } from '@/utils/message'
 
 // 类型定义
 interface ConfigItem {
@@ -370,11 +371,11 @@ const handleValidate = async () => {
         ElMessage.warning('配置验证失败，请检查缺少的配置项')
       }
     } else {
-      ElMessage.error(response.data.message || '验证失败')
+      showError(response.data.message || '验证失败')
     }
   } catch (error: any) {
     console.error('配置验证失败:', error)
-    ElMessage.error(error.response?.data?.message || '验证失败')
+    showError(error.response?.data?.message || '验证失败')
   } finally {
     validating.value = false
   }

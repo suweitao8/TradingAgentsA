@@ -250,6 +250,7 @@ import {
   Search
 } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
+import { showError } from '@/utils/message'
 
 type TokenRecord = {
   timestamp: string
@@ -359,7 +360,7 @@ const loadStatistics = async () => {
     renderCharts()
     
   } catch (_error) {
-    ElMessage.error('加载统计数据失败')
+    showError('加载统计数据失败')
   } finally {
     loading.value = false
   }

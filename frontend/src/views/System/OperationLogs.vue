@@ -318,6 +318,7 @@ import {
 } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import {
+import { showError } from '@/utils/message'
   OperationLogsApi,
   type OperationLog,
   type OperationLogStats,
@@ -392,7 +393,7 @@ const loadLogs = async () => {
 
   } catch (error) {
     console.error('加载操作日志失败:', error)
-    ElMessage.error('加载操作日志失败')
+    showError('加载操作日志失败')
   } finally {
     loading.value = false
   }
@@ -446,7 +447,7 @@ const exportLogs = async () => {
     ElMessage.success('操作日志导出成功')
   } catch (error) {
     console.error('导出操作日志失败:', error)
-    ElMessage.error('导出操作日志失败')
+    showError('导出操作日志失败')
   } finally {
     loading.value = false
   }
@@ -472,13 +473,13 @@ const clearLogs = async () => {
       ElMessage.success(response.message)
       loadLogs()
     } else {
-      ElMessage.error(response.message || '清空操作日志失败')
+      showError(response.message || '清空操作日志失败')
     }
 
   } catch (error) {
     if (error !== 'cancel') {
       console.error('清空操作日志失败:', error)
-      ElMessage.error('清空操作日志失败')
+      showError('清空操作日志失败')
     }
   } finally {
     loading.value = false

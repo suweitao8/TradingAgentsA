@@ -26,6 +26,7 @@ import { ElMessage } from 'element-plus'
 import NetworkStatus from '@/components/NetworkStatus.vue'
 import axios from 'axios'
 import { configApi } from '@/api/config'
+import { showError } from '@/utils/message'
 
 // 配置向导
 const showConfigWizard = ref(false)
@@ -141,7 +142,7 @@ const handleWizardComplete = async (data: any) => {
     })
   } catch (error) {
     console.error('保存配置失败:', error)
-    ElMessage.error('保存配置失败，请稍后重试')
+    showError('保存配置失败，请稍后重试')
   }
 }
 

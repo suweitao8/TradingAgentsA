@@ -94,6 +94,7 @@ import { ElMessage } from 'element-plus'
 import { Download, Clock, View, Reading, Loading, Document } from '@element-plus/icons-vue'
 import { marked } from 'marked'
 import {
+import { showError } from '@/utils/message'
   categoryMap,
   articlesDatabase,
   registry,
@@ -153,7 +154,7 @@ function selectArticle(id: string) {
 async function loadArticle(id: string) {
   const info = registry[id]
   if (!info) {
-    ElMessage.error('未找到文章')
+    showError('未找到文章')
     return
   }
 
@@ -196,7 +197,7 @@ async function loadArticle(id: string) {
     article.value.content = html
   } catch (e) {
     console.error(e)
-    ElMessage.error('加载文章失败：无法访问文档资源')
+    showError('加载文章失败：无法访问文档资源')
   } finally {
     loading.value = false
     await nextTick()
@@ -232,7 +233,7 @@ async function downloadArticle() {
     URL.revokeObjectURL(url)
   } catch (e) {
     console.error(e)
-    ElMessage.error('下载失败')
+    showError('下载失败')
   }
 }
 

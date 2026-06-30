@@ -268,6 +268,7 @@ import { ElMessage } from 'element-plus'
 import { DataAnalysis, Refresh, Download, Clock } from '@element-plus/icons-vue'
 import { dataCollectionApi, type StockDataItem, type NewsDataItem } from '@/api/dataCollection'
 import { formatDateTime } from '@/utils/datetime'
+import { showError } from '@/utils/message'
 
 // ---- 采集配置 ----
 const collectScope = ref<'favorites' | 'custom'>('favorites')
@@ -330,7 +331,7 @@ const handleCollect = async () => {
       ElMessage.warning('采集完成，但未获取到股票数据')
     }
   } catch (error: any) {
-    ElMessage.error(error?.message || '采集失败')
+    showError(error?.message || '采集失败')
   } finally {
     loading.value = false
   }

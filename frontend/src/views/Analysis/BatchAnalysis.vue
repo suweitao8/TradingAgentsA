@@ -300,6 +300,7 @@ import { useRouter, useRoute } from 'vue-router'
 import ModelConfig from '@/components/ModelConfig.vue'
 import { getMarketByStockCode } from '@/utils/market'
 import { validateStockCode } from '@/utils/stockValidator'
+import { showError } from '@/utils/message'
 
 // 路由实例（必须在顶层调用）
 const router = useRouter()
@@ -562,7 +563,7 @@ const submitBatchAnalysis = async () => {
   } catch (error: any) {
     // 处理错误
     if (error !== 'cancel') {
-      ElMessage.error(error.message || '批量分析提交失败')
+      showError(error.message || '批量分析提交失败')
     }
   } finally {
     submitting.value = false

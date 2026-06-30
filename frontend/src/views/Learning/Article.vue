@@ -62,6 +62,7 @@ import { Download, Clock, View, ArrowLeft, ArrowRight } from '@element-plus/icon
 import { ElMessage } from 'element-plus'
 import { marked } from 'marked'
 import { registry, articleOrder } from './data'
+import { showError } from '@/utils/message'
 
 const route = useRoute()
 const router = useRouter()
@@ -116,7 +117,7 @@ const downloadArticle = async () => {
     URL.revokeObjectURL(url)
   } catch (e) {
     console.error(e)
-    ElMessage.error('下载失败')
+    showError('下载失败')
   }
 }
 
@@ -203,7 +204,7 @@ function rewriteImageSrc(html: string): string {
 async function loadArticle(id: string) {
   const info = registry[id]
   if (!info) {
-    ElMessage.error('未找到文章')
+    showError('未找到文章')
     return
   }
   // 外链文章：自动在新标签页打开，当前页保留在系统内
@@ -266,7 +267,7 @@ async function loadArticle(id: string) {
     setupInternalLinks()
   } catch (e) {
     console.error(e)
-    ElMessage.error('加载文章失败：无法访问文档资源')
+    showError('加载文章失败：无法访问文档资源')
   }
 }
 
@@ -445,7 +446,6 @@ watch(articleId, (id) => {
             color: inherit;
           }
         }
-
 
         :deep(blockquote) {
           border-left: 4px solid var(--el-color-primary);

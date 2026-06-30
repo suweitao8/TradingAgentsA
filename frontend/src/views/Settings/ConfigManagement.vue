@@ -598,7 +598,6 @@
               <div class="setting-description">用于后端存储与展示的统一时区；修改后新写入的时间将按此时区保存与返回。</div>
             </el-form-item>
 
-
             <!-- 性能设置 -->
             <el-divider content-position="left">性能设置</el-divider>
 
@@ -615,7 +614,6 @@
               <el-input-number v-model="systemSettings.cache_ttl" :min="300" :max="86400" :disabled="!isEditable('cache_ttl')" />
               <span class="setting-description">秒</span>
             </el-form-item>
-
 
             <!-- 队列与 Worker -->
             <el-divider content-position="left">队列与 Worker</el-divider>
@@ -682,7 +680,6 @@
               <el-input-number v-model="systemSettings.ta_google_news_sleep_max_seconds" :min="0.1" :step="0.1" :disabled="!isEditable('ta_google_news_sleep_max_seconds')" />
               <span class="setting-description">秒</span>
             </el-form-item>
-
 
             <el-form-item label="任务流最大空闲">
               <el-input-number v-model="systemSettings.sse_task_max_idle_seconds" :min="10" :step="10" :disabled="!isEditable('sse_task_max_idle_seconds')" />
@@ -1076,6 +1073,7 @@ import DataSourceConfigDialog from './components/DataSourceConfigDialog.vue'
 import MarketCategoryManagement from './components/MarketCategoryManagement.vue'
 import DataSourceGroupingDialog from './components/DataSourceGroupingDialog.vue'
 import SortableDataSourceList from './components/SortableDataSourceList.vue'
+import { showError } from '@/utils/message'
 
 type ProviderInfoSummary = {
   display_name: string
@@ -1223,7 +1221,7 @@ const loadProviders = async () => {
     console.log('✅ 厂家列表加载成功，数量:', providerList.length)
   } catch (error) {
     console.error('❌ 加载厂家列表失败:', error)
-    ElMessage.error('加载厂家列表失败')
+    showError('加载厂家列表失败')
   } finally {
     providersLoading.value = false
   }
@@ -1267,7 +1265,7 @@ const loadLLMConfigs = async () => {
     buildLLMConfigGroups()
   } catch (error) {
     console.error('❌ 加载大模型配置失败:', error)
-    ElMessage.error('加载大模型配置失败')
+    showError('加载大模型配置失败')
   } finally {
     llmLoading.value = false
   }
@@ -1343,7 +1341,7 @@ const loadDataSourceConfigs = async () => {
     await loadDataSourceGroupings()
     buildDataSourceGroups()
   } catch (error) {
-    ElMessage.error('加载数据源配置失败')
+    showError('加载数据源配置失败')
   } finally {
     dataSourceLoading.value = false
   }
@@ -1424,7 +1422,7 @@ const loadDatabaseConfigs = async () => {
   try {
     databaseConfigs.value = await configApi.getDatabaseConfigs()
   } catch (error) {
-    ElMessage.error('加载数据库配置失败')
+    showError('加载数据库配置失败')
   } finally {
     databaseLoading.value = false
   }
@@ -1475,7 +1473,7 @@ const loadSystemSettings = async () => {
     const metaList = meta?.items || []
     systemSettingsMeta.value = Object.fromEntries(metaList.map((m: SettingMeta) => [m.key, m]))
   } catch (error) {
-    ElMessage.error('加载系统设置失败')
+    showError('加载系统设置失败')
   } finally {
     systemLoading.value = false
   }
@@ -1502,7 +1500,7 @@ const toggleProvider = async (provider: LLMProvider) => {
     await loadProviders()
     ElMessage.success(`厂家已${provider.is_active ? '禁用' : '启用'}`)
   } catch (error) {
-    ElMessage.error('切换厂家状态失败')
+    showError('切换厂家状态失败')
   }
 }
 
@@ -1520,7 +1518,7 @@ const deleteProvider = async (provider: LLMProvider) => {
     ElMessage.success('厂家删除成功')
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('删除厂家失败')
+      showError('删除厂家失败')
     }
   }
 }
@@ -1642,7 +1640,7 @@ const toggleProviderStatus = async (providerRow: LLMConfigGroup) => {
     // 获取厂家ID
     const provider = providers.value.find(p => p.name === providerRow.provider)
     if (!provider) {
-      ElMessage.error('找不到厂家信息')
+      showError('找不到厂家信息')
       return
     }
 
@@ -1660,7 +1658,7 @@ const toggleProviderStatus = async (providerRow: LLMConfigGroup) => {
     ElMessage.success(`厂家已${action}`)
   } catch (error) {
     console.error('切换厂家状态失败:', error)
-    ElMessage.error('切换厂家状态失败')
+    showError('切换厂家状态失败')
   }
 }
 
@@ -1679,11 +1677,11 @@ const testProviderAPI = async (provider: LLMProvider) => {
     if (result.success) {
       ElMessage.success(`${provider.display_name} API测试成功`)
     } else {
-      ElMessage.error(`${provider.display_name} API测试失败: ${result.message}`)
+      showError(`${provider.display_name} API测试失败: ${result.message}`)
     }
   } catch (error) {
     console.error('API测试失败:', error)
-    ElMessage.error(`${provider.display_name} API测试失败`)
+    showError(`${provider.display_name} API测试失败`)
   } finally {
     testingProviders.value[provider.id] = false
   }
@@ -1748,7 +1746,7 @@ const migrateFromEnv = async () => {
   } catch (error) {
     if (error !== 'cancel') {
       console.error('迁移失败:', error)
-      ElMessage.error('迁移失败，请检查控制台错误信息')
+      showError('迁移失败，请检查控制台错误信息')
     }
   } finally {
     migrateLoading.value = false
@@ -1797,12 +1795,12 @@ const testLLMConfig = async (config: LLMConfig) => {
     if (result.success) {
       ElMessage.success(`测试成功: ${result.message}`)
     } else {
-      ElMessage.error(`测试失败: ${result.message}`)
+      showError(`测试失败: ${result.message}`)
     }
   } catch (error: any) {
     console.error('❌ 测试配置失败:', error)
     console.error('❌ 错误详情:', error.response?.data)
-    ElMessage.error(error.response?.data?.detail || error.message || '测试配置失败')
+    showError(error.response?.data?.detail || error.message || '测试配置失败')
   }
 }
 
@@ -1822,7 +1820,7 @@ const toggleLLMConfig = async (config: LLMConfig) => {
     await loadLLMConfigs()
     ElMessage.success(`模型已${action}`)
   } catch (error) {
-    ElMessage.error('切换模型状态失败')
+    showError('切换模型状态失败')
   }
 }
 
@@ -1840,14 +1838,10 @@ const deleteLLMConfig = async (config: LLMConfig) => {
     ElMessage.success('大模型配置删除成功')
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('删除大模型配置失败')
+      showError('删除大模型配置失败')
     }
   }
 }
-
-
-
-
 
 // 数据源相关操作
 const showAddDataSourceDialog = () => {
@@ -1881,7 +1875,7 @@ const handleUpdateDataSourceOrder = async (categoryId: string, orderedItems: Arr
     buildDataSourceGroups()
   } catch (error) {
     console.error('更新排序失败:', error)
-    ElMessage.error('更新排序失败')
+    showError('更新排序失败')
   }
 }
 
@@ -1912,10 +1906,10 @@ const testDataSource = async (config: DataSourceConfig) => {
     if (result.success) {
       ElMessage.success('数据源连接测试成功')
     } else {
-      ElMessage.error(`数据源连接测试失败: ${result.message}`)
+      showError(`数据源连接测试失败: ${result.message}`)
     }
   } catch (error) {
-    ElMessage.error('数据源连接测试失败')
+    showError('数据源连接测试失败')
   }
 }
 
@@ -1939,7 +1933,7 @@ const deleteDataSourceConfig = async (config: DataSourceConfig) => {
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('删除数据源失败:', error)
-      ElMessage.error(error.message || '删除数据源失败')
+      showError(error.message || '删除数据源失败')
     }
   }
 }
@@ -1961,7 +1955,7 @@ const saveDatabaseConfig = async () => {
     databaseDialogVisible.value = false
     await loadDatabaseConfigs()
   } catch (error: any) {
-    ElMessage.error(error.message || '保存数据库配置失败')
+    showError(error.message || '保存数据库配置失败')
   }
 }
 
@@ -1978,12 +1972,12 @@ const testDatabase = async (config: DatabaseConfig) => {
     if (result.success) {
       ElMessage.success(`数据库连接测试成功`)
     } else {
-      ElMessage.error(`数据库连接测试失败: ${result.message}`)
+      showError(`数据库连接测试失败: ${result.message}`)
     }
   } catch (error: any) {
     console.error('❌ 数据库测试失败:', error)
     console.error('❌ 错误详情:', error.response?.data)
-    ElMessage.error(error.response?.data?.detail || error.message || '数据库连接测试失败')
+    showError(error.response?.data?.detail || error.message || '数据库连接测试失败')
   }
 }
 
@@ -2006,7 +2000,7 @@ const handleReloadConfig = async () => {
     }
   } catch (error: any) {
     console.error('配置重载失败:', error)
-    ElMessage.error({
+    showError({
       message: error.response?.data?.detail || '配置重载失败',
       duration: 3000
     })
@@ -2049,7 +2043,7 @@ const saveSystemSettings = async () => {
     for (const { key, min } of positiveKeys) {
       const v = (systemSettings.value as any)[key]
       if (v !== undefined && v !== null && Number(v) <= min - Number.EPSILON && isEditable(key)) {
-        ElMessage.error(`${key} 必须大于 ${min}`)
+        showError(`${key} 必须大于 ${min}`)
         systemSaving.value = false
         return
       }
@@ -2059,7 +2053,7 @@ const saveSystemSettings = async () => {
     const gMax = Number((systemSettings.value as any)['ta_google_news_sleep_max_seconds'])
     if (!Number.isNaN(gMin) && !Number.isNaN(gMax) && isEditable('ta_google_news_sleep_max_seconds')) {
       if (gMax <= gMin) {
-        ElMessage.error('ta_google_news_sleep_max_seconds 必须大于 ta_google_news_sleep_min_seconds')
+        showError('ta_google_news_sleep_max_seconds 必须大于 ta_google_news_sleep_min_seconds')
         systemSaving.value = false
         return
       }
@@ -2071,7 +2065,7 @@ const saveSystemSettings = async () => {
     await configApi.updateSystemSettings(payload)
     ElMessage.success('系统设置保存成功')
   } catch (error) {
-    ElMessage.error('系统设置保存失败')
+    showError('系统设置保存失败')
   } finally {
     systemSaving.value = false
   }
@@ -2096,7 +2090,7 @@ const exportConfig = async () => {
 
     ElMessage.success('配置导出成功')
   } catch (error) {
-    ElMessage.error('配置导出失败')
+    showError('配置导出失败')
   } finally {
     exportLoading.value = false
   }
@@ -2121,7 +2115,7 @@ const handleImportConfig = async (file: File) => {
     await loadTabData(activeTab.value)
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('配置导入失败')
+      showError('配置导入失败')
     }
   } finally {
     importLoading.value = false
@@ -2146,7 +2140,7 @@ const migrateLegacyConfig = async () => {
     await loadTabData(activeTab.value)
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('传统配置迁移失败')
+      showError('传统配置迁移失败')
     }
   } finally {
     migrateLoading.value = false

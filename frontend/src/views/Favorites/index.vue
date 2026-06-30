@@ -319,6 +319,7 @@ import { normalizeMarketForAnalysis } from '@/utils/market'
 import StockReportDrawer from './components/StockReportDrawer.vue'
 
 import type { FavoriteItem } from '@/api/favorites'
+import { showError } from '@/utils/message'
 
 const router = useRouter()
 
@@ -463,7 +464,6 @@ const editForm = ref({
   notes: ''
 })
 
-
 // 计算属性
 const filteredFavorites = computed<FavoriteItem[]>(() => {
   let result: FavoriteItem[] = favorites.value
@@ -501,7 +501,7 @@ const loadFavorites = async () => {
     favorites.value = ((res as any)?.data || []) as FavoriteItem[]
   } catch (error: any) {
     console.error('加载自选股失败:', error)
-    ElMessage.error(error.message || '加载自选股失败')
+    showError(error.message || '加载自选股失败')
   } finally {
     loading.value = false
   }
@@ -525,11 +525,11 @@ const syncAllRealtime = async () => {
       // 重新加载自选股列表以获取最新价格
       await loadFavorites()
     } else {
-      ElMessage.error((res as any)?.message || '同步失败')
+      showError((res as any)?.message || '同步失败')
     }
   } catch (error: any) {
     console.error('同步实时行情失败:', error)
-    ElMessage.error(error.message || '同步失败，请稍后重试')
+    showError(error.message || '同步失败，请稍后重试')
   } finally {
     syncRealtimeLoading.value = false
   }
@@ -648,12 +648,11 @@ const handleUpdateFavorite = async () => {
     await loadFavorites()
   } catch (error: any) {
     console.error('更新自选股失败:', error)
-    ElMessage.error(error.message || '保存失败')
+    showError(error.message || '保存失败')
   } finally {
     editLoading.value = false
   }
 }
-
 
 const editFavorite = (row: any) => {
   editForm.value = {
@@ -769,11 +768,11 @@ const handleSingleSync = async () => {
       // 刷新列表
       await loadFavorites()
     } else {
-      ElMessage.error(res.message || '同步失败')
+      showError(res.message || '同步失败')
     }
   } catch (error: any) {
     console.error('同步失败:', error)
-    ElMessage.error(error.message || '同步失败，请稍后重试')
+    showError(error.message || '同步失败，请稍后重试')
   } finally {
     singleSyncLoading.value = false
   }
@@ -784,7 +783,6 @@ const getChangeClass = (changePercent: number) => {
   if (changePercent < 0) return 'text-green'
   return ''
 }
-
 
 const formatPrice = (value: any): string => {
   const n = Number(value)

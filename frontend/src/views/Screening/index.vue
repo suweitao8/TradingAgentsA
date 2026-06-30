@@ -356,6 +356,7 @@ import { screeningApi, type FieldConfigResponse } from '@/api/screening'
 import { favoritesApi } from '@/api/favorites'
 import { getCurrentDataSource } from '@/api/sync'
 import { normalizeMarketForAnalysis, exchangeCodeToMarket, getMarketByStockCode } from '@/utils/market'
+import { showError } from '@/utils/message'
 
 // 响应式数据
 const screeningLoading = ref(false)
@@ -534,7 +535,7 @@ const performScreening = async () => {
 
     ElMessage.success(`筛选完成，找到 ${screeningResults.value.length} 只股票`)
   } catch (error) {
-    ElMessage.error('筛选失败，请重试')
+    showError('筛选失败，请重试')
   } finally {
     screeningLoading.value = false
   }
@@ -593,7 +594,6 @@ const batchAnalyze = async () => {
   }
 }
 
-
 const analyzeSingle = (stock: StockInfo) => {
   const stockCode = stock.code || stock.symbol || ''
   if (!stockCode) return
@@ -622,7 +622,7 @@ const toggleFavorite = async (stock: StockInfo) => {
   try {
     const code = stock.code || stock.symbol || ''
     if (!code) {
-      ElMessage.error('股票代码缺失，无法加入自选')
+      showError('股票代码缺失，无法加入自选')
       return
     }
     if (favoriteSet.value.has(code)) {
@@ -655,7 +655,7 @@ const toggleFavorite = async (stock: StockInfo) => {
       ElMessage.success(`已加入自选：${stock.name || code}`)
     }
   } catch (error: any) {
-    ElMessage.error(error?.message || '自选操作失败')
+    showError(error?.message || '自选操作失败')
   }
 }
 
@@ -696,7 +696,7 @@ const loadFieldConfig = async () => {
     console.log('字段配置加载成功:', fieldConfig.value)
   } catch (error) {
     console.error('加载字段配置失败:', error)
-    ElMessage.error('加载字段配置失败')
+    showError('加载字段配置失败')
   } finally {
     fieldsLoading.value = false
   }
@@ -711,7 +711,7 @@ const loadIndustries = async () => {
     console.log('行业列表加载成功:', industryOptions.value.length, '个行业')
   } catch (error) {
     console.error('加载行业列表失败:', error)
-    ElMessage.error('加载行业列表失败')
+    showError('加载行业列表失败')
     // 如果加载失败，使用默认的行业列表
     industryOptions.value = [
       { label: '银行', value: '银行' },
