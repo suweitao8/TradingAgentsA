@@ -1135,7 +1135,6 @@ onMounted(() => {
     .search-input {
       flex: 1 1 240px;
       min-width: 200px;
-      max-width: 360px;
     }
 
     .action-buttons {
