@@ -1,38 +1,22 @@
 <template>
   <div class="reports">
-    <!-- 页面标题 -->
-    <div class="page-header">
-      <h1 class="page-title">
-        <el-icon><Document /></el-icon>
-        分析报告
-      </h1>
-      <p class="page-description">
-        查看和管理股票分析报告，支持多种格式导出
-      </p>
-    </div>
-
-    <!-- 筛选和操作栏 -->
+    <!-- 筛选和操作栏：搜索框 + 筛选条件 + 按钮同一行 -->
     <el-card class="filter-card" shadow="never">
-      <el-row :gutter="16" align="middle">
-        <el-col :span="6">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索股票代码或名称"
-            clearable
-            @input="handleSearch"
-          >
-            <template #prefix>
-              <el-icon><Search /></el-icon>
-            </template>
-          </el-input>
-        </el-col>
-        
-        <el-col :span="4">
+      <div class="action-bar">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索股票代码或名称"
+          clearable
+          class="search-input"
+          @input="handleSearch"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
+        <div class="action-buttons">
           <el-select v-model="marketFilter" placeholder="市场筛选" clearable @change="handleMarketChange">
             <el-option label="A股" value="A股" />          </el-select>
-        </el-col>
-        
-        <el-col :span="6">
           <el-date-picker
             v-model="dateRange"
             type="daterange"
@@ -43,17 +27,12 @@
             value-format="YYYY-MM-DD"
             @change="handleDateChange"
           />
-        </el-col>
-        
-        <el-col :span="8">
-          <div class="action-buttons">
-            <el-button @click="refreshReports">
-              <el-icon><Refresh /></el-icon>
-              刷新
-            </el-button>
-          </div>
-        </el-col>
-      </el-row>
+          <el-button @click="refreshReports">
+            <el-icon><Refresh /></el-icon>
+            刷新
+          </el-button>
+        </div>
+      </div>
     </el-card>
 
     <!-- 报告列表 -->
@@ -179,7 +158,6 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Document,
   Search,
   Refresh,
   ArrowDown
@@ -461,32 +439,27 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .reports {
-  .page-header {
-    margin-bottom: 24px;
+  .filter-card {
+    margin-bottom: 16px;
 
-    .page-title {
+    .action-bar {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-      margin: 0 0 8px 0;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
-    .page-description {
-      color: var(--el-text-color-regular);
-      margin: 0;
+    .search-input {
+      flex: 1 1 240px;
+      min-width: 200px;
     }
-  }
-
-  .filter-card {
-    margin-bottom: 24px;
 
     .action-buttons {
       display: flex;
       gap: 8px;
-      justify-content: flex-end;
+      align-items: center;
+      flex-shrink: 0;
+      flex-wrap: wrap;
     }
   }
 

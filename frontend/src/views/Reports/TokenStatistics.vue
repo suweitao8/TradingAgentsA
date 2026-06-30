@@ -1,54 +1,37 @@
 <template>
   <div class="token-statistics">
-    <!-- 页面标题 -->
-    <div class="page-header">
-      <h1 class="page-title">
-        <el-icon><Coin /></el-icon>
-        Token使用统计
-      </h1>
-      <p class="page-description">
-        Token使用情况、成本分析和统计图表
-      </p>
-    </div>
-
-    <!-- 控制面板 -->
+    <!-- 控制面板：筛选条件 + 按钮同一行 -->
     <el-card class="control-panel" shadow="never">
-      <el-row :gutter="24" align="middle">
-        <el-col :span="6">
-          <el-form-item label="统计时间范围">
-            <el-select v-model="timeRange" @change="loadStatistics">
-              <el-option label="今天" value="today" />
-              <el-option label="最近7天" value="week" />
-              <el-option label="最近30天" value="month" />
-              <el-option label="最近90天" value="quarter" />
-              <el-option label="全部" value="all" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="供应商筛选">
-            <el-select v-model="providerFilter" @change="loadStatistics" clearable>
-              <el-option label="全部供应商" value="" />
-              <el-option label="阿里百炼" value="dashscope" />
-              <el-option label="OpenAI" value="openai" />
-              <el-option label="Google" value="google" />
-              <el-option label="DeepSeek" value="deepseek" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <div class="control-buttons">
-            <el-button @click="loadStatistics" :loading="loading">
-              <el-icon><Refresh /></el-icon>
-              刷新数据
-            </el-button>
-            <el-button @click="exportData">
-              <el-icon><Download /></el-icon>
-              导出统计
-            </el-button>
-          </div>
-        </el-col>
-      </el-row>
+      <div class="action-bar">
+        <el-form-item label="统计时间范围">
+          <el-select v-model="timeRange" @change="loadStatistics">
+            <el-option label="今天" value="today" />
+            <el-option label="最近7天" value="week" />
+            <el-option label="最近30天" value="month" />
+            <el-option label="最近90天" value="quarter" />
+            <el-option label="全部" value="all" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="供应商筛选">
+          <el-select v-model="providerFilter" @change="loadStatistics" clearable>
+            <el-option label="全部供应商" value="" />
+            <el-option label="阿里百炼" value="dashscope" />
+            <el-option label="OpenAI" value="openai" />
+            <el-option label="Google" value="google" />
+            <el-option label="DeepSeek" value="deepseek" />
+          </el-select>
+        </el-form-item>
+        <div class="action-buttons">
+          <el-button @click="loadStatistics" :loading="loading">
+            <el-icon><Refresh /></el-icon>
+            刷新数据
+          </el-button>
+          <el-button @click="exportData">
+            <el-icon><Download /></el-icon>
+            导出统计
+          </el-button>
+        </div>
+      </div>
     </el-card>
 
     <!-- 概览指标 -->
@@ -262,7 +245,6 @@
 import { ref, reactive, onMounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
-  Coin,
   Refresh,
   Download,
   Search
@@ -486,30 +468,21 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .token-statistics {
-  .page-header {
-    margin-bottom: 24px;
+  .control-panel {
+    margin-bottom: 16px;
 
-    .page-title {
+    .action-bar {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-      margin: 0 0 8px 0;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
-    .page-description {
-      color: var(--el-text-color-regular);
-      margin: 0;
-    }
-  }
-
-  .control-panel {
-    .control-buttons {
+    .action-buttons {
       display: flex;
-      gap: 12px;
-      justify-content: flex-end;
+      gap: 8px;
+      margin-left: auto;
+      flex-shrink: 0;
     }
   }
 

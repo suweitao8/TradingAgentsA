@@ -1,13 +1,5 @@
 <template>
   <div class="task-center">
-    <div class="page-header">
-      <h1 class="page-title">
-        <el-icon><List /></el-icon>
-        任务中心
-      </h1>
-      <p class="page-description">统一查看并管理分析任务：进行中 / 已完成 / 失败</p>
-    </div>
-
     <el-card class="tabs-card" shadow="never">
       <el-tabs v-model="activeTab" @tab-click="onTabChange">
         <el-tab-pane label="进行中" name="running" />
@@ -63,15 +55,13 @@
 
 
     <el-card class="list-card" shadow="never">
-      <div class="list-header">
-        <div class="left">
-          <el-input v-model="keyword" placeholder="搜索股票代码/名称" clearable style="width: 220px" />
+      <div class="action-bar">
+        <el-input v-model="keyword" placeholder="搜索股票代码/名称" clearable class="search-input" />
+        <div class="action-buttons">
           <el-button @click="refreshList" :loading="loading">
             <el-icon><Refresh /></el-icon>
             刷新
           </el-button>
-        </div>
-        <div class="right">
           <el-button @click="exportSelected" :disabled="selectedRows.length===0">
             <el-icon><Download /></el-icon>
             导出所选
@@ -143,7 +133,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { List, Refresh, Download } from '@element-plus/icons-vue'
+import { Refresh, Download } from '@element-plus/icons-vue'
 import { analysisApi } from '@/api/analysis'
 import TaskResultDialog from '@/components/Global/TaskResultDialog.vue'
 import TaskReportDialog from '@/components/Global/TaskReportDialog.vue'
@@ -522,11 +512,10 @@ const formatTime = (t:string) => t ? formatDateTime(t) : '-'
 
 <style scoped lang="scss">
 .task-center {
-  .page-header { margin-bottom: 24px; }
-  .page-title { display:flex; align-items:center; gap:8px; font-size:24px; font-weight:600; margin:0 0 8px 0; }
-  .page-description { color: var(--el-text-color-regular); margin:0; }
   .tabs-card { margin-bottom: 16px; }
-  .list-header { display:flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap:8px; }
+  .action-bar { display:flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .search-input { flex: 1 1 240px; min-width: 200px; }
+  .action-buttons { display: flex; gap: 8px; flex-shrink: 0; }
   .pagination-wrapper { display:flex; justify-content:center; margin-top: 16px; }
 }
 </style>
