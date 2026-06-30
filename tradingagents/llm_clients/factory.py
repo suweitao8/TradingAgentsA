@@ -1,29 +1,7 @@
 from typing import Optional
 
 from .base_client import BaseLLMClient
-from .provider_keys import normalize_provider_key
-
-
-_PROVIDER_ALIASES = {
-    "dashscope": "qwen",
-    "alibaba": "qwen",
-    "zhipu": "glm",
-    "siliconflow": "openai",
-}
-
-_OPENAI_COMPATIBLE = {
-    "openai",
-    "deepseek",
-    "qwen",
-    "glm",
-    "qianfan",
-    "openrouter",
-    "aihubmix",
-    "ollama",
-    "custom_openai",
-    "siliconflow",
-    "jdcloud",
-}
+from .provider_keys import normalize_provider_key, is_openai_compatible
 
 
 def create_llm_client(
@@ -32,20 +10,23 @@ def create_llm_client(
     base_url: Optional[str] = None,
     **kwargs,
 ) -> BaseLLMClient:
-    provider_lower = normalize_provider_key(provider)
-    provider_lower = _PROVIDER_ALIASES.get(provider_lower, provider_lower)
+    """根据 provider 创建对应的 LLM 客户端。
 
-    if provider_lower in _OPENAI_COMPATIBLE:
+    provider 类型和默认配置统一从 PROVIDER_REGISTRY 查表，不再在本文件硬编码。
+    """
+    canonical = normalize_provider_key(provider)
+
+    if is_openai_compatible(canonical):
         from .openai_client import OpenAIClient
 
-        return OpenAIClient(model, base_url, provider=provider_lower, **kwargs)
+        return OpenAIClient(model, base_url, provider=canonical, **kwargs)
 
-    if provider_lower == "google":
+    if canonical == "google":
         from .google_client import GoogleClient
 
         return GoogleClient(model, base_url, **kwargs)
 
-    if provider_lower == "anthropic":
+    if canonical == "anthropic":
         from .anthropic_client import AnthropicClient
 
         return AnthropicClient(model, base_url, **kwargs)

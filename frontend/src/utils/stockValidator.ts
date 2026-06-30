@@ -56,7 +56,7 @@ export function validateAStock(code: string): StockValidationResult {
  */
 export function validateStockCode(
   code: string,
-  marketHint?: 'A股'
+  _marketHint?: 'A股'
 ): StockValidationResult {
   if (!code || !code.trim()) {
     return {
@@ -74,14 +74,14 @@ export function validateStockCode(
 /**
  * 获取股票代码格式说明（本项目仅支持A股）
  */
-export function getStockCodeFormatHelp(market: 'A股'): string {
+export function getStockCodeFormatHelp(_market: 'A股'): string {
   return '6位数字，如：000001（平安银行）、600519（贵州茅台）'
 }
 
 /**
  * 获取股票代码示例（本项目仅支持A股）
  */
-export function getStockCodeExamples(market: 'A股'): string[] {
+export function getStockCodeExamples(_market: 'A股'): string[] {
   return ['000001', '600519', '000858', '300750']
 }
 

@@ -2,6 +2,7 @@
 股票数据服务层 - 统一数据访问接口
 基于现有MongoDB集合，提供标准化的数据访问服务
 """
+import json
 import logging
 from datetime import datetime, date
 from typing import Optional, Dict, Any, List
@@ -9,7 +10,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.database import get_mongo_db
 from app.models.stock_models import (
-    StockBasicInfoExtended, 
+    StockBasicInfoExtended,
     MarketQuotesExtended,
     MarketInfo,
     MarketType,
@@ -18,6 +19,10 @@ from app.models.stock_models import (
 )
 
 logger = logging.getLogger(__name__)
+
+# market_quotes Redis 缓存配置
+_MARKET_QUOTES_CACHE_PREFIX = "mq:"
+_MARKET_QUOTES_CACHE_TTL = 5  # 行情几秒更新一次，5s 缓存平衡新鲜度和性能
 
 
 class StockDataService:
@@ -90,17 +95,35 @@ class StockDataService:
     
     async def get_market_quotes(self, symbol: str) -> Optional[MarketQuotesExtended]:
         """
-        获取实时行情数据
+        获取实时行情数据（带 5s Redis 缓存）。
+
+        行情数据是热点读取（股票列表、详情页、自选股都调），但底层 market_quotes
+        集合几秒才更新一次，每次请求都 find_one 查 MongoDB 浪费。加 5s Redis
+        缓存，Redis 不可用时透明降级到直查 DB。
+
         Args:
             symbol: 6位股票代码
         Returns:
             MarketQuotesExtended: 扩展的实时行情数据
         """
         try:
-            db = get_mongo_db()
             symbol6 = str(symbol).zfill(6)
+            cache_key = f"{_MARKET_QUOTES_CACHE_PREFIX}{symbol6}"
 
-            # 从现有集合查询 (优先使用symbol字段，兼容code字段)
+            # 1) 先查 Redis 缓存（容错：Redis 不可用则跳过）
+            try:
+                from app.core.redis_client import get_redis
+                redis = get_redis()
+                cached = await redis.get(cache_key)
+                if cached:
+                    doc = json.loads(cached)
+                    standardized_doc = self._standardize_market_quotes(doc)
+                    return MarketQuotesExtended(**standardized_doc)
+            except Exception as e:
+                logger.debug(f"market_quotes Redis 缓存读取跳过: {e}")
+
+            # 2) 缓存未命中，查 MongoDB
+            db = get_mongo_db()
             doc = await db[self.market_quotes_collection].find_one(
                 {"$or": [{"symbol": symbol6}, {"code": symbol6}]},
                 {"_id": 0}
@@ -109,9 +132,16 @@ class StockDataService:
             if not doc:
                 return None
 
-            # 数据标准化处理
-            standardized_doc = self._standardize_market_quotes(doc)
+            # 3) 回写 Redis 缓存（容错：失败不影响主流程）
+            try:
+                from app.core.redis_client import get_redis
+                redis = get_redis()
+                await redis.setex(cache_key, _MARKET_QUOTES_CACHE_TTL, json.dumps(doc, default=str))
+            except Exception as e:
+                logger.debug(f"market_quotes Redis 缓存写入跳过: {e}")
 
+            # 4) 数据标准化处理
+            standardized_doc = self._standardize_market_quotes(doc)
             return MarketQuotesExtended(**standardized_doc)
 
         except Exception as e:

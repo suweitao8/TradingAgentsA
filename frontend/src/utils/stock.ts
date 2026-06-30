@@ -83,7 +83,7 @@ export function validateSymbol(symbol: string, market?: string): boolean {
  * @param market 市场类型（可选）
  * @returns 格式化后的代码
  */
-export function formatSymbol(symbol: string, market?: string): string {
+export function formatSymbol(symbol: string, _market?: string): string {
   if (!symbol) return ''
 
   const trimmed = symbol.trim()
