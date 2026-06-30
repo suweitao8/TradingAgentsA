@@ -34,9 +34,14 @@ def _safe_float(v) -> Optional[float]:
 class QuotesService:
     def __init__(self, ttl_seconds: int = 30) -> None:
         self._ttl = ttl_seconds
+        # A 股缓存
         self._cache_ts: float = 0.0
         self._cache: Dict[str, Dict[str, Optional[float]]] = {}
         self._lock = asyncio.Lock()
+        # ETF 缓存（独立，不污染 A 股缓存）
+        self._etf_cache_ts: float = 0.0
+        self._etf_cache: Dict[str, Dict[str, Optional[float]]] = {}
+        self._etf_lock = asyncio.Lock()
 
     async def get_quotes(self, codes: List[str]) -> Dict[str, Dict[str, Optional[float]]]:
         """获取一批股票的近实时快照（最新价、涨跌幅、成交额）。
@@ -117,6 +122,86 @@ class QuotesService:
             return result
         except Exception as e:
             logger.error(f"获取东方财富实时快照失败: {e}")
+            return {}
+
+    # ------------------------------------------------------------------
+    # ETF 行情（独立缓存，不污染 A 股缓存）
+    # ------------------------------------------------------------------
+
+    async def get_etf_quotes(self, codes: List[str]) -> Dict[str, Dict[str, Optional[float]]]:
+        """获取一批 ETF 的近实时快照（最新价、涨跌幅、换手率、量比）。
+
+        东方财富的 ETF 和 A 股是不同的市场分类（fs 参数不同），不能用 A 股的
+        _fetch_spot_akshare 拉取。本方法使用独立的 ETF 缓存。
+        """
+        codes = [c.strip() for c in codes if c]
+        now = time.time()
+        async with self._etf_lock:
+            if self._etf_cache and (now - self._etf_cache_ts) < self._ttl:
+                return {c: q for c, q in self._etf_cache.items() if c in codes and q}
+            data = await asyncio.to_thread(self._fetch_etf_spot)
+            self._etf_cache = data
+            self._etf_cache_ts = time.time()
+            return {c: q for c, q in self._etf_cache.items() if c in codes and q}
+
+    def _fetch_etf_spot(self) -> Dict[str, Dict[str, Optional[float]]]:
+        """通过东方财富 ETF 行情接口拉取全市场 ETF 快照。
+
+        ETF 的 fs 参数为 ``b:MK002``（沪深 ETF 基金），与 A 股的
+        ``m:0 t:6,...`` 不同。字段映射相同（f2/f3/f6/f8/f10/f12）。
+        """
+        try:
+            import requests
+
+            url = "https://82.push2delay.eastmoney.com/api/qt/clist/get"
+            base_params = {
+                "po": "1",
+                "np": "1",
+                "ut": "bd1d9ddb04089700cf9c27f6f7426281",
+                "fltt": "2",
+                "invt": "2",
+                "fid": "f12",
+                "fs": "b:MK0021",  # 沪深 ETF 基金
+                "fields": "f2,f3,f6,f8,f10,f12",
+            }
+
+            result: Dict[str, Dict[str, Optional[float]]] = {}
+            page_size = 20
+            page_no = 1
+            total = None
+            while True:
+                params = {**base_params, "pn": str(page_no), "pz": str(page_size)}
+                resp = requests.get(url, params=params, timeout=8)
+                if resp.status_code != 200:
+                    logger.warning(f"东方财富 ETF spot 第{page_no}页 HTTP {resp.status_code}")
+                    break
+                data = resp.json().get("data") or {}
+                if total is None:
+                    total = data.get("total", 0)
+                diff = data.get("diff") or []
+                if not diff:
+                    break
+                for item in diff:
+                    code = str(item.get("f12", "")).strip().zfill(6)
+                    if not code:
+                        continue
+                    result[code] = {
+                        "close": _safe_float(item.get("f2")),
+                        "pct_chg": _safe_float(item.get("f3")),
+                        "amount": _safe_float(item.get("f6")),
+                        "turnover_rate": _safe_float(item.get("f8")),
+                        "volume_ratio": _safe_float(item.get("f10")),
+                    }
+                if total and len(result) >= total:
+                    break
+                page_no += 1
+                if page_no > 100:  # ETF 约 900 只 / 20 = 45 页，安全上限 100
+                    break
+
+            logger.info(f"东方财富 ETF spot 拉取完成: {len(result)} 条")
+            return result
+        except Exception as e:
+            logger.error(f"获取东方财富 ETF 实时快照失败: {e}")
             return {}
 
 

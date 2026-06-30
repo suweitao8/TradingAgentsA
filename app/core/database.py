@@ -362,6 +362,10 @@ async def create_database_indexes(db):
         await market_quotes.create_index([("amount", -1)])
         await market_quotes.create_index([("updated_at", -1)])
 
+        # user_etfs 的索引（ETF 自选功能）
+        user_etfs = db["user_etfs"]
+        await user_etfs.create_index([("user_id", 1)], unique=True)
+
         logger.info("✅ 数据库索引创建完成")
 
     except Exception as e:

@@ -40,6 +40,7 @@
             <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
             <el-dropdown-item command="/tasks">任务中心</el-dropdown-item>
             <el-dropdown-item command="/favorites">我的自选股</el-dropdown-item>
+            <el-dropdown-item command="/etfs">我的ETF</el-dropdown-item>
             <el-dropdown-item command="/data-collection">数据采集</el-dropdown-item>
             <el-dropdown-item command="/learning" divided>学习中心</el-dropdown-item>
             <el-dropdown-item command="/about">关于</el-dropdown-item>
@@ -128,6 +129,7 @@ import { useNotificationStore } from '@/stores/notifications'
 import { storeToRefs } from 'pinia'
 import {
   Star,
+  TrendCharts,
   MoreFilled,
   Menu,
   Bell,
@@ -145,7 +147,8 @@ const { unreadCount, items } = storeToRefs(notifStore)
 
 // ---- 导航链接 ----
 const navLinks = [
-  { path: '/favorites', label: '我的自选股', icon: Star }
+  { path: '/favorites', label: '我的自选股', icon: Star },
+  { path: '/etfs', label: '我的ETF', icon: TrendCharts }
 ]
 
 const isActive = (link: { path: string }) => {
