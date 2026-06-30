@@ -21,7 +21,7 @@ logger = logging.getLogger("webapi")
 # 股票名称缓存
 _stock_name_cache = {}
 
-def get_stock_name(stock_code: str) -> str:
+async def get_stock_name(stock_code: str) -> str:
     """
     获取股票名称
     优先级：缓存 -> MongoDB（按数据源优先级） -> 默认返回股票代码
@@ -33,16 +33,16 @@ def get_stock_name(stock_code: str) -> str:
         return _stock_name_cache[stock_code]
 
     try:
-        # 从 MongoDB 获取股票名称
-        from ..core.database import get_mongo_db_sync
+        # 从 MongoDB 获取股票名称（使用 motor 异步客户端，复用连接池）
+        from ..core.database import get_mongo_db
         from ..core.unified_config import UnifiedConfigManager
 
-        db = get_mongo_db_sync()
+        db = get_mongo_db()
         code6 = str(stock_code).zfill(6)
 
         # 🔥 按数据源优先级查询
         config = UnifiedConfigManager()
-        data_source_configs = config.get_data_source_configs()
+        data_source_configs = await config.get_data_source_configs_async()
 
         # 提取启用的数据源，按优先级排序
         enabled_sources = [
@@ -56,7 +56,7 @@ def get_stock_name(stock_code: str) -> str:
         # 按数据源优先级查询
         stock_info = None
         for data_source in enabled_sources:
-            stock_info = db.stock_basic_info.find_one(
+            stock_info = await db.stock_basic_info.find_one(
                 {"$or": [{"symbol": code6}, {"code": code6}], "source": data_source}
             )
             if stock_info:
@@ -65,7 +65,7 @@ def get_stock_name(stock_code: str) -> str:
 
         # 如果所有数据源都没有，尝试不带 source 条件查询（兼容旧数据）
         if not stock_info:
-            stock_info = db.stock_basic_info.find_one(
+            stock_info = await db.stock_basic_info.find_one(
                 {"$or": [{"symbol": code6}, {"code": code6}]}
             )
             if stock_info:
@@ -177,7 +177,7 @@ async def get_reports_list(
             # 🔥 优先使用MongoDB中保存的股票名称，如果没有则查询
             stock_name = doc.get("stock_name")
             if not stock_name:
-                stock_name = get_stock_name(stock_code)
+                stock_name = await get_stock_name(stock_code)
 
             # 🔥 获取市场类型，如果没有则根据股票代码推断
             market_type = doc.get("market_type")
@@ -276,7 +276,7 @@ async def get_report_detail(
             stock_symbol = r.get("stock_symbol", r.get("stock_code", tasks_doc.get("stock_code", "")))
             stock_name = r.get("stock_name")
             if not stock_name:
-                stock_name = get_stock_name(stock_symbol)
+                stock_name = await get_stock_name(stock_symbol)
 
             report = {
                 "id": tasks_doc.get("task_id", report_id),
@@ -306,7 +306,7 @@ async def get_report_detail(
             stock_symbol = doc.get("stock_symbol", "")
             stock_name = doc.get("stock_name")
             if not stock_name:
-                stock_name = get_stock_name(stock_symbol)
+                stock_name = await get_stock_name(stock_symbol)
 
             # 获取时间（数据库中是 UTC 时间，需要转换为 UTC+8）
             created_at = doc.get("created_at", datetime.utcnow())
