@@ -17,6 +17,8 @@ export interface AppState {
   // 首次健康检查是否完成（完成前不显示连接失败弹窗，避免初始化误报）
   apiCheckInitialized: boolean
   lastApiCheck: number
+  // 连续失败计数（避免单次抖动即误报"后端连接失败"）
+  apiFailCount: number
 
   // 布局状态
   sidebarCollapsed: boolean
@@ -67,6 +69,7 @@ export const useAppStore = defineStore('app', {
     apiConnected: false,
     apiCheckInitialized: false,
     lastApiCheck: 0,
+    apiFailCount: 0,
 
     sidebarCollapsed: useStorage('sidebar-collapsed', false).value || false,
     sidebarWidth: useStorage('sidebar-width', 240).value || 240,
@@ -264,29 +267,50 @@ export const useAppStore = defineStore('app', {
     },
 
     // 检查API连接状态
+    // 容错策略：单次失败不立即判断连，连续失败 2 次才报"后端连接失败"，
+    // 避免后端偶发慢响应/瞬时抖动导致误报。成功立即恢复。
     async checkApiConnection() {
-      try {
-        // 使用 AbortController 实现超时
+      // 单次健康探测：8s 超时（原 3s 过短，后端偶发慢响应即误报）
+      const probe = async (): Promise<boolean> => {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 3000) // 3秒超时
-
-        const response = await fetch('/api/health', {
-          method: 'GET',
-          signal: controller.signal
-        })
-
-        clearTimeout(timeoutId)
-        const connected = response.ok
-        this.setApiConnected(connected)
-        return connected
-      } catch (error) {
-        const err = error as Error
-        if (err.name === 'AbortError') {
-          // 连接超时
+        const timeoutId = setTimeout(() => controller.abort(), 8000)
+        try {
+          const response = await fetch('/api/health', {
+            method: 'GET',
+            signal: controller.signal
+          })
+          return response.ok
+        } catch {
+          return false
+        } finally {
+          clearTimeout(timeoutId)
         }
-        this.setApiConnected(false)
-        return false
       }
+
+      // 第一次探测
+      let ok = await probe()
+      // 失败则立即重试一次（覆盖瞬时抖动）
+      if (!ok) {
+        ok = await probe()
+      }
+
+      if (ok) {
+        // 成功：清零计数并恢复连接状态
+        this.apiFailCount = 0
+        this.setApiConnected(true)
+        return true
+      }
+
+      // 失败：累计计数，连续失败达到阈值才判断连
+      this.apiFailCount += 1
+      const FAIL_THRESHOLD = 2
+      if (this.apiFailCount >= FAIL_THRESHOLD) {
+        this.setApiConnected(false)
+      } else {
+        // 未达阈值：保持当前连接状态不变，避免单次抖动翻转状态
+        this.lastApiCheck = Date.now()
+      }
+      return false
     },
 
     // 获取API版本信息
