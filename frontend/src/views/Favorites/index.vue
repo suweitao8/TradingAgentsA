@@ -28,15 +28,6 @@
             <el-icon><Refresh /></el-icon>
             同步实时行情
           </el-button>
-          <!-- 只有选中的股票都是A股时才显示批量同步按钮 -->
-          <el-button
-            v-if="selectedStocksAreAllAShares"
-            type="primary"
-            @click="showBatchSyncDialog"
-          >
-            <el-icon><Download /></el-icon>
-            批量同步数据
-          </el-button>
           <el-button type="success" @click="showBatchImportDialog">
             <el-icon><Upload /></el-icon>
             批量导入
@@ -51,10 +42,9 @@
         :data="filteredFavorites"
         v-loading="loading"
         style="width: 100%"
-        @selection-change="handleSelectionChange"
         @row-contextmenu="handleRowContextMenu"
       >
-        <el-table-column type="selection" width="55" />
+        <el-table-column type="index" label="#" width="55" align="center" />
         <el-table-column prop="stock_code" label="股票代码" min-width="120">
           <template #default="{ row }">
             <el-link type="primary" @click="viewStockDetail(row)">
@@ -118,49 +108,6 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
-
-        <el-table-column prop="added_at" label="添加时间" min-width="120">
-          <template #default="{ row }">
-            {{ formatDate(row.added_at) }}
-          </template>
-        </el-table-column>
-
-        <el-table-column label="操作" width="260" fixed="right">
-          <template #default="{ row }">
-            <el-button
-              type="text"
-              size="small"
-              @click="editFavorite(row)"
-            >
-              编辑
-            </el-button>
-            <!-- 只有A股显示同步按钮 -->
-            <el-button
-              v-if="row.market === 'A股'"
-              type="text"
-              size="small"
-              @click="showSingleSyncDialog(row)"
-              style="color: #2f7bff;"
-            >
-              同步
-            </el-button>
-            <el-button
-              type="text"
-              size="small"
-              @click="analyzeFavorite(row)"
-            >
-              分析
-            </el-button>
-            <el-button
-              type="text"
-              size="small"
-              @click="removeFavorite(row)"
-              style="color: #f56c6c;"
-            >
-              移除
-            </el-button>
-          </template>
-        </el-table-column>
       </el-table>
 
       <!-- 右键菜单 -->
@@ -215,58 +162,6 @@
       <template #footer>
         <el-button @click="editDialogVisible = false">取消</el-button>
         <el-button type="primary" :loading="editLoading" @click="handleUpdateFavorite">保存</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 批量同步对话框 -->
-    <el-dialog
-      v-model="batchSyncDialogVisible"
-      title="批量同步股票数据"
-      width="500px"
-    >
-      <el-alert
-        type="info"
-        :closable="false"
-        style="margin-bottom: 16px;"
-      >
-        已选择 <strong>{{ selectedStocks.length }}</strong> 只股票
-      </el-alert>
-
-      <el-form :model="batchSyncForm" label-width="120px">
-        <el-form-item label="同步内容">
-          <el-checkbox-group v-model="batchSyncForm.syncTypes">
-            <el-checkbox label="historical">历史行情数据</el-checkbox>
-            <el-checkbox label="financial">财务数据</el-checkbox>
-            <el-checkbox label="basic">基础数据</el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>
-        <el-form-item label="数据源">
-          <el-radio-group v-model="batchSyncForm.dataSource">
-            <el-radio label="tushare">Tushare</el-radio>
-            <el-radio label="akshare">AKShare</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="历史数据天数" v-if="batchSyncForm.syncTypes.includes('historical')">
-          <el-input-number v-model="batchSyncForm.days" :min="1" :max="3650" />
-          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
-            (最多3650天，约10年)
-          </span>
-        </el-form-item>
-      </el-form>
-
-      <el-alert
-        type="warning"
-        :closable="false"
-        style="margin-top: 16px;"
-      >
-        批量同步可能需要较长时间，请耐心等待
-      </el-alert>
-
-      <template #footer>
-        <el-button @click="batchSyncDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleBatchSync" :loading="batchSyncLoading">
-          开始同步
-        </el-button>
       </template>
     </el-dialog>
 
@@ -391,7 +286,6 @@ import { useRouter } from 'vue-router'
 import {
   Search,
   Refresh,
-  Download,
   Upload
 } from '@element-plus/icons-vue'
 import { favoritesApi } from '@/api/favorites'
@@ -446,9 +340,6 @@ const getIndustryOrder = (industry: string | undefined | null): number => {
 
 const searchKeyword = ref('')
 
-// 批量选择
-const selectedStocks = ref<FavoriteItem[]>([])
-
 // 右键菜单
 const contextMenuRef = ref()
 const contextMenuVisible = ref(false)
@@ -460,15 +351,6 @@ const handleRowContextMenu = (row: FavoriteItem, _column: any, event: MouseEvent
   contextMenuRow.value = row
   contextMenuVisible.value = true
 }
-
-// 批量同步对话框
-const batchSyncDialogVisible = ref(false)
-const batchSyncLoading = ref(false)
-const batchSyncForm = ref({
-  syncTypes: ['historical', 'financial'],
-  dataSource: 'tushare' as 'tushare' | 'akshare',
-  days: 365
-})
 
 // 单个股票同步对话框
 const singleSyncDialogVisible = ref(false)
@@ -535,12 +417,6 @@ const filteredFavorites = computed<FavoriteItem[]>(() => {
 // 判断是否有A股自选股
 const hasAStocks = computed(() => {
   return favorites.value.some(item => item.market === 'A股')
-})
-
-// 判断选中的股票是否都是A股
-const selectedStocksAreAllAShares = computed(() => {
-  if (selectedStocks.value.length === 0) return false
-  return selectedStocks.value.every(item => item.market === 'A股')
 })
 
 // 方法
@@ -750,11 +626,6 @@ const viewStockDetail = (row: any) => {
   })
 }
 
-// 处理表格选择变化
-const handleSelectionChange = (selection: FavoriteItem[]) => {
-  selectedStocks.value = selection
-}
-
 // 显示单个股票同步对话框
 const showSingleSyncDialog = (row: FavoriteItem) => {
   currentSyncStock.value = {
@@ -834,68 +705,6 @@ const handleSingleSync = async () => {
   }
 }
 
-// 显示批量同步对话框
-const showBatchSyncDialog = () => {
-  if (selectedStocks.value.length === 0) {
-    ElMessage.warning('请先选择要同步的股票')
-    return
-  }
-  batchSyncDialogVisible.value = true
-}
-
-// 执行批量同步
-const handleBatchSync = async () => {
-  if (batchSyncForm.value.syncTypes.length === 0) {
-    ElMessage.warning('请至少选择一种同步内容')
-    return
-  }
-
-  batchSyncLoading.value = true
-  try {
-    const symbols = selectedStocks.value
-      .map(stock => stock.stock_code)
-      .filter((code): code is string => Boolean(code))
-
-    const res = await stockSyncApi.syncBatch({
-      symbols,
-      sync_historical: batchSyncForm.value.syncTypes.includes('historical'),
-      sync_financial: batchSyncForm.value.syncTypes.includes('financial'),
-      data_source: batchSyncForm.value.dataSource,
-      days: batchSyncForm.value.days
-    })
-
-    if (res.success) {
-      const data = res.data
-      let message = `批量同步完成 (共 ${symbols.length} 只股票)\n`
-
-      if (data.historical_sync) {
-        message += `✅ 历史数据: ${data.historical_sync.success_count}/${data.historical_sync.success_count + data.historical_sync.error_count} 成功，共 ${data.historical_sync.total_records} 条记录\n`
-      }
-
-      if (data.financial_sync) {
-        message += `✅ 财务数据: ${data.financial_sync.success_count}/${data.financial_sync.total_symbols} 成功\n`
-      }
-
-      if (data.basic_sync) {
-        message += `✅ 基础数据: ${data.basic_sync.success_count}/${data.basic_sync.total_symbols} 成功\n`
-      }
-
-      ElMessage.success(message)
-      batchSyncDialogVisible.value = false
-
-      // 刷新列表
-      await loadFavorites()
-    } else {
-      ElMessage.error(res.message || '批量同步失败')
-    }
-  } catch (error: any) {
-    console.error('批量同步失败:', error)
-    ElMessage.error(error.message || '批量同步失败，请稍后重试')
-  } finally {
-    batchSyncLoading.value = false
-  }
-}
-
 const getChangeClass = (changePercent: number) => {
   if (changePercent > 0) return 'text-red'
   if (changePercent < 0) return 'text-green'
@@ -913,10 +722,6 @@ const formatPercent = (value: any): string => {
   if (!Number.isFinite(n)) return '-'
   const sign = n > 0 ? '+' : ''
   return `${sign}${n.toFixed(2)}%`
-}
-
-const formatDate = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString('zh-CN')
 }
 
 // 生命周期
