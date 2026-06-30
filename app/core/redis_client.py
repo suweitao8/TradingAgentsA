@@ -4,6 +4,7 @@ Redis客户端配置和连接管理
 
 import redis.asyncio as redis
 import logging
+import socket
 from typing import Optional
 from .config import settings
 
@@ -19,19 +20,29 @@ async def init_redis():
     global redis_pool, redis_client
 
     try:
+        # 构建 TCP keepalive 选项（用 socket 模块常量替代硬编码数字，兼容各平台）
+        keepalive_options = {}
+        if hasattr(socket, "TCP_KEEPIDLE"):
+            keepalive_options[socket.TCP_KEEPIDLE] = 60
+        if hasattr(socket, "TCP_KEEPINTVL"):
+            keepalive_options[socket.TCP_KEEPINTVL] = 10
+        if hasattr(socket, "TCP_KEEPCNT"):
+            keepalive_options[socket.TCP_KEEPCNT] = 3
+
         # 创建连接池
-        redis_pool = redis.ConnectionPool.from_url(
-            settings.REDIS_URL,
-            max_connections=settings.REDIS_MAX_CONNECTIONS,  # 使用配置文件中的值
+        pool_kwargs = dict(
+            max_connections=settings.REDIS_MAX_CONNECTIONS,
             retry_on_timeout=settings.REDIS_RETRY_ON_TIMEOUT,
             decode_responses=True,
-            socket_keepalive=True,  # 启用 TCP keepalive
-            socket_keepalive_options={
-                1: 60,  # TCP_KEEPIDLE: 60秒后开始发送keepalive探测
-                2: 10,  # TCP_KEEPINTVL: 每10秒发送一次探测
-                3: 3,   # TCP_KEEPCNT: 最多发送3次探测
-            },
             health_check_interval=30,  # 每30秒检查一次连接健康状态
+        )
+        if keepalive_options:
+            pool_kwargs["socket_keepalive"] = True
+            pool_kwargs["socket_keepalive_options"] = keepalive_options
+
+        redis_pool = redis.ConnectionPool.from_url(
+            settings.REDIS_URL,
+            **pool_kwargs,
         )
 
         # 创建Redis客户端

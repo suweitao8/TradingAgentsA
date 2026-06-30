@@ -28,6 +28,7 @@ from pathlib import Path
 from app.core.config import settings
 from app.core.database import init_db, close_db
 from app.core.logging_config import setup_logging
+from app.core.redis_client import init_redis, close_redis
 from app.routers import settings_api, analysis, screening, queue, sse, health, favorites, config, reports, database, operation_logs, tags, tushare_init, akshare_init, baostock_init, historical_data, multi_period_sync, financial_data, news_data, internal_messages, usage_statistics, model_capabilities, cache, logs, data_collection
 from app.routers import sync as sync_router, multi_source_sync
 from app.routers import stocks as stocks_router
@@ -226,6 +227,13 @@ async def lifespan(app: FastAPI):
         raise
 
     await init_db()
+
+    # 初始化 Redis（用于速率限制等中间件，非关键路径，失败不阻塞启动）
+    try:
+        await init_redis()
+        logger.info("✅ Redis 客户端已初始化（速率限制/缓存中间件可用）")
+    except Exception as e:
+        logger.warning(f"⚠️  Redis 初始化失败（速率限制将降级放行）: {e}")
 
     #  配置桥接：将统一配置写入环境变量，供 TradingAgents 核心库使用
     try:
@@ -645,6 +653,10 @@ async def lifespan(app: FastAPI):
                 logger.warning(f"Scheduler shutdown error: {e}")
 
         await close_db()
+        try:
+            await close_redis()
+        except Exception as e:
+            logger.warning(f"Redis close error: {e}")
         logger.info("TradingAgents FastAPI backend stopped")
 
 
