@@ -99,14 +99,6 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="主题模式">
-              <el-radio-group v-model="generalSettings.theme" @change="handleThemeChange">
-                <el-radio label="light">浅色主题</el-radio>
-                <el-radio label="dark">深色主题</el-radio>
-                <el-radio label="auto">跟随系统</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            
             <el-form-item>
               <el-button type="primary" @click="saveGeneralSettings">
                 保存设置
@@ -591,12 +583,6 @@ watch(() => appStore.serverPreferences, (prefs) => {
 // 方法
 const handleMenuSelect = (index: string) => {
   activeTab.value = index
-}
-
-const handleThemeChange = (theme: string | number | boolean | undefined) => {
-  if (typeof theme === 'string') {
-    appStore.setTheme(theme as any)
-  }
 }
 
 const saveGeneralSettings = async () => {
