@@ -376,8 +376,8 @@ class FavoriteReportService:
                 model=model_name,
                 backend_url=backend_url,
                 temperature=0.3,
-                max_tokens=1024,
-                timeout=30,
+                max_tokens=4096,  # thinking 模型（Kimi-K2.5）需要大 max_tokens，否则 reasoning 耗尽后 content 为空
+                timeout=60,
                 api_key=api_key,
             )
             return llm, f"{provider}/{model_name}"
@@ -414,13 +414,29 @@ class FavoriteReportService:
             return "qwen-turbo"
 
     def _parse_llm_commentary(self, content: str, model_info: str) -> tuple:
-        """解析 LLM 返回的 JSON 简评，失败则降级"""
+        """解析 LLM 返回的 JSON 简评，失败则降级
+
+        兼容 thinking 模型（Kimi-K2.5 等）返回：
+        - 可能带 <think>...</think> 前缀
+        - 可能被 ```json ... ``` 代码块包裹
+        - JSON 可能不是从行首开始（前面有思考文字）
+        """
         try:
-            # 去除可能的 markdown 代码块包裹
             text = content.strip()
+
+            # 1. 去除 thinking 模型的 <think>...</think> 块
+            text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
+            # 2. 去除 markdown 代码块包裹
             if text.startswith("```"):
                 text = re.sub(r"^```(?:json)?\s*", "", text)
                 text = re.sub(r"\s*```$", "", text)
+
+            # 3. 提取第一个 JSON 对象（兼容 JSON 前后有杂文字的情况）
+            json_match = re.search(r"\{.*\}", text, flags=re.DOTALL)
+            if json_match:
+                text = json_match.group(0)
+
             data = json.loads(text)
             commentary = str(data.get("commentary", "")).strip()
             recommendation = str(data.get("recommendation", "中性")).strip()
@@ -434,9 +450,10 @@ class FavoriteReportService:
                 raise ValueError("commentary 为空")
             return commentary, recommendation, risk_level, key_points, model_info
         except Exception as e:
-            logger.warning(f"⚠️ [实时报告] 解析 LLM 返回失败: {e}，原文: {content[:200]}")
-            # 降级：把原文当 commentary
-            return content.strip()[:500] if content else "（简评生成失败）", "中性", "中", [], model_info
+            logger.warning(f"⚠️ [实时报告] 解析 LLM 返回失败: {e}，原文前200字: {content[:200]}")
+            # 降级：去掉 <think> 块后把原文当 commentary
+            fallback = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
+            return fallback[:500] if fallback else "（简评生成失败）", "中性", "中", [], model_info
 
     def _rule_based_commentary(self, stock_name: str, snapshot: QuotesSnapshot) -> str:
         """无 LLM 时的规则降级简评"""
