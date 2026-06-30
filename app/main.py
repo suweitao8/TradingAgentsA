@@ -1,5 +1,5 @@
 """
-TradingAgentsA v1.0.0-preview FastAPI Backend
+TradingAgentsA FastAPI Backend
 主应用程序入口
 
 Copyright (c) 2025 hsliuping. All rights reserved.

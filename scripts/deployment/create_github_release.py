@@ -32,88 +32,75 @@ def run_command(command, cwd=None):
 def create_release_notes():
     """创建发布说明"""
     release_notes = """
-## 🌐 Web管理界面和Google AI支持
+## 🚀 现代化全栈架构与多智能体分析
 
-TradingAgentsA v0.1.2 带来了重大更新，新增了完整的Web管理界面和Google AI模型支持！
+TradingAgentsA v1.0.1 带来全新的 FastAPI + Vue3 全栈架构，基于多智能体的 A 股深度分析平台！
 
-### ✨ 主要新功能
+### ✨ 主要特性
 
-#### 🌐 Streamlit Web管理界面
-- 🎯 完整的Web股票分析平台
-- 📊 直观的用户界面和实时进度显示
-- 🤖 支持多种LLM提供商选择（阿里百炼/Google AI）
-- 📈 可视化的分析结果展示
-- 📱 响应式设计，支持移动端访问
+#### 🏗️ 现代化全栈架构
+- ⚡ 后端 FastAPI（高性能异步 RESTful API）
+- 🖥️ 前端 Vue 3 + Vite + Element Plus 单页应用
+- 🗄️ MongoDB + Redis 双数据库架构
+- 🐳 Docker 一键部署，开箱即用
 
-#### 🤖 Google AI模型集成
-- 🧠 完整的Google Gemini模型支持
-- 🔧 支持gemini-2.0-flash、gemini-1.5-pro等模型
-- 🌍 智能混合嵌入服务（Google AI推理 + 阿里百炼嵌入）
-- 💾 完美的中文分析能力和稳定的LangChain集成
+#### 🤖 多智能体股票分析
+- 📊 多智能体协作（市场/基本面/新闻/技术分析师 + 风险评估）
+- 🇨🇳 中文增强，适配 A 股市场
+- 📈 多数据源支持（Tushare / AKShare / BaoStock）
+- 💡 支持 OpenAI 兼容协议的多家 LLM Provider
 
-#### 🔧 多LLM提供商支持
-- 🔄 Web界面支持LLM提供商无缝切换
-- ⚙️ 自动配置最优嵌入服务
-- 🎛️ 统一的配置管理界面
-
-### 🔧 改进优化
-
-- 📊 新增分析配置信息显示
-- 🗂️ 项目结构优化（tests/docs/web目录规范化）
-- 🔑 多种API服务配置支持
-- 🧪 完整的测试体系（25+个测试文件）
-- 📚 完整的使用文档和配置指南
+#### 🔧 工程化能力
+- 📋 任务队列与 SSE 实时进度推送
+- 🗓️ APScheduler 定时数据采集
+- 💾 多级缓存（Redis + MongoDB）
+- 📚 完整文档体系
 
 ### 🚀 快速开始
 
-#### 1. 安装依赖
+#### 1. 使用 Docker 一键启动（推荐）
 ```bash
-pip install -r requirements.txt
-```
+# 克隆仓库
+git clone https://github.com/hsliuping/TradingAgents-CN.git
+cd TradingAgentsA
 
-#### 2. 配置API密钥
-```bash
-# 复制环境变量模板
+# 配置环境变量
 cp .env.example .env
+# 编辑 .env 填入 API 密钥（LLM / 数据源）
 
-# 编辑.env文件，添加您的API密钥
-# DASHSCOPE_API_KEY=your_dashscope_key  # 阿里百炼（推荐）
-# GOOGLE_API_KEY=your_google_key        # Google AI（可选）
+# 一键启动全栈
+docker-compose up -d
 ```
 
-#### 3. 启动Web界面
+#### 2. 本地开发模式
 ```bash
-# 启动Web管理界面
-python -m streamlit run web/app.py
+# 安装后端依赖（pip + pyproject.toml）
+pip install -e .
 
-# 或使用快捷脚本
-start_web.bat  # Windows
+# 安装前端依赖（yarn）
+cd frontend && yarn install
+
+# 启动后端 API（端口 8000）
+python -m uvicorn app.main:app --reload --port 8000
+
+# 启动前端 dev server（端口 3000）
+cd frontend && yarn dev
 ```
 
-#### 4. 使用CLI工具
-```bash
-# 使用阿里百炼模型
-python cli/main.py --stock AAPL --analysts market fundamentals
-
-# 使用Google AI模型
-python cli/main.py --llm-provider google --model gemini-2.0-flash --stock TSLA
-```
+启动后访问前端：http://localhost:3000
 
 ### 📚 文档和支持
 
 - 📖 [完整文档](./docs/)
-- 🌐 [Web界面指南](./web/README.md)
-- 🤖 [Google AI配置指南](./docs/configuration/google-ai-setup.md)
-- 🧪 [测试指南](./tests/README.md)
-- 💡 [示例代码](./examples/)
+- 🔧 [配置指南](./docs/configuration/)
+- 🚀 [部署指南](./docs/deployment/)
+- 🧪 [开发指南](./docs/development/)
 
 ### 🎯 推荐配置
 
-**最佳性能组合**：
-- **LLM提供商**: Google AI
-- **推荐模型**: gemini-2.0-flash
-- **嵌入服务**: 阿里百炼（自动配置）
-- **分析师**: 市场技术 + 基本面分析师
+- **LLM Provider**: 京东云 jdcloud（默认，模型 kimi-k2.5）
+- **数据源**: Tushare（主）+ AKShare（兜底）
+- **数据库**: MongoDB + Redis（Docker）
 
 ### 🙏 致谢
 
@@ -121,40 +108,40 @@ python cli/main.py --llm-provider google --model gemini-2.0-flash --stock TSLA
 
 ### 📄 许可证
 
-本项目遵循 Apache 2.0 许可证。
+核心多智能体框架遵循 Apache 2.0 许可证；FastAPI 后端与 Vue 前端为专有代码。
 
 ---
 
-**🚀 立即体验**: `python -m streamlit run web/app.py`
+**🚀 立即体验**: `docker-compose up -d`
 """
     return release_notes.strip()
 
 def show_release_info():
     """显示发布信息"""
-    logger.info(f"🎉 TradingAgentsA v0.1.2 已成功发布到GitHub！")
+    logger.info(f"🎉 TradingAgentsA v1.0.1 已成功发布到GitHub！")
     logger.info(f"=")
-    
+
     logger.info(f"\n📋 发布内容:")
-    logger.info(f"  🌐 完整的Web管理界面")
-    logger.info(f"  🤖 Google AI模型集成")
-    logger.info(f"  🔧 多LLM提供商支持")
+    logger.info(f"  🏗️ FastAPI + Vue3 现代化全栈架构")
+    logger.info(f"  🤖 多智能体 A 股分析")
+    logger.info(f"  🐳 Docker 一键部署")
     logger.info(f"  🧪 完整的测试体系")
     logger.info(f"  📚 详细的使用文档")
-    
+
     logger.info(f"\n🔗 GitHub链接:")
-    logger.info(f"  📦 Release: https://github.com/hsliuping/TradingAgents-CN/releases/tag/cn-v0.1.2")
+    logger.info(f"  📦 Release: https://github.com/hsliuping/TradingAgents-CN/releases/tag/v1.0.1")
     logger.info(f"  📝 代码: https://github.com/hsliuping/TradingAgents-CN")
-    
+
     logger.info(f"\n🚀 快速开始:")
     logger.info(f"  1. git clone https://github.com/hsliuping/TradingAgents-CN.git")
     logger.info(f"  2. cd TradingAgentsA")
-    logger.info(f"  3. pip install -r requirements.txt")
-    logger.info(f"  4. python -m streamlit run web/app.py")
-    
+    logger.info(f"  3. cp .env.example .env（编辑填入 API 密钥）")
+    logger.info(f"  4. docker-compose up -d")
+
     logger.info(f"\n💡 主要特性:")
-    logger.info(f"  ✅ Web界面股票分析")
-    logger.info(f"  ✅ Google AI + 阿里百炼双模型支持")
-    logger.info(f"  ✅ 实时分析进度显示")
+    logger.info(f"  ✅ 多智能体股票分析")
+    logger.info(f"  ✅ FastAPI + Vue3 全栈")
+    logger.info(f"  ✅ Docker 一键部署")
     logger.info(f"  ✅ 多分析师协作决策")
     logger.info(f"  ✅ 完整的中文支持")
 
