@@ -1,6 +1,7 @@
 /**
- * 全局样式 — glassmorphism 主题
- * 基于 tokens.scss 的设计令牌，为 Element Plus 组件统一玻璃拟态外观。
+ * 全局样式 — 深色金融专业风（Dark Finance Theme）
+ * 基于 tokens.scss 的设计令牌，为 Element Plus 组件统一深色专业外观。
+ * 弱化毛玻璃效果，以实色深面板为主，保留顶栏轻模糊。
  */
 
 // ===== 重置 =====
@@ -39,20 +40,19 @@ h6 { font-size: 14px; }
 
 // ===== Element Plus 组件玻璃拟态增强 =====
 
-// 卡片
+// 卡片（实色深面板，弱化毛玻璃）
 .el-card {
   background: var(--glass-bg-surface);
-  backdrop-filter: blur(var(--glass-blur-md)) saturate(1.08);
-  -webkit-backdrop-filter: blur(var(--glass-blur-md)) saturate(1.08);
   border: 1px solid var(--glass-stroke-base);
   border-radius: var(--glass-radius-lg);
   box-shadow: var(--glass-shadow-sm);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
 
-  // hover 阴影增强（仅对有 shadow 属性的卡片）
+  // hover 阴影增强 + 边框微亮（仅对有 shadow 属性的卡片）
   &.is-hover-shadow:hover,
   &[class*="shadow-hover"]:hover {
     box-shadow: var(--glass-shadow-md);
+    border-color: var(--glass-stroke-strong);
   }
 
   .el-card__header {
@@ -69,11 +69,9 @@ h6 { font-size: 14px; }
   }
 }
 
-// 对话框
+// 对话框（实色面板，无边框模糊）
 .el-dialog {
   background: var(--glass-bg-surface-strong);
-  backdrop-filter: blur(var(--glass-blur-lg)) saturate(1.08);
-  -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(1.08);
   border: 1px solid var(--glass-stroke-base);
   border-radius: var(--glass-radius-lg);
   box-shadow: var(--glass-shadow-lg);
@@ -90,11 +88,9 @@ h6 { font-size: 14px; }
   }
 }
 
-// 抽屉
+// 抽屉（实色面板）
 .el-drawer {
   background: var(--glass-bg-surface-strong);
-  backdrop-filter: blur(var(--glass-blur-lg)) saturate(1.08);
-  -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(1.08);
 
   .el-drawer__header {
     color: var(--glass-text-primary);
@@ -106,7 +102,7 @@ h6 { font-size: 14px; }
   }
 }
 
-// 输入框
+// 输入框（深色背景，focus 青蓝光圈）
 .el-input__wrapper,
 .el-textarea__inner {
   background: var(--glass-bg-surface) !important;
@@ -121,38 +117,44 @@ h6 { font-size: 14px; }
   &.is-focus,
   &:focus-within {
     box-shadow: 0 0 0 1px var(--el-color-primary) inset,
-                0 0 0 3px rgba(47, 123, 255, 0.12) !important;
+                0 0 0 3px rgba(59, 130, 246, 0.20) !important;
   }
 }
 
 .el-textarea__inner {
   &:focus {
     box-shadow: 0 0 0 1px var(--el-color-primary) inset,
-                0 0 0 3px rgba(47, 123, 255, 0.12) !important;
+                0 0 0 3px rgba(59, 130, 246, 0.20) !important;
   }
 }
 
-// 下拉菜单
+// 下拉菜单（实色面板）
 .el-dropdown-menu {
   background: var(--glass-bg-surface-strong);
-  backdrop-filter: blur(var(--glass-blur-lg));
-  -webkit-backdrop-filter: blur(var(--glass-blur-lg));
   border: 1px solid var(--glass-stroke-base);
   border-radius: var(--glass-radius-md);
   box-shadow: var(--glass-shadow-md);
 }
 
-// 表格
+// 表格（深色适配）
 .el-table {
   background: transparent;
   --el-table-bg-color: transparent;
   --el-table-tr-bg-color: transparent;
-  --el-table-header-bg-color: rgba(0, 0, 0, 0.02);
+  --el-table-header-bg-color: var(--glass-bg-surface-hover);
+  --el-table-border-color: var(--glass-stroke-base);
+  --el-table-text-color: var(--glass-text-primary);
+  --el-table-header-text-color: var(--glass-text-secondary);
 
   th.el-table__cell {
-    background-color: rgba(0, 0, 0, 0.02) !important;
+    background-color: var(--glass-bg-surface-hover) !important;
     color: var(--glass-text-secondary);
     font-weight: 600;
+  }
+
+  // 行 hover
+  .el-table__body tr:hover > td.el-table__cell {
+    background-color: var(--glass-bg-surface-hover) !important;
   }
 }
 
@@ -161,7 +163,7 @@ h6 { font-size: 14px; }
   background-color: var(--glass-stroke-base);
 }
 
-// 按钮 primary 增强
+// 按钮 primary 增强（科技蓝渐变 + 悬浮阴影）
 .el-button--primary {
   background: var(--glass-brand-gradient);
   border: none;
@@ -169,9 +171,9 @@ h6 { font-size: 14px; }
   transition: all 0.2s ease;
 
   &:hover {
-    opacity: 0.9;
+    opacity: 0.92;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(47, 123, 255, 0.25);
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
   }
 }
 

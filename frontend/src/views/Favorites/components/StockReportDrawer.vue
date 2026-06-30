@@ -279,17 +279,17 @@ function formatTime(t?: string) {
   gap: 14px;
   flex-wrap: wrap;
   padding: 8px 10px;
-  background: #f5f7fa;
+  background: var(--glass-bg-surface-hover);
   border-radius: 6px;
   margin-bottom: 8px;
   font-size: 13px;
 }
-.quote-item.up { color: #f56c6c; }
-.quote-item.down { color: #2dbb55; }
+.quote-item.up { color: var(--stock-up); }
+.quote-item.down { color: var(--stock-down); }
 .report-summary {
   font-size: 14px;
   line-height: 1.7;
-  color: #606266;
+  color: var(--glass-text-secondary);
   margin: 6px 0;
   white-space: pre-wrap;
 }
@@ -297,7 +297,7 @@ function formatTime(t?: string) {
   margin: 6px 0 0;
   padding-left: 20px;
   font-size: 13px;
-  color: #606266;
+  color: var(--glass-text-secondary);
   line-height: 1.7;
 }
 .report-footer {
@@ -306,6 +306,6 @@ function formatTime(t?: string) {
   gap: 12px;
   margin-top: 8px;
   font-size: 12px;
-  color: #909399;
+  color: var(--glass-text-tertiary);
 }
 </style>

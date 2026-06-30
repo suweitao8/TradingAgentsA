@@ -22,9 +22,9 @@
         <!-- 步骤 0: 欢迎 -->
         <div v-if="currentStep === 0" class="step-content welcome-step">
           <div class="welcome-icon">
-            <el-icon :size="80" color="#2f7bff"><Setting /></el-icon>
+            <el-icon :size="80" color="#3b82f6"><Setting /></el-icon>
           </div>
-          <h2>欢迎使用 TradingAgentsA</h2>
+          <h2>欢迎使用股市分析</h2>
           <p class="welcome-text">
             让我们通过几个简单的步骤来配置您的系统。
             这将帮助您快速开始使用股票分析功能。

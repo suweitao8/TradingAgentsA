@@ -330,14 +330,26 @@ const routes: RouteRecordRaw[] = [
 
   {
     path: '/about',
-    name: 'About',
-    component: () => import('@/views/About/index.vue'),
+    component: () => import('@/layouts/BasicLayout.vue'),
     meta: {
       title: '关于',
       icon: 'InfoFilled',
       requiresAuth: false, // 关于页面不需要认证
       transition: 'fade'
-    }
+    },
+    children: [
+      {
+        path: '',
+        name: 'About',
+        component: () => import('@/views/About/index.vue'),
+        meta: {
+          title: '关于',
+          icon: 'InfoFilled',
+          requiresAuth: false,
+          transition: 'fade'
+        }
+      }
+    ]
   },
   {
     path: '/data-collection',
@@ -394,7 +406,7 @@ router.beforeEach(async (to, _from, next) => {
   // 设置页面标题
   const title = to.meta.title as string
   if (title) {
-    document.title = `${title} - TradingAgentsA`
+    document.title = `${title} - 股市分析`
   }
 
   // 单用户本地部署模式：无需认证，直接放行所有路由

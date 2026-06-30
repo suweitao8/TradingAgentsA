@@ -4,7 +4,7 @@
     <div class="welcome-section">
       <div class="welcome-content">
         <h1 class="welcome-title">
-          欢迎使用 TradingAgentsA
+          欢迎使用股市分析
           <span class="version-badge">{{ versionLabel }}</span>
         </h1>
         <p class="welcome-subtitle">
@@ -806,11 +806,11 @@ onMounted(async () => {
             margin-top: 2px;
 
             &.price-up {
-              color: #f56c6c;
+              color: var(--stock-up);
             }
 
             &.price-down {
-              color: #67c23a;
+              color: var(--stock-down);
             }
 
             &.price-neutral {

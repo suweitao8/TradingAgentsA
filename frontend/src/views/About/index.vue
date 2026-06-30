@@ -5,7 +5,7 @@
       <div class="hero-content">
         <div class="hero-text">
           <h1 class="hero-title">
-            TradingAgentsA
+            股市分析
             <span class="version-badge">{{ versionLabel }}</span>
           </h1>
           <p class="hero-subtitle">
@@ -272,7 +272,7 @@
 
           <div class="origin-description">
             <p>
-              <strong>TradingAgentsA</strong> 是基于 <strong>TradingAgents</strong> 项目开发的中文本地化版本。
+              <strong>股市分析</strong> 是基于 <strong>TradingAgents</strong> 项目开发的中文本地化版本。
               原项目由 Tauric Research 团队开发，是一个创新的多智能体股票分析框架。
             </p>
             <p>
@@ -396,7 +396,7 @@
             <el-icon><ChatDotRound /></el-icon>
           </div>
           <h4>微信公众号</h4>
-          <p>TradingAgentsA</p>
+          <p>股市分析</p>
           <span class="contact-desc">最新动态和使用教程</span>
         </div>
 
@@ -421,7 +421,7 @@
     <!-- Footer -->
     <div class="footer-section">
       <div class="footer-content">
-        <p>&copy; 2025 TradingAgentsA. All rights reserved.</p>
+        <p>&copy; 2025 股市分析. All rights reserved.</p>
         <p>许可证说明：开源组件遵循 Apache 2.0；前端与后端采用专有许可证（个人学习/研究免费，商业使用需授权）。</p>
       </div>
     </div>
@@ -573,12 +573,12 @@ const viewDocumentation = () => {
           border-radius: 8px;
 
           &.el-button--primary {
-            background: white;
-            color: var(--el-color-primary);
-            border: none;
+            background: var(--glass-bg-surface-strong);
+            color: var(--accent-cyan);
+            border: 1px solid var(--glass-stroke-base);
 
             &:hover {
-              background: rgba(255, 255, 255, 0.9);
+              background: var(--glass-bg-surface-hover);
               transform: translateY(-2px);
             }
           }
@@ -726,7 +726,7 @@ const viewDocumentation = () => {
             margin: 0;
             font-size: 20px;
             font-weight: 600;
-            color: #1a202c;
+            color: var(--glass-text-primary);
           }
         }
 
@@ -955,7 +955,7 @@ const viewDocumentation = () => {
             margin: 0;
             font-size: 20px;
             font-weight: 600;
-            color: #1a202c;
+            color: var(--glass-text-primary);
           }
         }
 
@@ -973,7 +973,7 @@ const viewDocumentation = () => {
 
             .tech-name {
               font-weight: 500;
-              color: #1a202c;
+              color: var(--glass-text-primary);
             }
 
             .tech-desc {
@@ -1072,7 +1072,7 @@ const viewDocumentation = () => {
           margin: 0 0 24px 0;
           font-size: 20px;
           font-weight: 600;
-          color: #1a202c;
+          color: var(--glass-text-primary);
         }
 
         .framework-list {
@@ -1089,7 +1089,7 @@ const viewDocumentation = () => {
 
             .name {
               font-weight: 500;
-              color: #1a202c;
+              color: var(--glass-text-primary);
             }
 
             .version {
@@ -1160,14 +1160,14 @@ const viewDocumentation = () => {
           margin: 0 0 12px 0;
           font-size: 18px;
           font-weight: 600;
-          color: #1a202c;
+          color: var(--glass-text-primary);
         }
 
         p {
           margin: 0 0 8px 0;
           font-size: 16px;
           font-weight: 500;
-          color: #1a202c;
+          color: var(--glass-text-primary);
 
           .doc-link {
             color: var(--el-color-primary);

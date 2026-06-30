@@ -59,7 +59,7 @@ export const useAppStore = defineStore('app', {
   state: (): AppState => ({
     loading: false,
     loadingProgress: 0,
-    theme: (useStorage('app-theme', 'auto').value || 'auto') as 'light' | 'dark' | 'auto',
+    theme: (useStorage('app-theme', 'dark').value || 'dark') as 'light' | 'dark' | 'auto',
     language: (useStorage('app-language', 'zh-CN').value || 'zh-CN') as 'zh-CN' | 'en-US',
 
     isOnline: navigator.onLine,
@@ -98,7 +98,7 @@ export const useAppStore = defineStore('app', {
     
     // 当前页面标题
     currentPageTitle(): string {
-      return this.currentRoute?.meta?.title as string || 'TradingAgentsA'
+      return this.currentRoute?.meta?.title as string || '股市分析'
     },
     
     // 应用信息
@@ -142,14 +142,17 @@ export const useAppStore = defineStore('app', {
     },
     
     // 应用主题
+    // 设计：:root 默认深色，html.light 覆盖浅色。
+    // 因此深色时移除 html.light，浅色时加上。
     applyTheme() {
       const isDark = this.isDarkTheme
+      document.documentElement.classList.toggle('light', !isDark)
       document.documentElement.classList.toggle('dark', isDark)
-      
+
       // 更新meta标签
       const themeColorMeta = document.querySelector('meta[name="theme-color"]')
       if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', isDark ? '#1f2937' : '#2f7bff')
+        themeColorMeta.setAttribute('content', isDark ? '#0a0e1a' : '#f1f3f7')
       }
     },
     
