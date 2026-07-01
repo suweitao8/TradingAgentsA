@@ -1326,6 +1326,8 @@ onUnmounted(() => {
     clearInterval(pollingTimer.value)
     pollingTimer.value = null
   }
+  // 移除页面可见性监听（M1: 原顶层注册未移除，导致内存泄漏）
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 
 // 页面可见性变化时的处理
@@ -1349,9 +1351,6 @@ const handleVisibilityChange = () => {
     }
   }
 }
-
-// 监听页面可见性变化
-document.addEventListener('visibilitychange', handleVisibilityChange)
 
 // 获取深度描述
 const getDepthDescription = (depth: number) => {
@@ -1736,6 +1735,9 @@ onMounted(async () => {
 
   // 🆕 初始检查模型适用性
   await checkModelSuitability()
+
+  // 注册页面可见性监听（M1: 原顶层注册未在 onUnmounted 移除，改为生命周期内注册/移除）
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 </script>
 

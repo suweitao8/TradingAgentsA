@@ -21,9 +21,6 @@
         <el-button type="warning" @click="clearCache" :loading="clearCacheLoading">
           <el-icon><Delete /></el-icon> 清除缓存
         </el-button>
-        <el-button type="success" @click="goPaperTrading">
-          <el-icon><CreditCard /></el-icon> 模拟交易
-        </el-button>
       </div>
     </div>
 
@@ -350,7 +347,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { TrendCharts, Star, Refresh, Link, Document, Clock, Reading, CreditCard, Delete } from '@element-plus/icons-vue'
+import { TrendCharts, Star, Refresh, Link, Document, Clock, Reading, Delete } from '@element-plus/icons-vue'
 import { marked } from 'marked'
 import { stocksApi } from '@/api/stocks'
 import { analysisApi } from '@/api/analysis'
@@ -383,16 +380,8 @@ const lastTaskInfo = ref<any | null>(null) // 保存任务信息（包含 end_ti
 const showReportsDialog = ref(false)
 const activeReportTab = ref('')
 
-// 股票代码（从路由参数获取）
-const code = computed(() => {
-  const routeCode = String(route.params.code || '').toUpperCase()
-  if (!routeCode) {
-    showError('股票代码不能为空')
-    router.push({ name: 'Dashboard' })
-    return ''
-  }
-  return routeCode
-})
+// 股票代码（从路由参数获取）—— computed 保持纯计算，副作用在 watch 中处理
+const code = computed(() => String(route.params.code || '').toUpperCase())
 const symbol = computed(() => code.value.split('.')[0])  // 提取6位代码
 const stockName = ref('')
 const market = ref('')
@@ -766,8 +755,22 @@ watch(() => route.params.code, async (newCode, oldCode) => {
     return
   }
 
+  // 空值校验+跳转（原 computed 副作用，移到 watch 保证只触发一次）
+  if (!String(newCode || '').toUpperCase()) {
+    showError('股票代码不能为空')
+    router.push({ name: 'Dashboard' })
+    return
+  }
+
+  // 切股前先清旧定时器，避免旧 code 的轮询继续跑（H4: 定时器泄漏）
+  if (timer) {
+    clearInterval(timer)
+    timer = null
+  }
   resetPageState()
   await loadPageData()
+  // 重建新股票的报价轮询定时器
+  timer = setInterval(fetchQuote, 30000)
 })
 
 // K线占位相关
@@ -913,10 +916,6 @@ async function onToggleFavorite() {
     console.error('自选操作失败', e)
     showError(e?.message || '自选操作失败')
   }
-}
-
-function goPaperTrading() {
-  router.push({ name: 'PaperTradingHome', query: { code: code.value } })
 }
 
 // 获取最新的历史分析报告

@@ -108,9 +108,9 @@ async def generate_reports(
             try:
                 logger.info(f"🚀 [BackgroundTask] 开始生成报告: type={report_type}, user={user_id}")
                 if report_type == "daily":
-                    await get_favorite_report_service().generate_daily_reports(user_id)
+                    await get_favorite_report_service().generate_daily_reports(user_id, stock_code=stock_code)
                 elif report_type == "realtime":
-                    await get_favorite_report_service().generate_realtime_reports(user_id)
+                    await get_favorite_report_service().generate_realtime_reports(user_id, stock_code=stock_code)
                 else:
                     logger.warning(f"⚠️ 未知 report_type: {report_type}")
                 logger.info(f"✅ [BackgroundTask] 报告生成完成: type={report_type}, user={user_id}")

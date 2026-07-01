@@ -123,7 +123,16 @@ class ConditionalLogic:
         logger.info(f"🤖 [条件判断] 最后一条消息详细内容:")
         logger.info(f"🤖 [条件判断] - 消息类型: {type(last_message).__name__}")
         if hasattr(last_message, 'content'):
-            content_preview = last_message.content[:300] + "..." if len(last_message.content) > 300 else last_message.content
+            # content 可能是 str 或 list（typed content blocks，部分模型/场景会返回），统一转成 str
+            raw_content = last_message.content
+            if isinstance(raw_content, list):
+                content_str = "".join(
+                    blk.get("text", "") if isinstance(blk, dict) else str(blk)
+                    for blk in raw_content
+                )
+            else:
+                content_str = str(raw_content)
+            content_preview = content_str[:300] + "..." if len(content_str) > 300 else content_str
             logger.info(f"🤖 [条件判断] - 内容预览: {content_preview}")
         
         # 🔍 [调试日志] 打印tool_calls的详细信息
