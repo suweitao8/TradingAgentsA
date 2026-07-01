@@ -345,20 +345,20 @@ class StockDataService:
             else:
                 exchange = "SZSE"
                 exchange_name = "深圳证券交易所"
-            
-            # 添加市场信息
-            result["market_info"] = {
-                "market": "CN",
-                "exchange": exchange,
-                "exchange_name": exchange_name,
-                "currency": "CNY",
-                "timezone": "Asia/Shanghai",
-                "trading_hours": {
-                    "open": "09:30",
-                    "close": "15:00",
-                    "lunch_break": ["11:30", "13:00"]
-                }
+
+        # 添加市场信息（所有分支统一写入，exchange/exchange_name 已在上方赋值）
+        result["market_info"] = {
+            "market": "CN",
+            "exchange": exchange,
+            "exchange_name": exchange_name,
+            "currency": "CNY",
+            "timezone": "Asia/Shanghai",
+            "trading_hours": {
+                "open": "09:30",
+                "close": "15:00",
+                "lunch_break": ["11:30", "13:00"]
             }
+        }
         
         # 字段映射和标准化
         result["board"] = doc.get("sse")  # 板块标准化

@@ -363,9 +363,10 @@ const deleteReport = async (report: ReportListItem) => {
       throw new Error(result.message || '删除失败')
     }
   } catch (error) {
-    const err = error as Error
-    if (err.message !== 'cancel') {
-      console.error('删除报告失败:', err)
+    // ElMessageBox 取消时 reject 的是字符串 'cancel'（非 Error 对象），需兼容两种形态
+    const errMsg = typeof error === 'string' ? error : (error as Error)?.message
+    if (errMsg !== 'cancel') {
+      console.error('删除报告失败:', error)
       showError('删除报告失败')
     }
   }

@@ -60,6 +60,7 @@ class FavoriteReportService:
         user_id: str,
         trade_date: Optional[str] = None,
         max_concurrent: Optional[int] = None,
+        stock_code: Optional[str] = None,
     ) -> Dict[str, Any]:
         """对用户每只自选股生成每日报告（复用 SimpleAnalysisService 完整分析）
 
@@ -67,6 +68,7 @@ class FavoriteReportService:
             user_id: 用户ID
             trade_date: 指定交易日，默认当天
             max_concurrent: 最大并发数，默认取配置 FAVORITE_REPORT_MAX_CONCURRENT
+            stock_code: 指定单只股票代码，为空则对全部自选股生成
 
         Returns:
             统计信息 {total, success, skipped, failed, errors}
@@ -89,6 +91,9 @@ class FavoriteReportService:
             return stats
 
         a_share_favs = [f for f in favs if (f.get("market") or "A股") == "A股"]
+        # 指定单只股票时只处理该只
+        if stock_code:
+            a_share_favs = [f for f in a_share_favs if f.get("stock_code") == stock_code]
         stats["total"] = len(a_share_favs)
         if not a_share_favs:
             logger.info(f"ℹ️ [每日报告] 用户 {user_id} 无 A 股自选股，跳过")
@@ -181,8 +186,16 @@ class FavoriteReportService:
     # 盘中实时报告（行情 + LLM 简评）
     # ===================================================================
 
-    async def generate_realtime_reports(self, user_id: str) -> Dict[str, Any]:
+    async def generate_realtime_reports(
+        self,
+        user_id: str,
+        stock_code: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """对用户每只自选股生成盘中实时报告（行情快照 + LLM 简评）
+
+        Args:
+            user_id: 用户ID
+            stock_code: 指定单只股票代码，为空则对全部自选股生成
 
         Returns:
             统计信息 {total, success, skipped, failed, errors}
@@ -198,6 +211,9 @@ class FavoriteReportService:
             return stats
 
         a_share_favs = [f for f in favs if (f.get("market") or "A股") == "A股"]
+        # 指定单只股票时只处理该只
+        if stock_code:
+            a_share_favs = [f for f in a_share_favs if f.get("stock_code") == stock_code]
         stats["total"] = len(a_share_favs)
         if not a_share_favs:
             return stats
