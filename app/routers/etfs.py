@@ -124,8 +124,39 @@ async def get_etfs(
 async def get_popular_etfs(
     current_user: dict = Depends(get_current_user),
 ):
-    """返回预置热门 ETF 清单（供前端一键导入）"""
-    return ok(POPULAR_ETFS)
+    """返回预置热门 ETF 清单，附带实时行情 + 是否已加入自选。
+
+    前端弹窗预览时可以直接展示价格/涨跌幅，并对已存在的 ETF 标记 disabled。
+    """
+    try:
+        from app.services.quotes_service import get_quotes_service
+
+        codes = [e["fund_code"] for e in POPULAR_ETFS]
+        svc = get_quotes_service()
+        quotes = await svc.get_etf_quotes(codes)
+
+        # 查当前用户已有 ETF，标记 is_added
+        added_codes = set()
+        try:
+            added_codes = await etfs_service.get_added_codes(current_user["id"])
+        except Exception:
+            pass
+
+        result = []
+        for e in POPULAR_ETFS:
+            q = quotes.get(e["fund_code"], {})
+            result.append({
+                **e,
+                "current_price": q.get("close"),
+                "change_percent": q.get("pct_chg"),
+                "is_added": e["fund_code"] in added_codes,
+            })
+        return ok(result)
+    except Exception as e:
+        logger.error(f"获取热门 ETF 失败: {e}", exc_info=True)
+        # 行情拉取失败时降级返回静态清单
+        result = [{**e, "current_price": None, "change_percent": None, "is_added": False} for e in POPULAR_ETFS]
+        return ok(result)
 
 
 @router.post("/", response_model=dict)
