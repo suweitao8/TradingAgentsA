@@ -167,6 +167,14 @@ class EtfsService:
         )
         return doc is not None
 
+    async def get_added_codes(self, user_id: str) -> set:
+        """返回用户已添加的 ETF 代码集合（用于热门清单标记 is_added）。"""
+        db = await self._get_db()
+        doc = await db.user_etfs.find_one({"user_id": user_id}, {"etfs.fund_code": 1, "_id": 0})
+        if not doc:
+            return set()
+        return {e.get("fund_code") for e in (doc.get("etfs") or [])}
+
     async def get_user_tags(self, user_id: str) -> List[str]:
         """获取用户所有 ETF 标签（去重）。"""
         db = await self._get_db()
