@@ -330,7 +330,7 @@
         </el-form-item>
         <el-form-item label="历史数据天数" v-if="syncForm.syncTypes.includes('historical')">
           <el-input-number v-model="syncForm.days" :min="1" :max="3650" />
-          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+          <span style="margin-left: 10px; color: var(--glass-text-tertiary); font-size: 12px;">
             (最多3650天，约10年)
           </span>
         </el-form-item>
@@ -426,9 +426,9 @@ const kOption = ref<EChartsOption>({
       data: [],
       itemStyle: {
         color: '#ef4444',
-        color0: '#16a34a',
+        color0: '#22c55e',
         borderColor: '#ef4444',
-        borderColor0: '#16a34a'
+        borderColor0: '#22c55e'
       }
     }
   ]
@@ -826,9 +826,9 @@ async function fetchKline() {
           data: values,
           itemStyle: {
             color: '#ef4444',
-            color0: '#16a34a',
+            color0: '#22c55e',
             borderColor: '#ef4444',
-            borderColor0: '#16a34a'
+            borderColor0: '#22c55e'
           }
         }
       ]
@@ -1226,8 +1226,8 @@ function exportReport() {
 .price-row { display: flex; align-items: center; gap: 12px; }
 .price { font-size: 32px; font-weight: 800; }
 .change { font-size: 16px; font-weight: 700; }
-.up { color: #e53935; }
-.down { color: #16a34a; }
+.up { color: var(--stock-up); }
+.down { color: var(--stock-down); }
 .stats { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-top: 6px; }
 .stats .item { display: flex; flex-direction: column; font-size: 12px; color: var(--el-text-color-secondary); }
 .stats .item b { color: var(--el-text-color-primary); font-size: 14px; }

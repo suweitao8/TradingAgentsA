@@ -439,7 +439,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #909399;
+    color: var(--glass-text-tertiary);
     font-size: 14px;
     margin-bottom: 12px;
   }
@@ -462,7 +462,7 @@ onMounted(() => {
 
       .cost-currency {
         font-size: 14px;
-        color: #909399;
+        color: var(--glass-text-tertiary);
       }
     }
   }

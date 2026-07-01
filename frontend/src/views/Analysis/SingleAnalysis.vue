@@ -70,7 +70,7 @@
                       >
                         <el-option label="🇨🇳 A股市场" value="A股">
                           <span>🇨🇳 A股市场</span>
-                          <span style="color: #909399; font-size: 12px; margin-left: 8px;">（6位数字）</span>
+                          <span style="color: var(--glass-text-tertiary); font-size: 12px; margin-left: 8px;">（6位数字）</span>
                         </el-option>
                       </el-select>
                     </el-form-item>
@@ -340,7 +340,7 @@
                             >
                               ⚡快速
                             </el-tag>
-                            <span style="font-size: 12px; color: #909399;">{{ model.provider }}</span>
+                            <span style="font-size: 12px; color: var(--glass-text-tertiary);">{{ model.provider }}</span>
                           </div>
                         </div>
                       </el-option>

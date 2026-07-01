@@ -179,7 +179,7 @@
               <el-checkbox v-model="importOverwrite">
                 覆盖现有数据
               </el-checkbox>
-              <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+              <div style="font-size: 12px; color: var(--glass-text-tertiary); margin-top: 4px;">
                 ⚠️ 勾选后将删除现有数据再导入
               </div>
             </el-form-item>
@@ -220,7 +220,7 @@
                       mongorestore --uri="mongodb://localhost:27017" --db=tradingagents --gzip ./backup/tradingagents
                     </code>
                   </div>
-                  <p style="margin: 8px 0; font-size: 12px; color: #909399;">
+                  <p style="margin: 8px 0; font-size: 12px; color: var(--glass-text-tertiary);">
                     💡 提示：请根据实际的 MongoDB 连接信息修改命令中的 URI
                   </p>
                 </div>

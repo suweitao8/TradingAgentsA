@@ -57,7 +57,7 @@
           >
             <div style="display: flex; flex-direction: column;">
               <span>{{ model.label }}</span>
-              <span style="font-size: 12px; color: #909399;">代码: {{ model.value }}</span>
+              <span style="font-size: 12px; color: var(--glass-text-tertiary);">代码: {{ model.value }}</span>
             </div>
           </el-option>
         </el-select>

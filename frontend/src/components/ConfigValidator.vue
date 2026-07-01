@@ -189,7 +189,7 @@
                 <div class="item-icon">
                   <el-icon v-if="item.status.includes('已配置')" color="#67C23A"><CircleCheck /></el-icon>
                   <el-icon v-else-if="item.enabled" color="#E6A23C"><Warning /></el-icon>
-                  <el-icon v-else color="#909399"><CircleClose /></el-icon>
+                  <el-icon v-else color="var(--glass-text-tertiary)"><CircleClose /></el-icon>
                 </div>
                 <div class="item-content">
                   <div class="item-name">{{ item.name }}</div>

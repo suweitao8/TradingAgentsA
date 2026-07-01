@@ -1,5 +1,8 @@
 <template>
   <div class="favorites">
+    <!-- 股票/ETF 切换 Tab -->
+    <WatchlistTabs active="stocks" />
+
     <!-- 操作栏：按钮在左，搜索在右 -->
     <el-card class="action-card" shadow="never">
       <div class="action-bar">
@@ -175,7 +178,7 @@
     >
       <el-form :model="editForm" ref="editFormRef" label-width="100px">
         <el-form-item label="股票">
-          <div>{{ editForm.stock_code }}｜{{ editForm.stock_name }}<span v-if="editForm.industry && editForm.industry !== '-'" style="color: #909399; margin-left: 8px;">{{ editForm.industry }}</span></div>
+          <div>{{ editForm.stock_code }}｜{{ editForm.stock_name }}<span v-if="editForm.industry && editForm.industry !== '-'" style="color: var(--glass-text-tertiary); margin-left: 8px;">{{ editForm.industry }}</span></div>
         </el-form-item>
 
         <el-form-item label="备注">
@@ -218,7 +221,7 @@
         </el-form-item>
         <el-form-item label="历史数据天数" v-if="singleSyncForm.syncTypes.includes('historical')">
           <el-input-number v-model="singleSyncForm.days" :min="1" :max="3650" />
-          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+          <span style="margin-left: 10px; color: var(--glass-text-tertiary); font-size: 12px;">
             (最多3650天，约10年)
           </span>
         </el-form-item>
@@ -273,7 +276,7 @@
             ❌ 未识别 <strong>{{ batchImportResult.failed.length }}</strong> 只
           </div>
         </el-alert>
-        <div v-if="batchImportResult.failed.length > 0" style="font-size: 13px; color: #909399;">
+        <div v-if="batchImportResult.failed.length > 0" style="font-size: 13px; color: var(--glass-text-tertiary);">
           未识别的行（非 A 股个股或未找到匹配）：
           <el-tag
             v-for="item in batchImportResult.failed"
@@ -307,6 +310,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
+import WatchlistTabs from '@/components/Layout/WatchlistTabs.vue'
 import {
   Search,
   Refresh,
@@ -893,7 +897,7 @@ onBeforeUnmount(() => {
     display: inline-block;
     width: 12px;
     height: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--glass-stroke-base);
     border-radius: 2px;
     margin-left: 8px;
     vertical-align: middle;
@@ -908,7 +912,7 @@ onBeforeUnmount(() => {
     display: inline-block;
     width: 14px;
     height: 14px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--glass-stroke-base);
     border-radius: 2px;
     margin-left: 6px;
     vertical-align: middle;
