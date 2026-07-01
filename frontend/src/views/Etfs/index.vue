@@ -234,7 +234,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Refresh, Upload, StarFilled } from '@element-plus/icons-vue'
 import WatchlistTabs from '@/components/Layout/WatchlistTabs.vue'
@@ -481,7 +481,27 @@ async function handleBatchImport() {
 }
 
 // ---- 生命周期 ----
-onMounted(loadEtfs)
+// 每分钟自动刷新（静默，不显示 loading）
+let etfRefreshTimer: ReturnType<typeof setInterval> | null = null
+
+onMounted(() => {
+  loadEtfs()
+  etfRefreshTimer = setInterval(async () => {
+    try {
+      const res = await etfsApi.list()
+      etfs.value = res.data || []
+    } catch (e) {
+      // 静默忽略
+    }
+  }, 60000)
+})
+
+onBeforeUnmount(() => {
+  if (etfRefreshTimer) {
+    clearInterval(etfRefreshTimer)
+    etfRefreshTimer = null
+  }
+})
 </script>
 
 <style scoped>
