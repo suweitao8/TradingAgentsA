@@ -16,15 +16,16 @@
 </template>
 
 <script setup lang="ts">
-import { Star, TrendCharts } from '@element-plus/icons-vue'
+import { Star, TrendCharts, VideoCamera } from '@element-plus/icons-vue'
 
 defineProps<{
-  active: 'stocks' | 'etfs'
+  active: 'stocks' | 'etfs' | 'bilibili'
 }>()
 
 const tabs = [
   { key: 'stocks', label: '自选股', path: '/favorites', icon: Star },
   { key: 'etfs', label: 'ETF', path: '/etfs', icon: TrendCharts },
+  { key: 'bilibili', label: 'B站', path: '/bilibili', icon: VideoCamera },
 ] as const
 </script>
 

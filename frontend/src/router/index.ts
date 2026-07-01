@@ -138,6 +138,28 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/bilibili',
+    name: 'Bilibili',
+    component: () => import('@/layouts/BasicLayout.vue'),
+    meta: {
+      title: 'B站UP主',
+      icon: 'VideoCamera',
+      requiresAuth: true,
+      transition: 'slide-up'
+    },
+    children: [
+      {
+        path: '',
+        name: 'BilibiliHome',
+        component: () => import('@/views/Bilibili/index.vue'),
+        meta: {
+          title: 'B站UP主',
+          requiresAuth: true
+        }
+      }
+    ]
+  },
+  {
     path: '/learning',
     name: 'Learning',
     component: () => import('@/layouts/BasicLayout.vue'),
