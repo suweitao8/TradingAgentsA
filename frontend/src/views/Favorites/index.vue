@@ -4,7 +4,7 @@
     <WatchlistTabs active="stocks" />
 
     <!-- 操作栏：按钮在左，搜索在右 -->
-    <el-card class="action-card" shadow="never">
+    <el-card class="action-card fade-in-up" shadow="never">
       <div class="action-bar">
         <div class="action-buttons">
           <el-button @click="refreshData">
@@ -45,6 +45,7 @@
         :data="filteredFavorites"
         v-loading="loading"
         style="width: 100%"
+        :row-class-name="({ row }) => getIndustryClass(row.industry)"
         @row-contextmenu="handleRowContextMenu"
       >
         <el-table-column type="index" label="#" width="55" align="center" />
@@ -311,6 +312,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import WatchlistTabs from '@/components/Layout/WatchlistTabs.vue'
+import { getIndustryClass } from '@/utils/industryColor'
 import {
   Search,
   Refresh,

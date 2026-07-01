@@ -189,6 +189,14 @@ h6 { font-size: 14px; }
   }
 }
 
+// 所有非禁用按钮 hover 统一轻微抬起（交互跟手感）
+.el-button:not(.is-disabled):not(.is-loading) {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
 // ===== 滚动条美化 =====
 ::-webkit-scrollbar {
   width: 8px;
@@ -212,6 +220,56 @@ h6 { font-size: 14px; }
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--glass-stroke-strong) transparent;
+}
+
+// ===== 路由切换过渡（router meta.transition 驱动）=====
+// fade：淡入淡出
+.fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+// slide-up：从下方轻微滑入
+.slide-up-enter-active { transition: opacity 0.3s ease, transform 0.3s ease; }
+.slide-up-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.slide-up-enter-from { opacity: 0; transform: translateY(14px); }
+.slide-up-leave-to { opacity: 0; transform: translateY(-8px); }
+
+// slide-left：从右侧滑入
+.slide-left-enter-active { transition: opacity 0.3s ease, transform 0.3s ease; }
+.slide-left-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.slide-left-enter-from { opacity: 0; transform: translateX(20px); }
+.slide-left-leave-to { opacity: 0; transform: translateX(-12px); }
+
+// ===== 入场动画工具类 =====
+.fade-in-up {
+  animation: fadeInUp 0.4s ease both;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ===== 行业分组行背景色（12 组循环，淡色）=====
+// 由 utils/industryColor.ts 的哈希函数分配组号
+.industry-group-0  { --industry-bg: rgba(59, 130, 246, 0.07); }  // 蓝
+.industry-group-1  { --industry-bg: rgba(34, 211, 238, 0.07); }  // 青
+.industry-group-2  { --industry-bg: rgba(168, 85, 247, 0.07); }  // 紫
+.industry-group-3  { --industry-bg: rgba(236, 72, 153, 0.07); }  // 粉
+.industry-group-4  { --industry-bg: rgba(245, 158, 11, 0.07); }  // 琥珀
+.industry-group-5  { --industry-bg: rgba(34, 197, 94, 0.07); }   // 绿
+.industry-group-6  { --industry-bg: rgba(239, 68, 68, 0.07); }   // 红
+.industry-group-7  { --industry-bg: rgba(14, 165, 233, 0.07); }  // 天蓝
+.industry-group-8  { --industry-bg: rgba(139, 92, 246, 0.07); }  // 靛蓝
+.industry-group-9  { --industry-bg: rgba(217, 119, 6, 0.07); }   // 棕橙
+.industry-group-10 { --industry-bg: rgba(6, 182, 212, 0.07); }   // 蓝绿
+.industry-group-11 { --industry-bg: rgba(244, 114, 182, 0.07); } // 玫红
+
+// 表格行应用行业背景色（el-table 行需穿透 scoped）
+.el-table__body tr[class*="industry-group"] > td.el-table__cell {
+  background-color: var(--industry-bg) !important;
+}
+// hover 时保留行业底色但加深一档
+.el-table__body tr[class*="industry-group"]:hover > td.el-table__cell {
+  background-color: var(--glass-bg-surface-hover) !important;
 }
 
 // ===== 工具类 =====

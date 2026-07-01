@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard">
     <!-- 欢迎区域 -->
-    <div class="welcome-section">
+    <div class="welcome-section fade-in-up">
       <div class="welcome-content">
         <h1 class="welcome-title">
           欢迎使用股市分析
@@ -24,7 +24,7 @@
     </div>
 
     <!-- 学习中心推荐卡片 -->
-    <el-card class="learning-highlight-card">
+    <el-card class="learning-highlight-card fade-in-up">
       <div class="learning-highlight">
         <div class="learning-icon">
           <el-icon size="48"><Reading /></el-icon>

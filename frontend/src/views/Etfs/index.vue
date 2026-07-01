@@ -4,7 +4,7 @@
     <WatchlistTabs active="etfs" />
 
     <!-- 操作栏 -->
-    <el-card class="action-card" shadow="never">
+    <el-card class="action-card fade-in-up" shadow="never">
       <div class="action-bar">
         <div class="action-buttons">
           <el-button @click="refreshData" :loading="loading">
@@ -35,7 +35,12 @@
 
     <!-- ETF 列表 -->
     <el-card class="etfs-list-card" shadow="never">
-      <el-table :data="filteredEtfs" v-loading="loading" style="width: 100%">
+      <el-table
+        :data="filteredEtfs"
+        v-loading="loading"
+        style="width: 100%"
+        :row-class-name="({ row }) => getEtfTypeClass(row.fund_type)"
+      >
         <el-table-column type="index" label="#" width="55" align="center" />
 
         <el-table-column prop="fund_code" label="ETF代码" min-width="100">
@@ -233,6 +238,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Refresh, Upload, StarFilled } from '@element-plus/icons-vue'
 import WatchlistTabs from '@/components/Layout/WatchlistTabs.vue'
+import { getEtfTypeClass } from '@/utils/industryColor'
 import { etfsApi, type EtfItem, type AddEtfReq, type PopularEtf } from '@/api/etfs'
 import { showError } from '@/utils/message'
 
