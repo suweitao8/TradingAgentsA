@@ -120,27 +120,90 @@ async def get_etfs(
         )
 
 
+async def _fetch_top_etfs_by_amount(top_n: int = 30) -> list:
+    """从东方财富拉取按成交额降序的前 N 只 ETF。
+
+    休市/非交易时段成交额为空时返回空列表，由调用方降级到静态清单。
+    """
+    import asyncio
+    import requests
+
+    try:
+        def _do_fetch():
+            url = "https://82.push2delay.eastmoney.com/api/qt/clist/get"
+            params = {
+                "po": "1",           # 降序
+                "np": "1",
+                "ut": "bd1d9ddb04089700cf9c27f6f7426281",
+                "fltt": "2", "invt": "2",
+                "fid": "f6",         # 按成交额排序
+                "fs": "b:MK0021",    # 沪深 ETF
+                "fields": "f2,f3,f6,f12,f14",
+                "pn": "1", "pz": str(top_n + 20),  # 多拉一些，过滤掉无成交额的
+            }
+            resp = requests.get(url, params=params, timeout=10)
+            if resp.status_code != 200:
+                return []
+            data = resp.json().get("data") or {}
+            diff = data.get("diff") or []
+
+            result = []
+            for item in diff:
+                amount = item.get("f6")
+                # 休市时段 amount 为 "-" 或 None，过滤掉
+                if amount is None or amount == "-" or amount == 0:
+                    continue
+                result.append({
+                    "fund_code": str(item.get("f12", "")).strip().zfill(6),
+                    "fund_name": item.get("f14", ""),
+                    "fund_type": "热门",  # 动态拉取无法自动分类，统一标记
+                    "current_price": item.get("f2") if item.get("f2") != "-" else None,
+                    "change_percent": item.get("f3") if item.get("f3") != "-" else None,
+                })
+                if len(result) >= top_n:
+                    break
+            return result
+
+        return await asyncio.to_thread(_do_fetch)
+    except Exception as e:
+        logger.warning(f"动态拉取热门 ETF 失败: {e}")
+        return []
+
+
 @router.get("/popular", response_model=dict)
 async def get_popular_etfs(
     current_user: dict = Depends(get_current_user),
 ):
-    """返回预置热门 ETF 清单，附带实时行情 + 是否已加入自选。
+    """返回热门 ETF 清单（按成交额动态排名），附带行情 + 是否已加入自选。
 
-    前端弹窗预览时可以直接展示价格/涨跌幅，并对已存在的 ETF 标记 disabled。
+    策略：
+    1. 优先从东方财富按当日成交额降序拉取 TOP 30（反映真实市场热度）
+    2. 休市/非交易时段成交额为空时，降级到硬编码的 POPULAR_ETFS 静态清单
     """
     try:
-        from app.services.quotes_service import get_quotes_service
-
-        codes = [e["fund_code"] for e in POPULAR_ETFS]
-        svc = get_quotes_service()
-        quotes = await svc.get_etf_quotes(codes)
-
-        # 查当前用户已有 ETF，标记 is_added
+        # 查当前用户已有 ETF
         added_codes = set()
         try:
             added_codes = await etfs_service.get_added_codes(current_user["id"])
         except Exception:
             pass
+
+        # 1) 动态拉取成交额 TOP ETF
+        dynamic_list = await _fetch_top_etfs_by_amount(30)
+
+        if dynamic_list and len(dynamic_list) >= 10:
+            # 动态拉取成功，附加 is_added 标记
+            for e in dynamic_list:
+                e["is_added"] = e["fund_code"] in added_codes
+            return ok(dynamic_list)
+
+        # 2) 降级：动态拉取不足（休市），用硬编码清单 + 行情富集
+        logger.info("动态热门 ETF 不足，降级到静态清单")
+        from app.services.quotes_service import get_quotes_service
+
+        codes = [e["fund_code"] for e in POPULAR_ETFS]
+        svc = get_quotes_service()
+        quotes = await svc.get_etf_quotes(codes)
 
         result = []
         for e in POPULAR_ETFS:
@@ -154,7 +217,6 @@ async def get_popular_etfs(
         return ok(result)
     except Exception as e:
         logger.error(f"获取热门 ETF 失败: {e}", exc_info=True)
-        # 行情拉取失败时降级返回静态清单
         result = [{**e, "current_price": None, "change_percent": None, "is_added": False} for e in POPULAR_ETFS]
         return ok(result)
 
