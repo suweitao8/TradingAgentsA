@@ -93,6 +93,23 @@ export const favoritesApi = {
     ApiClient.get<Array<{ stock_code: string; current_price: number | null; change_percent: number | null; turnover_rate: number | null; volume_ratio: number | null }>>('/api/favorites/quotes'),
 }
 
+/** 涨幅榜股票项 */
+export interface TopGainer {
+  stock_code: string
+  stock_name: string
+  current_price: number | null
+  change_percent: number | null
+  turnover_rate: number | null
+  volume_ratio: number | null
+}
+
+/** 涨幅榜 API（从 market_quotes 按涨跌幅排序） */
+export const topGainersApi = {
+  /** 获取涨幅榜 Top N */
+  list: (limit: number = 20) =>
+    ApiClient.get<TopGainer[]>('/api/stock-data/top-gainers', { limit }),
+}
+
 // ==================== 自选股分析报告 ====================
 
 /** 每日报告（完整分析） */

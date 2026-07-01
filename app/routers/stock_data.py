@@ -387,3 +387,64 @@ async def get_quotes_sync_status(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"获取同步状态失败: {str(e)}"
         )
+
+
+@router.get("/top-gainers", response_model=dict)
+async def get_top_gainers(
+    limit: int = Query(20, ge=1, le=50, description="返回数量，默认20，最多50"),
+    current_user: dict = Depends(get_current_user),
+):
+    """获取涨幅榜 Top N（基于 market_quotes 集合按 pct_chg 降序）
+
+    毫秒级查询（查库排序，不拉网络）。stock_name 从 stock_basic_info 批量 join。
+    """
+    try:
+        from app.core.database import get_mongo_db
+
+        db = get_mongo_db()
+        # 按 pct_chg 降序取 Top N（过滤掉无涨跌幅的记录）
+        cursor = (
+            db["market_quotes"]
+            .find(
+                {"pct_chg": {"$ne": None}},
+                {"code": 1, "close": 1, "pct_chg": 1, "turnover_rate": 1, "volume_ratio": 1, "_id": 0},
+            )
+            .sort("pct_chg", -1)
+            .limit(limit)
+        )
+        docs = await cursor.to_list(length=limit)
+        if not docs:
+            return {"success": True, "data": [], "message": "暂无行情数据"}
+
+        codes = [str(d.get("code")).zfill(6) for d in docs if d.get("code")]
+
+        # 批量取股票名称
+        name_map: dict = {}
+        if codes:
+            name_cursor = db["stock_basic_info"].find(
+                {"code": {"$in": codes}},
+                {"code": 1, "name": 1, "_id": 0},
+            )
+            async for nd in name_cursor:
+                nc = str(nd.get("code")).zfill(6)
+                nm = nd.get("name")
+                if nm:
+                    name_map[nc] = nm
+
+        result = []
+        for d in docs:
+            code = str(d.get("code")).zfill(6)
+            result.append({
+                "stock_code": code,
+                "stock_name": name_map.get(code, code),
+                "current_price": d.get("close"),
+                "change_percent": d.get("pct_chg"),
+                "turnover_rate": d.get("turnover_rate"),
+                "volume_ratio": d.get("volume_ratio"),
+            })
+        return {"success": True, "data": result, "message": "ok"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取涨幅榜失败: {str(e)}",
+        )

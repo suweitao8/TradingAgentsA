@@ -753,8 +753,8 @@ function resetPageState() {
 onMounted(async () => {
   // 首次加载：打通后端（并行）
   await loadPageData()
-  // 每30秒刷新一次报价
-  timer = setInterval(fetchQuote, 30000)
+  // 每分钟刷新一次报价
+  timer = setInterval(fetchQuote, 60000)
 })
 onUnmounted(() => { if (timer) clearInterval(timer) })
 
@@ -778,7 +778,7 @@ watch(() => route.params.code, async (newCode, oldCode) => {
   resetPageState()
   await loadPageData()
   // 重建新股票的报价轮询定时器
-  timer = setInterval(fetchQuote, 30000)
+  timer = setInterval(fetchQuote, 60000)
 })
 
 // K线占位相关

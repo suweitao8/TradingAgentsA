@@ -11,15 +11,9 @@
             <el-icon><Refresh /></el-icon>
             刷新
           </el-button>
-          <!-- 只有有A股自选股时才显示同步实时行情按钮 -->
-          <el-button
-            v-if="hasAStocks"
-            type="success"
-            @click="syncAllRealtime"
-            :loading="syncRealtimeLoading"
-          >
-            <el-icon><Refresh /></el-icon>
-            同步实时行情
+          <el-button type="warning" @click="loadTopGainers" :loading="topGainersLoading">
+            <el-icon><TrendCharts /></el-icon>
+            热门股票
           </el-button>
           <el-button type="success" @click="showBatchImportDialog">
             <el-icon><Upload /></el-icon>
@@ -141,11 +135,6 @@
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item @click="editFavorite(contextMenuRow)">编辑</el-dropdown-item>
-            <!-- 只有A股显示同步 -->
-            <el-dropdown-item
-              v-if="contextMenuRow?.market === 'A股'"
-              @click="showSingleSyncDialog(contextMenuRow)"
-            >同步</el-dropdown-item>
             <el-dropdown-item @click="analyzeFavorite(contextMenuRow)">分析</el-dropdown-item>
             <el-dropdown-item @click="openReportDrawer(contextMenuRow)">今日报告</el-dropdown-item>
             <el-dropdown-item @click="removeFavorite(contextMenuRow)" divided>移除</el-dropdown-item>
@@ -193,45 +182,51 @@
       </template>
     </el-dialog>
 
-    <!-- 单个股票同步对话框 -->
+    <!-- 热门股票（涨幅榜）对话框 -->
     <el-dialog
-      v-model="singleSyncDialogVisible"
-      title="同步股票数据"
-      width="500px"
+      v-model="topGainersDialogVisible"
+      title="热门股票 · 涨幅榜 Top 20"
+      width="720px"
+      :close-on-click-modal="false"
     >
-      <el-form :model="singleSyncForm" label-width="120px">
-        <el-form-item label="股票代码">
-          <el-input v-model="currentSyncStock.stock_code" disabled />
-        </el-form-item>
-        <el-form-item label="股票名称">
-          <el-input v-model="currentSyncStock.stock_name" disabled />
-        </el-form-item>
-        <el-form-item label="同步内容">
-          <el-checkbox-group v-model="singleSyncForm.syncTypes">
-            <el-checkbox label="realtime">实时行情</el-checkbox>
-            <el-checkbox label="historical">历史行情数据</el-checkbox>
-            <el-checkbox label="financial">财务数据</el-checkbox>
-            <el-checkbox label="basic">基础数据</el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>
-        <el-form-item label="数据源">
-          <el-radio-group v-model="singleSyncForm.dataSource">
-            <el-radio label="tushare">Tushare</el-radio>
-            <el-radio label="akshare">AKShare</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="历史数据天数" v-if="singleSyncForm.syncTypes.includes('historical')">
-          <el-input-number v-model="singleSyncForm.days" :min="1" :max="3650" />
-          <span style="margin-left: 10px; color: var(--glass-text-tertiary); font-size: 12px;">
-            (最多3650天，约10年)
+      <div v-if="topGainersLoading" v-loading="true" style="min-height: 200px"></div>
+      <div v-else>
+        <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+          <el-checkbox v-model="topGainersSelectAll" :indeterminate="topGainersIndeterminate" @change="onSelectAllGainers">
+            全选
+          </el-checkbox>
+          <span style="color: var(--glass-text-tertiary); font-size: 12px;">
+            已选 {{ topGainersSelected.length }} 只，数据来自实时行情
           </span>
-        </el-form-item>
-      </el-form>
-
+        </div>
+        <el-table :data="topGainersList" max-height="400" size="small" @selection-change="onGainersSelectionChange">
+          <el-table-column type="selection" width="40" :selectable="(row: any) => !isAlreadyFavorite(row.stock_code)" />
+          <el-table-column label="代码" prop="stock_code" width="80" />
+          <el-table-column label="名称" prop="stock_name" min-width="100" />
+          <el-table-column label="最新价" width="80">
+            <template #default="{ row }">{{ row.current_price != null ? row.current_price.toFixed(2) : '-' }}</template>
+          </el-table-column>
+          <el-table-column label="涨跌幅" width="80">
+            <template #default="{ row }">
+              <span :style="{ color: (row.change_percent || 0) > 0 ? 'var(--el-color-danger)' : 'var(--el-color-success)' }">
+                {{ row.change_percent != null ? (row.change_percent > 0 ? '+' : '') + row.change_percent.toFixed(2) + '%' : '-' }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column label="换手率" width="80">
+            <template #default="{ row }">{{ row.turnover_rate != null ? row.turnover_rate.toFixed(2) + '%' : '-' }}</template>
+          </el-table-column>
+          <el-table-column label="状态" width="70">
+            <template #default="{ row }">
+              <el-tag v-if="isAlreadyFavorite(row.stock_code)" type="info" size="small">已加</el-tag>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
       <template #footer>
-        <el-button @click="singleSyncDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSingleSync" :loading="singleSyncLoading">
-          开始同步
+        <el-button @click="topGainersDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="addSelectedGainers" :loading="addingGainers" :disabled="topGainersSelected.length === 0">
+          加入自选（{{ topGainersSelected.length }}）
         </el-button>
       </template>
     </el-dialog>
@@ -317,10 +312,11 @@ import {
   Search,
   Refresh,
   Upload,
-  Document
+  Document,
+  TrendCharts
 } from '@element-plus/icons-vue'
-import { favoritesApi, favoriteReportsApi } from '@/api/favorites'
-import { stockSyncApi } from '@/api/stockSync'
+import { favoritesApi, favoriteReportsApi, topGainersApi } from '@/api/favorites'
+import type { TopGainer } from '@/api/favorites'
 import { normalizeMarketForAnalysis } from '@/utils/market'
 import StockReportDrawer from './components/StockReportDrawer.vue'
 
@@ -433,18 +429,74 @@ const handleRowContextMenu = (row: FavoriteItem, _column: any, event: MouseEvent
   contextMenuVisible.value = true
 }
 
-// 单个股票同步对话框
-const singleSyncDialogVisible = ref(false)
-const singleSyncLoading = ref(false)
-const currentSyncStock = ref({
-  stock_code: '',
-  stock_name: ''
+// ==================== 热门股票（涨幅榜）====================
+const topGainersDialogVisible = ref(false)
+const topGainersLoading = ref(false)
+const topGainersList = ref<TopGainer[]>([])
+const topGainersSelected = ref<TopGainer[]>([])
+const addingGainers = ref(false)
+
+const topGainersSelectAll = computed({
+  get: () => {
+    const selectable = topGainersList.value.filter(e => !isAlreadyFavorite(e.stock_code))
+    return selectable.length > 0 && selectable.every(e => topGainersSelected.value.some(s => s.stock_code === e.stock_code))
+  },
+  set: () => {},
 })
-const singleSyncForm = ref({
-  syncTypes: ['realtime'],  // 默认只选中实时行情（最常用）
-  dataSource: 'tushare' as 'tushare' | 'akshare',
-  days: 365
+const topGainersIndeterminate = computed(() => {
+  const selectable = topGainersList.value.filter(e => !isAlreadyFavorite(e.stock_code))
+  const selCount = topGainersSelected.value.filter(s => !isAlreadyFavorite(s.stock_code)).length
+  return selCount > 0 && selCount < selectable.length
 })
+
+const isAlreadyFavorite = (code: string) => favorites.value.some(f => f.stock_code === code)
+
+const loadTopGainers = async () => {
+  topGainersDialogVisible.value = true
+  topGainersLoading.value = true
+  topGainersSelected.value = []
+  try {
+    const res = await topGainersApi.list(20)
+    topGainersList.value = ((res as any)?.data || []) as TopGainer[]
+  } catch (e: any) {
+    ElMessage.error(e?.message || '加载热门股票失败')
+    topGainersList.value = []
+  } finally {
+    topGainersLoading.value = false
+  }
+}
+
+const onSelectAllGainers = (val: any) => {
+  if (val) {
+    topGainersSelected.value = topGainersList.value.filter(e => !isAlreadyFavorite(e.stock_code))
+  } else {
+    topGainersSelected.value = []
+  }
+}
+const onGainersSelectionChange = (sel: TopGainer[]) => { topGainersSelected.value = sel }
+
+const addSelectedGainers = async () => {
+  if (topGainersSelected.value.length === 0) return
+  addingGainers.value = true
+  let ok = 0
+  let fail = 0
+  for (const g of topGainersSelected.value) {
+    try {
+      await favoritesApi.add({ symbol: g.stock_code, stock_name: g.stock_name, market: 'A股' })
+      ok++
+    } catch {
+      fail++
+    }
+  }
+  addingGainers.value = false
+  if (ok > 0) {
+    ElMessage.success(`成功加入 ${ok} 只自选${fail > 0 ? `，${fail} 只失败` : ''}`)
+    topGainersDialogVisible.value = false
+    await loadFavorites()
+  } else {
+    ElMessage.error('加入失败，可能已存在')
+  }
+}
 
 // 批量导入对话框
 const batchImportDialogVisible = ref(false)
@@ -494,19 +546,14 @@ const filteredFavorites = computed<FavoriteItem[]>(() => {
   })
 })
 
-// 判断是否有A股自选股
-const hasAStocks = computed(() => {
-  return favorites.value.some(item => item.market === 'A股')
-})
-
 // 方法
 const loadFavorites = async () => {
   loading.value = true
   try {
     const res = await favoritesApi.list()
     favorites.value = ((res as any)?.data || []) as FavoriteItem[]
-    // 先渲染已有数据，后台轮询补齐缺失的行情字段（换手率/量比等）
-    startQuotesPolling()
+    // 启动每分钟自动刷新（行情入库是6分钟一次，60秒刷新足够看到更新）
+    startAutoRefresh()
   } catch (error: any) {
     console.error('加载自选股失败:', error)
     showError(error.message || '加载自选股失败')
@@ -515,88 +562,27 @@ const loadFavorites = async () => {
   }
 }
 
-// 行情轮询：后台补齐 market_quotes 后，前端拿新值局部更新（不重新加载整个列表）
-let quotesPollTimer: ReturnType<typeof setTimeout> | null = null
-const QUOTES_POLL_INTERVAL = 10000  // 10秒一次
-const QUOTES_POLL_MAX_TIMES = 6     // 最多轮询6次（1分钟），避免无限轮询
+// 每分钟自动刷新整表（静默，不显示 loading、不弹提示）
+let autoRefreshTimer: ReturnType<typeof setInterval> | null = null
+const AUTO_REFRESH_INTERVAL = 60000  // 60秒
 
-const startQuotesPolling = () => {
-  stopQuotesPolling()
-  let times = 0
-  const poll = async () => {
-    times++
+const startAutoRefresh = () => {
+  stopAutoRefresh()
+  autoRefreshTimer = setInterval(async () => {
     try {
-      const res = await favoritesApi.listQuotes()
-      const quotes = ((res as any)?.data || []) as Array<{
-        stock_code: string
-        current_price: number | null
-        change_percent: number | null
-        turnover_rate: number | null
-        volume_ratio: number | null
-      }>
-      if (quotes.length === 0) return
-      // 构建查找映射
-      const qMap = new Map(quotes.map(q => [q.stock_code, q]))
-      let updated = false
-      for (const fav of favorites.value) {
-        const code = fav.stock_code
-        if (!code) continue
-        const q = qMap.get(code)
-        if (!q) continue
-        // 只在值从空变有值时更新（避免覆盖已有数据造成闪烁）
-        if (fav.current_price == null && q.current_price != null) { fav.current_price = q.current_price; updated = true }
-        if (fav.change_percent == null && q.change_percent != null) { fav.change_percent = q.change_percent; updated = true }
-        if (fav.turnover_rate == null && q.turnover_rate != null) { fav.turnover_rate = q.turnover_rate; updated = true }
-        if (fav.volume_ratio == null && q.volume_ratio != null) { fav.volume_ratio = q.volume_ratio; updated = true }
-      }
-      // 若一轮下来没有任何字段被补齐，说明数据已完整，停止轮询
-      const stillMissing = favorites.value.some(f =>
-        (f.current_price == null || f.turnover_rate == null || f.volume_ratio == null)
-      )
-      if (!stillMissing || times >= QUOTES_POLL_MAX_TIMES) {
-        stopQuotesPolling()
-        return
-      }
+      const res = await favoritesApi.list()
+      const newList = ((res as any)?.data || []) as FavoriteItem[]
+      favorites.value = newList
     } catch (e) {
-      // 轮询失败静默忽略
+      // 静默忽略刷新失败
     }
-    quotesPollTimer = setTimeout(poll, QUOTES_POLL_INTERVAL)
-  }
-  quotesPollTimer = setTimeout(poll, QUOTES_POLL_INTERVAL)
+  }, AUTO_REFRESH_INTERVAL)
 }
 
-const stopQuotesPolling = () => {
-  if (quotesPollTimer) {
-    clearTimeout(quotesPollTimer)
-    quotesPollTimer = null
-  }
-}
-
-// 同步实时行情
-const syncRealtimeLoading = ref(false)
-const syncAllRealtime = async () => {
-  if (favorites.value.length === 0) {
-    ElMessage.warning('没有自选股需要同步')
-    return
-  }
-
-  syncRealtimeLoading.value = true
-  try {
-    const res = await favoritesApi.syncRealtime('tushare')
-    const data = (res as any)?.data
-
-    if ((res as any)?.success) {
-      ElMessage.success(data?.message || `同步完成: 成功 ${data?.success_count} 只`)
-      // 重新加载自选股列表以获取最新价格
-      await loadFavorites()
-    } else {
-      showError((res as any)?.message || '同步失败')
-    }
-  } catch (error: any) {
-    console.error('同步实时行情失败:', error)
-    showError(error.message || '同步失败，请稍后重试')
-  } finally {
-    syncRealtimeLoading.value = false
+const stopAutoRefresh = () => {
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer)
+    autoRefreshTimer = null
   }
 }
 
@@ -764,85 +750,6 @@ const viewStockDetail = (row: any) => {
   })
 }
 
-// 显示单个股票同步对话框
-const showSingleSyncDialog = (row: FavoriteItem) => {
-  currentSyncStock.value = {
-    stock_code: row.stock_code || '',
-    stock_name: row.stock_name || ''
-  }
-  singleSyncDialogVisible.value = true
-}
-
-// 执行单个股票同步
-const handleSingleSync = async () => {
-  if (singleSyncForm.value.syncTypes.length === 0) {
-    ElMessage.warning('请至少选择一种同步内容')
-    return
-  }
-
-  singleSyncLoading.value = true
-  try {
-    const res = await stockSyncApi.syncSingle({
-      symbol: currentSyncStock.value.stock_code,
-      sync_realtime: singleSyncForm.value.syncTypes.includes('realtime'),
-      sync_historical: singleSyncForm.value.syncTypes.includes('historical'),
-      sync_financial: singleSyncForm.value.syncTypes.includes('financial'),
-      data_source: singleSyncForm.value.dataSource,
-      days: singleSyncForm.value.days
-    })
-
-    if (res.success) {
-      const data = res.data
-      let message = `股票 ${currentSyncStock.value.stock_code} 数据同步完成\n`
-
-      if (data.realtime_sync) {
-        if (data.realtime_sync.success) {
-          message += `✅ 实时行情同步成功\n`
-        } else {
-          message += `❌ 实时行情同步失败: ${data.realtime_sync.error || '未知错误'}\n`
-        }
-      }
-
-      if (data.historical_sync) {
-        if (data.historical_sync.success) {
-          message += `✅ 历史数据: ${data.historical_sync.records || 0} 条记录\n`
-        } else {
-          message += `❌ 历史数据同步失败: ${data.historical_sync.error || '未知错误'}\n`
-        }
-      }
-
-      if (data.financial_sync) {
-        if (data.financial_sync.success) {
-          message += `✅ 财务数据同步成功\n`
-        } else {
-          message += `❌ 财务数据同步失败: ${data.financial_sync.error || '未知错误'}\n`
-        }
-      }
-
-      if (data.basic_sync) {
-        if (data.basic_sync.success) {
-          message += `✅ 基础数据同步成功\n`
-        } else {
-          message += `❌ 基础数据同步失败: ${data.basic_sync.error || '未知错误'}\n`
-        }
-      }
-
-      ElMessage.success(message)
-      singleSyncDialogVisible.value = false
-
-      // 刷新列表
-      await loadFavorites()
-    } else {
-      showError(res.message || '同步失败')
-    }
-  } catch (error: any) {
-    console.error('同步失败:', error)
-    showError(error.message || '同步失败，请稍后重试')
-  } finally {
-    singleSyncLoading.value = false
-  }
-}
-
 const getChangeClass = (changePercent: number) => {
   if (changePercent > 0) return 'text-red'
   if (changePercent < 0) return 'text-green'
@@ -867,7 +774,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  stopQuotesPolling()
+  stopAutoRefresh()
 })
 </script>
 
