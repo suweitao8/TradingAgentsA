@@ -7,7 +7,9 @@
     <main class="main-content">
       <div class="content-wrapper">
         <router-view v-slot="{ Component, route }">
-          <component :is="Component" :key="route.path" />
+          <transition :name="(route.meta.transition as string) || 'fade'" mode="out-in">
+            <component :is="Component" :key="route.path" />
+          </transition>
         </router-view>
       </div>
     </main>

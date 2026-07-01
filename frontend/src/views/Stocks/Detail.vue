@@ -28,9 +28,16 @@
     <el-card class="quote-card" shadow="hover">
       <div class="quote">
         <div class="price-row">
-          <div class="price" :class="changeClass">{{ fmtPrice(quote.price) }}</div>
+          <div class="price" :class="changeClass">
+            <AnimatedNumber :value="quote.price" :decimals="2" />
+          </div>
           <div class="change" :class="changeClass">
-            <span>{{ fmtPercent(quote.changePercent) }}</span>
+            <AnimatedNumber
+              :value="quote.changePercent"
+              :decimals="2"
+              :prefix="quote.changePercent > 0 ? '+' : ''"
+              suffix="%"
+            />
           </div>
           <el-tag type="info" size="small">{{ refreshText }}</el-tag>
           <el-button text size="small" @click="refreshMockQuote" :icon="Refresh">刷新</el-button>
@@ -349,6 +356,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { TrendCharts, Star, Refresh, Link, Document, Clock, Reading, Delete } from '@element-plus/icons-vue'
 import { marked } from 'marked'
+import AnimatedNumber from '@/components/AnimatedNumber.vue'
 import { stocksApi } from '@/api/stocks'
 import { analysisApi } from '@/api/analysis'
 import { ApiClient } from '@/api/request'
