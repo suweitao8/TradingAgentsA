@@ -164,7 +164,7 @@
     </el-dialog>
 
     <!-- 热门 ETF 预览对话框 -->
-    <el-dialog v-model="popularDialogVisible" title="热门 ETF（按成交额排名）" width="780px" top="6vh">
+    <el-dialog v-model="popularDialogVisible" title="热门板块 ETF（按涨幅排名）" width="780px" top="6vh">
       <div v-loading="popularLoading" style="min-height: 200px">
         <div class="popular-toolbar">
           <el-checkbox v-model="popularSelectAll" :indeterminate="popularIndeterminate" @change="onSelectAll">
