@@ -304,7 +304,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import {
@@ -499,11 +499,70 @@ const loadFavorites = async () => {
   try {
     const res = await favoritesApi.list()
     favorites.value = ((res as any)?.data || []) as FavoriteItem[]
+    // 先渲染已有数据，后台轮询补齐缺失的行情字段（换手率/量比等）
+    startQuotesPolling()
   } catch (error: any) {
     console.error('加载自选股失败:', error)
     showError(error.message || '加载自选股失败')
   } finally {
     loading.value = false
+  }
+}
+
+// 行情轮询：后台补齐 market_quotes 后，前端拿新值局部更新（不重新加载整个列表）
+let quotesPollTimer: ReturnType<typeof setTimeout> | null = null
+const QUOTES_POLL_INTERVAL = 10000  // 10秒一次
+const QUOTES_POLL_MAX_TIMES = 6     // 最多轮询6次（1分钟），避免无限轮询
+
+const startQuotesPolling = () => {
+  stopQuotesPolling()
+  let times = 0
+  const poll = async () => {
+    times++
+    try {
+      const res = await favoritesApi.listQuotes()
+      const quotes = ((res as any)?.data || []) as Array<{
+        stock_code: string
+        current_price: number | null
+        change_percent: number | null
+        turnover_rate: number | null
+        volume_ratio: number | null
+      }>
+      if (quotes.length === 0) return
+      // 构建查找映射
+      const qMap = new Map(quotes.map(q => [q.stock_code, q]))
+      let updated = false
+      for (const fav of favorites.value) {
+        const code = fav.stock_code
+        if (!code) continue
+        const q = qMap.get(code)
+        if (!q) continue
+        // 只在值从空变有值时更新（避免覆盖已有数据造成闪烁）
+        if (fav.current_price == null && q.current_price != null) { fav.current_price = q.current_price; updated = true }
+        if (fav.change_percent == null && q.change_percent != null) { fav.change_percent = q.change_percent; updated = true }
+        if (fav.turnover_rate == null && q.turnover_rate != null) { fav.turnover_rate = q.turnover_rate; updated = true }
+        if (fav.volume_ratio == null && q.volume_ratio != null) { fav.volume_ratio = q.volume_ratio; updated = true }
+      }
+      // 若一轮下来没有任何字段被补齐，说明数据已完整，停止轮询
+      const stillMissing = favorites.value.some(f =>
+        (f.current_price == null || f.turnover_rate == null || f.volume_ratio == null)
+      )
+      if (!stillMissing || times >= QUOTES_POLL_MAX_TIMES) {
+        stopQuotesPolling()
+        return
+      }
+    } catch (e) {
+      // 轮询失败静默忽略
+    }
+    quotesPollTimer = setTimeout(poll, QUOTES_POLL_INTERVAL)
+  }
+  quotesPollTimer = setTimeout(poll, QUOTES_POLL_INTERVAL)
+}
+
+const stopQuotesPolling = () => {
+  if (quotesPollTimer) {
+    clearTimeout(quotesPollTimer)
+    quotesPollTimer = null
   }
 }
 
@@ -799,6 +858,10 @@ const formatPercent = (value: any): string => {
 // 生命周期
 onMounted(() => {
   loadFavorites().then(() => loadReportBadges())
+})
+
+onBeforeUnmount(() => {
+  stopQuotesPolling()
 })
 </script>
 

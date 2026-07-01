@@ -412,6 +412,50 @@ class QuotesIngestionService:
             f"✅ 行情入库完成 source={source}, matched={result.matched_count}, upserted={len(result.upserted_ids) if result.upserted_ids else 0}, modified={result.modified_count}"
         )
 
+    async def _backfill_turnover_and_volume_ratio(self) -> None:
+        """补齐换手率/量比字段。
+
+        Tushare rt_k 接口不返回 turnover_rate/volume_ratio（那是 daily_basic 的字段），
+        导致 market_quotes 里这两个字段大面积为空。这里用东方财富延迟快照补齐。
+        QuotesService 有 30 秒缓存，避免重复拉全市场。
+        """
+        try:
+            from app.services.quotes_service import get_quotes_service
+            # 查出缺换手率/量比的代码（限制数量，避免一次性补太多）
+            db = get_mongo_db()
+            cursor = db[self.collection_name].find(
+                {"$or": [
+                    {"turnover_rate": None},
+                    {"turnover_rate": {"$exists": False}},
+                    {"volume_ratio": None},
+                    {"volume_ratio": {"$exists": False}},
+                ]},
+                {"code": 1, "_id": 0},
+            ).limit(200)
+            codes = [str(doc["code"]).zfill(6) async for doc in cursor if doc.get("code")]
+            if not codes:
+                return
+            logger.info(f"📈 开始补齐 {len(codes)} 只股票的换手率/量比")
+            quotes = await get_quotes_service().get_quotes(codes)
+            if not quotes:
+                return
+            ops = []
+            for code, q in quotes.items():
+                if not q:
+                    continue
+                set_fields = {}
+                if q.get("turnover_rate") is not None:
+                    set_fields["turnover_rate"] = q.get("turnover_rate")
+                if q.get("volume_ratio") is not None:
+                    set_fields["volume_ratio"] = q.get("volume_ratio")
+                if set_fields:
+                    ops.append(UpdateOne({"code": code}, {"$set": set_fields}))
+            if ops:
+                res = await db[self.collection_name].bulk_write(ops, ordered=False)
+                logger.info(f"📈 换手率/量比补齐完成: {res.modified_count} 只更新")
+        except Exception as e:
+            logger.warning(f"⚠️ 换手率/量比补齐失败: {e}")
+
     async def backfill_from_historical_data(self) -> None:
         """
         从历史数据集合导入前一天的收盘数据到 market_quotes
@@ -655,6 +699,10 @@ class QuotesIngestionService:
 
             # 入库
             await self._bulk_upsert(quotes_map, trade_date, source_name)
+
+            # 补齐换手率/量比：Tushare rt_k 不返回这两个字段，用东方财富延迟快照补齐
+            # QuotesService 有 30 秒缓存，与入库任务的 6 分钟间隔配合，每轮只触发一次全市场拉取
+            await self._backfill_turnover_and_volume_ratio()
 
             # 记录成功状态
             await self._record_sync_status(

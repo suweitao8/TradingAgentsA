@@ -85,6 +85,12 @@ export const favoritesApi = {
    */
   searchStock: (keyword: string) =>
     ApiClient.get<any>('/api/stock-data/search', { keyword, limit: 1 }),
+
+  /**
+   * 轻量查询：只返回自选股的实时行情字段（供轮询刷新，毫秒级）
+   */
+  listQuotes: () =>
+    ApiClient.get<Array<{ stock_code: string; current_price: number | null; change_percent: number | null; turnover_rate: number | null; volume_ratio: number | null }>>('/api/favorites/quotes'),
 }
 
 // ==================== 自选股分析报告 ====================

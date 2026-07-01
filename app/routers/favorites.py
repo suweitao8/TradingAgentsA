@@ -69,6 +69,21 @@ async def get_favorites(
         )
 
 
+@router.get("/quotes", response_model=dict)
+async def get_favorites_quotes(
+    current_user: dict = Depends(get_current_user)
+):
+    """轻量查询：只返回自选股的实时行情字段（供前端轮询刷新，毫秒级）"""
+    try:
+        quotes = await favorites_service.get_user_quotes(current_user["id"])
+        return ok(quotes)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取行情失败: {str(e)}"
+        )
+
+
 @router.post("/", response_model=dict)
 async def add_favorite(
     request: AddFavoriteRequest,
