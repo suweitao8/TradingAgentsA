@@ -59,6 +59,18 @@
   --glass-blur-lg: 12px;
   --glass-blur-nav: 12px;
 
+  // —— 间距令牌（统一全站 padding/margin/gap）——
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --gap-page: 16px;     // 页面卡片间距
+  --pad-page: 20px;     // 页面容器 padding
+  --pad-card: 16px;     // 卡片内 padding
+
   // —— 圆角（收敛，专业紧凑）——
   --glass-radius-sm: 6px;
   --glass-radius-md: 10px;

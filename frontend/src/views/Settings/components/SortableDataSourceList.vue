@@ -356,7 +356,7 @@ onUnmounted(() => {
           display: flex;
           gap: 16px;
           font-size: 12px;
-          color: #909399;
+          color: var(--glass-text-tertiary);
 
           .datasource-type {
             font-weight: 500;

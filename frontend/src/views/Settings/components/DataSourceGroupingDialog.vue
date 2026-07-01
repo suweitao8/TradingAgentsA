@@ -314,7 +314,7 @@ onMounted(() => {
         gap: 8px;
 
         .category-desc {
-          color: #909399;
+          color: var(--glass-text-tertiary);
           font-size: 12px;
         }
       }
@@ -343,7 +343,7 @@ onMounted(() => {
         gap: 8px;
 
         .priority-info {
-          color: #909399;
+          color: var(--glass-text-tertiary);
           font-size: 12px;
         }
       }

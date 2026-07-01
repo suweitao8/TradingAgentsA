@@ -39,7 +39,7 @@
                   >
                     ⚡快速
                   </el-tag>
-                  <span style="font-size: 12px; color: #909399;">{{ model.provider }}</span>
+                  <span style="font-size: 12px; color: var(--glass-text-tertiary);">{{ model.provider }}</span>
                 </div>
               </div>
             </el-option>
@@ -81,7 +81,7 @@
                   >
                     🧠深度
                   </el-tag>
-                  <span style="font-size: 12px; color: #909399;">{{ model.provider }}</span>
+                  <span style="font-size: 12px; color: var(--glass-text-tertiary);">{{ model.provider }}</span>
                 </div>
               </div>
             </el-option>

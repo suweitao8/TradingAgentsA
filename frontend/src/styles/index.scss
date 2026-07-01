@@ -60,12 +60,17 @@ h6 { font-size: 14px; }
     border-bottom: 1px solid var(--glass-stroke-base);
     color: var(--glass-text-primary);
     font-weight: 600;
+    padding: var(--space-lg) var(--pad-card);
 
     h1, h2, h3, h4, h5, h6 {
       color: var(--glass-text-primary);
       font-weight: 600;
       margin: 0;
     }
+  }
+
+  .el-card__body {
+    padding: var(--pad-card);
   }
 }
 
@@ -136,7 +141,7 @@ h6 { font-size: 14px; }
   box-shadow: var(--glass-shadow-md);
 }
 
-// 表格（深色适配）
+// 表格（深色适配 + 紧凑密度）
 .el-table {
   background: transparent;
   --el-table-bg-color: transparent;
@@ -145,11 +150,18 @@ h6 { font-size: 14px; }
   --el-table-border-color: var(--glass-stroke-base);
   --el-table-text-color: var(--glass-text-primary);
   --el-table-header-text-color: var(--glass-text-secondary);
+  // 紧凑密度：收紧 cell padding（默认 12px 8px → 10px 6px）
+  --el-table-cell-padding: 6px 10px;
 
   th.el-table__cell {
     background-color: var(--glass-bg-surface-hover) !important;
     color: var(--glass-text-secondary);
     font-weight: 600;
+    font-size: 13px;
+  }
+
+  td.el-table__cell {
+    padding: 6px 0;  // 进一步收紧行高
   }
 
   // 行 hover

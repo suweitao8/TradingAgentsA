@@ -478,9 +478,9 @@ onMounted(async () => {
   .welcome-section {
     background: var(--glass-brand-gradient);
     border-radius: var(--glass-radius-lg);
-    padding: 40px;
+    padding: var(--space-2xl) var(--space-3xl);
     color: white;
-    margin-bottom: 24px;
+    margin-bottom: var(--gap-page);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -593,7 +593,8 @@ onMounted(async () => {
   .quick-actions-card {
     .quick-actions {
       display: grid;
-      gap: 16px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-lg);
 
       .action-item {
         display: flex;

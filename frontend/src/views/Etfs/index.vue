@@ -1,5 +1,8 @@
 <template>
   <div class="etfs-page">
+    <!-- 股票/ETF 切换 Tab -->
+    <WatchlistTabs active="etfs" />
+
     <!-- 操作栏 -->
     <el-card class="action-card" shadow="never">
       <div class="action-bar">
@@ -37,7 +40,9 @@
 
         <el-table-column prop="fund_code" label="ETF代码" min-width="100">
           <template #default="{ row }">
-            <span class="fund-code">{{ row.fund_code }}</span>
+            <router-link :to="`/stocks/${row.fund_code}`" class="fund-code-link">
+              {{ row.fund_code }}
+            </router-link>
           </template>
         </el-table-column>
 
@@ -227,6 +232,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Refresh, Upload, StarFilled } from '@element-plus/icons-vue'
+import WatchlistTabs from '@/components/Layout/WatchlistTabs.vue'
 import { etfsApi, type EtfItem, type AddEtfReq, type PopularEtf } from '@/api/etfs'
 import { showError } from '@/utils/message'
 
@@ -502,10 +508,17 @@ onMounted(loadEtfs)
   min-height: 400px;
 }
 
-.fund-code {
+.fund-code-link {
   font-family: 'Courier New', monospace;
   font-weight: 600;
-  color: var(--el-color-primary);
+  color: var(--accent-cyan);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
 }
 
 .price-value {
