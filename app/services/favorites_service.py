@@ -2,6 +2,7 @@
 自选股服务
 """
 
+import logging
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from bson import ObjectId
@@ -9,6 +10,8 @@ from bson import ObjectId
 from app.core.database import get_mongo_db
 from app.models.common import FavoriteStock
 from app.services.quotes_service import get_quotes_service
+
+logger = logging.getLogger(__name__)
 
 
 class FavoritesService:
@@ -131,9 +134,9 @@ class FavoritesService:
                         it["change_percent"] = q.get("pct_chg")
                         it["turnover_rate"] = q.get("turnover_rate")
                         it["volume_ratio"] = q.get("volume_ratio")
-                # 兜底：当 market_quotes 缺价格、换手率或量比时，
-                # 调东方财富延迟快照补齐（该接口带换手率/量比，且 QuotesService 有30秒缓存）。
-                # 根因：入库任务（Tushare rt_k）不返回换手率/量比，market_quotes 里这两个字段大面积为空。
+                # 兜底：当 market_quotes 缺价格、换手率或量比时，后台异步补齐（不阻塞当前请求）。
+                # 根因：入库任务（Tushare rt_k）不返回换手率/量比，market_quotes 里这两个字段可能为空。
+                # 改为后台触发：先立即返回已有数据（前端先渲染），补齐后前端轮询刷新拿到新值。
                 missing_codes = [
                     it.get("stock_code") for it in items
                     if it.get("stock_code") and (
@@ -143,25 +146,8 @@ class FavoritesService:
                     )
                 ]
                 if missing_codes:
-                    try:
-                        quotes_online = await get_quotes_service().get_quotes(missing_codes)
-                        for it in items:
-                            code = it.get("stock_code")
-                            if code not in missing_codes:
-                                continue
-                            q2 = quotes_online.get(code, {}) if quotes_online else {}
-                            if not q2:
-                                continue
-                            if it.get("current_price") is None:
-                                it["current_price"] = q2.get("close")
-                            if it.get("change_percent") is None:
-                                it["change_percent"] = q2.get("pct_chg")
-                            if it.get("turnover_rate") is None and q2.get("turnover_rate") is not None:
-                                it["turnover_rate"] = q2.get("turnover_rate")
-                            if it.get("volume_ratio") is None and q2.get("volume_ratio") is not None:
-                                it["volume_ratio"] = q2.get("volume_ratio")
-                    except Exception:
-                        pass
+                    import asyncio
+                    asyncio.create_task(self._backfill_quotes_async(db, missing_codes))
             except Exception:
                 # 查询失败时保持占位 None，避免影响基础功能
                 pass
@@ -192,6 +178,67 @@ class FavoritesService:
                         it["industry"] = "-"
 
         return items
+
+    async def _backfill_quotes_async(self, db, codes: list) -> None:
+        """后台异步补齐：从东方财富延迟快照取行情，写入 market_quotes 集合。
+
+        - 不阻塞调用方（由 asyncio.create_task 触发）
+        - 写入 market_quotes 后，前端的轮询刷新接口自然能拿到新值
+        - QuotesService 有 30 秒缓存，多个并发请求只触发一次全市场拉取
+        """
+        try:
+            quotes_online = await get_quotes_service().get_quotes(codes)
+            if not quotes_online:
+                return
+            # 只回填有值的字段，避免覆盖已有的价格数据
+            from pymongo import UpdateOne
+            ops = []
+            for code, q in quotes_online.items():
+                if not q:
+                    continue
+                set_fields = {}
+                if q.get("close") is not None:
+                    set_fields["close"] = q.get("close")
+                if q.get("pct_chg") is not None:
+                    set_fields["pct_chg"] = q.get("pct_chg")
+                if q.get("turnover_rate") is not None:
+                    set_fields["turnover_rate"] = q.get("turnover_rate")
+                if q.get("volume_ratio") is not None:
+                    set_fields["volume_ratio"] = q.get("volume_ratio")
+                if set_fields:
+                    ops.append(UpdateOne({"code": code}, {"$set": set_fields}))
+            if ops:
+                await db["market_quotes"].bulk_write(ops, ordered=False)
+                logger.info(f"🔄 [后台补齐] 已回填 {len(ops)} 只股票的行情字段到 market_quotes")
+        except Exception as e:
+            logger.warning(f"⚠️ [后台补齐] 行情补齐失败: {e}")
+
+    async def get_user_quotes(self, user_id: str) -> List[Dict[str, Any]]:
+        """轻量查询：只返回用户自选股的行情字段（供前端轮询刷新用，毫秒级）。
+
+        比 get_user_favorites 快：跳过基础信息、行业识别等富集，只查 market_quotes。
+        """
+        db = await self._get_db()
+        doc = await db.user_favorites.find_one({"user_id": user_id}, {"favorites.stock_code": 1, "_id": 0})
+        favorites = (doc or {}).get("favorites", [])
+        codes = [str(f.get("stock_code")).zfill(6) for f in favorites if f.get("stock_code")]
+        if not codes:
+            return []
+        cursor = db["market_quotes"].find(
+            {"code": {"$in": codes}},
+            {"code": 1, "close": 1, "pct_chg": 1, "turnover_rate": 1, "volume_ratio": 1, "_id": 0},
+        )
+        docs = await cursor.to_list(length=None)
+        result = []
+        for d in (docs or []):
+            result.append({
+                "stock_code": str(d.get("code")).zfill(6),
+                "current_price": d.get("close"),
+                "change_percent": d.get("pct_chg"),
+                "turnover_rate": d.get("turnover_rate"),
+                "volume_ratio": d.get("volume_ratio"),
+            })
+        return result
 
     async def add_favorite(
         self,
