@@ -218,7 +218,7 @@ async def _get_llm() -> Tuple[Any, str]:
         llm = create_llm_by_provider(
             provider=info["provider"], model=model_name,
             backend_url=info.get("backend_url"), temperature=0.1,
-            max_tokens=2048, timeout=30, api_key=info.get("api_key"),
+            max_tokens=4096, timeout=120, api_key=info.get("api_key"),
         )
         return llm, f"{info['provider']}/{model_name}"
     except Exception as e:
