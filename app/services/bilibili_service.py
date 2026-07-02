@@ -1,23 +1,24 @@
 """
 B站 UP 主管理服务
 
-功能：
-- UP 主 CRUD（存 user_bili_upmasters 集合，按用户聚合）
-- 抓取 UP 主动态（B站 web-dynamic API + WBI 签名 + cookie）
-- LLM 提取动态里提到的股票及观点
+通过 RSSHub（自建 docker 容器）抓取 UP 主动态，规避 B站反爬/风控。
+RSSHub 用 Playwright 无头浏览器模拟真人访问，处理 buvid3/wbi/cookie/重试。
+
+依赖：
+- RSSHub 容器（docker-compose 里配置，http://rsshub:1200）
+- RSSHub 的 B站动态路由：/bilibili/user/dynamic/{mid}
 """
 
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import json
 import logging
 import os
 import re
-import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
+from xml.etree import ElementTree as ET
 
 import httpx
 
@@ -26,192 +27,98 @@ from app.utils.timezone import now_tz
 
 logger = logging.getLogger(__name__)
 
-_MIXIN_KEY_ENC_TAB = [
-    46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35,
-    27, 43, 5, 49, 33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13,
-    37, 36, 25, 24, 30, 48, 51, 40, 52, 4, 34, 7, 0, 55, 20, 17,
-    57, 21, 22, 6, 26, 54, 44, 1, 56, 11, 16, 61, 60, 59, 63, 62,
-]
-_NAV_API = "https://api.bilibili.com/x/web-interface/nav"
-_DYNAMIC_API = "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space"
-_DYNAMIC_DETAIL_API = "https://api.bilibili.com/x/polymer/web-dynamic/v1/detail"
-_USER_INFO_API = "https://api.bilibili.com/x/space/wbi/acc/info"
 
-_cached_mixin_key: Optional[str] = None
-_cached_mixin_key_expire: float = 0.0
+def _rsshub_base() -> str:
+    """RSSHub 地址（容器内通过服务名访问，本地开发用 localhost）"""
+    return os.getenv("RSSHUB_BASE_URL", "http://rsshub:1200")
+
+
+# 动态抓取内存缓存：{ mid: (timestamp, items) }，10 分钟内不重复拉
 _DYNAMIC_CACHE_TTL = 600
 _dynamic_cache: Dict[str, Tuple[float, List[dict]]] = {}
 
 
-def _get_cookie() -> str:
-    return os.getenv("BILI_COOKIE", "").strip()
-
-
-def _default_headers(cookie: str) -> Dict[str, str]:
-    return {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Referer": "https://www.bilibili.com",
-        "Accept": "application/json, text/plain, */*",
-        "Cookie": cookie,
-    }
-
-
-def _extract_key(url: str) -> str:
-    return url.split("/")[-1].split(".")[0]
-
-
-def _get_mixin_key(img_key: str, sub_key: str) -> str:
-    raw = img_key + sub_key
-    result = ""
-    for idx in _MIXIN_KEY_ENC_TAB:
-        if idx < len(raw):
-            result += raw[idx]
-        if len(result) >= 32:
-            break
-    return result
-
-
-def _sign_params(params: Dict[str, Any], mixin_key: str) -> Dict[str, Any]:
-    wts = int(time.time())
-    merged = {**params, "wts": wts}
-    query = "&".join(f"{k}={merged[k]}" for k in sorted(merged.keys()) if merged[k] != "")
-    w_rid = hashlib.md5((query + mixin_key).encode()).hexdigest()
-    return {**params, "wts": wts, "w_rid": w_rid}
-
-
-async def _fetch_mixin_key(cookie: str) -> str:
-    global _cached_mixin_key, _cached_mixin_key_expire
-    now = time.time()
-    if _cached_mixin_key and now < _cached_mixin_key_expire:
-        return _cached_mixin_key
-    async with httpx.AsyncClient(timeout=15) as client:
-        resp = await client.get(_NAV_API, headers=_default_headers(cookie))
-        data = resp.json()
-    wbi_img = (data.get("data") or {}).get("wbi_img") or {}
-    if not wbi_img.get("img_url") or not wbi_img.get("sub_url"):
-        raise RuntimeError(f"nav 接口未返回 wbi_img: code={data.get('code')}")
-    mk = _get_mixin_key(_extract_key(wbi_img["img_url"]), _extract_key(wbi_img["sub_url"]))
-    _cached_mixin_key = mk
-    _cached_mixin_key_expire = now + 50 * 60
-    return mk
-
-
 async def fetch_up_dynamics(mid: str, limit: int = 20) -> List[dict]:
-    """抓取某 UP 主的最新动态列表"""
+    """通过 RSSHub 抓取某 UP 主的最新动态
+
+    RSSHub 返回 RSS XML，解析出每条动态的标题/描述/时间/链接。
+    """
     cached = _dynamic_cache.get(mid)
-    if cached and (time.time() - cached[0]) < _DYNAMIC_CACHE_TTL:
+    if cached and (datetime.now().timestamp() - cached[0]) < _DYNAMIC_CACHE_TTL:
         return cached[1][:limit]
 
-    cookie = _get_cookie()
-    if not cookie:
-        raise RuntimeError("未配置 BILI_COOKIE 环境变量")
-
-    mixin_key = await _fetch_mixin_key(cookie)
-    signed = _sign_params({"host_mid": mid, "offset": "", "timezone_offset": -480}, mixin_key)
-    async with httpx.AsyncClient(timeout=20) as client:
-        resp = await client.get(_DYNAMIC_API, params=signed, headers=_default_headers(cookie))
-        data = resp.json()
-
-    if data.get("code") != 0:
-        raise RuntimeError(f"B站动态接口报错: code={data.get('code')}, msg={data.get('message')}")
-
-    raw_items = (data.get("data") or {}).get("items") or []
-    simplified = [s for s in (_simplify_dynamic(it) for it in raw_items) if s]
-
-    # 列表接口会对 desc 做裁剪（纯文字动态返回 desc=null），
-    # 对 desc 为空的动态逐条调详情接口补取正文（限并发避免风控）
-    need_detail = [s for s in simplified if not s.get("text")]
-    if need_detail:
-        sem = asyncio.Semaphore(3)
-
-        async def _fill(s):
-            dyn_id = s.get("id", "")
-            if not dyn_id:
-                return
-            try:
-                async with sem:
-                    full = await _fetch_dynamic_detail(dyn_id, cookie)
-                if full:
-                    s["text"] = full
-            except Exception as e:
-                logger.warning(f"[Bili] 补取动态正文失败 id={dyn_id}: {e}")
-
-        await asyncio.gather(*[_fill(s) for s in need_detail])
-
-    _dynamic_cache[mid] = (time.time(), simplified)
-    logger.info(f"[Bili] 抓取 mid={mid} 动态 {len(simplified)} 条")
-    return simplified[:limit]
-
-
-async def _fetch_dynamic_detail(dyn_id: str, cookie: str) -> str:
-    """调详情接口取动态正文（列表接口对 desc 裁剪，详情接口有完整内容）"""
-    async with httpx.AsyncClient(timeout=15) as client:
-        resp = await client.get(
-            _DYNAMIC_DETAIL_API,
-            params={"id": dyn_id},
-            headers=_default_headers(cookie),
-        )
-        data = resp.json()
-    if data.get("code") != 0:
-        return ""
-    item = (data.get("data") or {}).get("item") or {}
-    dyn = (item.get("modules") or {}).get("module_dynamic") or {}
-    desc = dyn.get("desc") or {}
-    # 优先 text 字段
-    if desc.get("text"):
-        return desc["text"]
-    # 兼容 rich_text_nodes（详情接口用这个字段名）
-    nodes = desc.get("rich_text_nodes") or desc.get("rich_text_node") or []
-    if nodes:
-        return "".join(n.get("text", "") for n in nodes if n.get("text"))
-    return ""
-
-
-def _simplify_dynamic(it: dict) -> Optional[dict]:
-    modules = it.get("modules", {}) or {}
-    author = modules.get("module_author", {}) or {}
-    dynamic = modules.get("module_dynamic", {}) or {}
-    dtype = it.get("type", "")
-    pub_ts_raw = author.get("pub_ts") or 0
+    url = f"{_rsshub_base()}/bilibili/user/dynamic/{mid}"
     try:
-        pub_ts = int(pub_ts_raw)
-    except (TypeError, ValueError):
-        pub_ts = 0
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+            xml_text = resp.text
+    except Exception as e:
+        raise RuntimeError(f"RSSHub 请求失败: {e}")
 
-    text = ""
-    desc = dynamic.get("desc") or {}
-    if desc.get("text"):
-        text = desc["text"]
-    else:
-        # 兼容 rich_text_nodes（详情接口）和 rich_text_node（列表接口旧字段名）
-        nodes = desc.get("rich_text_nodes") or desc.get("rich_text_node") or []
-        if nodes:
-            text = "".join(n.get("text", "") for n in nodes if n.get("text"))
+    items = _parse_rss(xml_text)
+    _dynamic_cache[mid] = (datetime.now().timestamp(), items)
+    logger.info(f"[Bili] 通过RSSHub抓取 mid={mid} 动态 {len(items)} 条")
+    return items[:limit]
 
-    title = ""
-    major = dynamic.get("major") or {}
-    video_bvid = ""
-    if major.get("archive"):
-        title = major["archive"].get("title", "")
-        video_bvid = major["archive"].get("bvid", "")
-    elif major.get("opus"):
-        title = (major["opus"].get("summary") or {}).get("text", "")
-    elif major.get("draw"):
-        pics = major["draw"].get("items") or []
-        title = f"[图文动态 x{len(pics)}张图]"
 
-    if not text and not title:
-        return None
+def _parse_rss(xml_text: str) -> List[dict]:
+    """解析 RSSHub 返回的 RSS XML，提取动态列表"""
+    items: List[dict] = []
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError as e:
+        logger.error(f"[Bili] RSS XML 解析失败: {e}")
+        return items
 
-    return {
-        "id": it.get("id_str", ""),
-        "type": dtype,
-        "pub_ts": pub_ts,
-        "pub_time": datetime.fromtimestamp(pub_ts).strftime("%Y-%m-%d %H:%M") if pub_ts else "",
-        "text": text,
-        "title": title,
-        "video_bvid": video_bvid,
-    }
+    channel = root.find("channel")
+    if channel is None:
+        return items
+
+    for idx, item in enumerate(channel.findall("item")):
+        title = (item.findtext("title") or "").strip()
+        desc_raw = (item.findtext("description") or "").strip()
+        pub_date = (item.findtext("pubDate") or "").strip()
+        link = (item.findtext("link") or "").strip()
+
+        # description 是 HTML，去掉标签得到纯文本
+        text = _strip_html(desc_raw) if desc_raw else title
+
+        pub_ts = _parse_pub_date(pub_date)
+        pub_time = datetime.fromtimestamp(pub_ts).strftime("%Y-%m-%d %H:%M") if pub_ts else pub_date
+
+        video_bvid = ""
+        bvid_match = re.search(r"(BV[a-zA-Z0-9]{10})", link)
+        if bvid_match:
+            video_bvid = bvid_match.group(1)
+
+        items.append({
+            "id": link or f"dyn_{idx}",
+            "type": "DYNAMIC_TYPE_AV" if video_bvid else "DYNAMIC_TYPE_WORD",
+            "pub_ts": pub_ts,
+            "pub_time": pub_time,
+            "text": text,
+            "title": title if title != text else "",
+            "video_bvid": video_bvid,
+        })
+    return items
+
+
+def _strip_html(html: str) -> str:
+    text = re.sub(r"<[^>]+>", "", html)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def _parse_pub_date(pub_date: str) -> int:
+    if not pub_date:
+        return 0
+    try:
+        from email.utils import parsedate_to_datetime
+        dt = parsedate_to_datetime(pub_date)
+        return int(dt.timestamp())
+    except Exception:
+        return 0
 
 
 async def extract_stocks_from_dynamics(dynamics: List[dict]) -> List[dict]:
@@ -311,7 +218,7 @@ async def _get_llm() -> Tuple[Any, str]:
         llm = create_llm_by_provider(
             provider=info["provider"], model=model_name,
             backend_url=info.get("backend_url"), temperature=0.1,
-            max_tokens=2048, timeout=30, api_key=info.get("api_key"),
+            max_tokens=4096, timeout=120, api_key=info.get("api_key"),
         )
         return llm, f"{info['provider']}/{model_name}"
     except Exception as e:
@@ -320,24 +227,21 @@ async def _get_llm() -> Tuple[Any, str]:
 
 
 async def fetch_up_info(mid: str) -> Optional[dict]:
-    cookie = _get_cookie()
-    if not cookie:
-        return None
+    """查询 UP 主基本信息（通过 RSSHub 用户名路由）"""
+    url = f"{_rsshub_base()}/bilibili/user/name/{mid}"
     try:
-        mixin_key = await _fetch_mixin_key(cookie)
-        signed = _sign_params({"mid": mid}, mixin_key)
         async with httpx.AsyncClient(timeout=15) as client:
-            resp = await client.get(_USER_INFO_API, params=signed, headers=_default_headers(cookie))
-            data = resp.json()
-        if data.get("code") != 0:
+            resp = await client.get(url)
+            if resp.status_code != 200:
+                return None
+            xml_text = resp.text
+        root = ET.fromstring(xml_text)
+        channel = root.find("channel")
+        if channel is None:
             return None
-        d = data.get("data") or {}
-        return {
-            "mid": str(mid),
-            "uname": d.get("name", ""),
-            "face": d.get("face", ""),
-            "sign": d.get("sign", ""),
-        }
+        uname = (channel.findtext("title") or "").strip()
+        desc = (channel.findtext("description") or "").strip()
+        return {"mid": str(mid), "uname": uname, "face": "", "sign": desc}
     except Exception as e:
         logger.warning(f"[Bili] 查询 UP 主信息失败 mid={mid}: {e}")
         return None
@@ -394,7 +298,7 @@ class BilibiliService:
             try:
                 async with sem:
                     dynamics = await fetch_up_dynamics(mid, limit=15)
-                    stocks = await extract_stocks_from_dynamics(dynamics)
+                stocks = await extract_stocks_from_dynamics(dynamics)
             except Exception as e:
                 error = str(e)
             return {**up, "dynamics": dynamics, "stocks": stocks, "fetch_error": error}

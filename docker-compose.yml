@@ -194,6 +194,21 @@ services:
     profiles:
       - management
 
+  # RSSHub - B站动态抓取（解决反爬/风控，Playwright无头浏览器模式）
+  rsshub:
+    image: diygod/rsshub:chromium-bundled
+    container_name: tradingagents-rsshub
+    restart: unless-stopped
+    ports:
+      - "1200:1200"
+    environment:
+      # B站cookie（按UP主UID配置，格式：BILIBILI_COOKIE_<UID>=完整cookie串）
+      # cookie 从 .env 的 BILI_COOKIE 读取
+      BILIBILI_COOKIE_3706942109256376: ${BILI_COOKIE:-}
+      TZ: "Asia/Shanghai"
+    networks:
+      - tradingagents-network
+
 # 数据卷定义
 volumes:
   mongodb_data:
