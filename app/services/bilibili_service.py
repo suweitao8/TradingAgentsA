@@ -34,6 +34,7 @@ _MIXIN_KEY_ENC_TAB = [
 ]
 _NAV_API = "https://api.bilibili.com/x/web-interface/nav"
 _DYNAMIC_API = "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space"
+_DYNAMIC_DETAIL_API = "https://api.bilibili.com/x/polymer/web-dynamic/v1/detail"
 _USER_INFO_API = "https://api.bilibili.com/x/space/wbi/acc/info"
 
 _cached_mixin_key: Optional[str] = None
@@ -116,9 +117,54 @@ async def fetch_up_dynamics(mid: str, limit: int = 20) -> List[dict]:
 
     raw_items = (data.get("data") or {}).get("items") or []
     simplified = [s for s in (_simplify_dynamic(it) for it in raw_items) if s]
+
+    # 列表接口会对 desc 做裁剪（纯文字动态返回 desc=null），
+    # 对 desc 为空的动态逐条调详情接口补取正文（限并发避免风控）
+    need_detail = [s for s in simplified if not s.get("text")]
+    if need_detail:
+        sem = asyncio.Semaphore(3)
+
+        async def _fill(s):
+            dyn_id = s.get("id", "")
+            if not dyn_id:
+                return
+            try:
+                async with sem:
+                    full = await _fetch_dynamic_detail(dyn_id, cookie)
+                if full:
+                    s["text"] = full
+            except Exception as e:
+                logger.warning(f"[Bili] 补取动态正文失败 id={dyn_id}: {e}")
+
+        await asyncio.gather(*[_fill(s) for s in need_detail])
+
     _dynamic_cache[mid] = (time.time(), simplified)
     logger.info(f"[Bili] 抓取 mid={mid} 动态 {len(simplified)} 条")
     return simplified[:limit]
+
+
+async def _fetch_dynamic_detail(dyn_id: str, cookie: str) -> str:
+    """调详情接口取动态正文（列表接口对 desc 裁剪，详情接口有完整内容）"""
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await client.get(
+            _DYNAMIC_DETAIL_API,
+            params={"id": dyn_id},
+            headers=_default_headers(cookie),
+        )
+        data = resp.json()
+    if data.get("code") != 0:
+        return ""
+    item = (data.get("data") or {}).get("item") or {}
+    dyn = (item.get("modules") or {}).get("module_dynamic") or {}
+    desc = dyn.get("desc") or {}
+    # 优先 text 字段
+    if desc.get("text"):
+        return desc["text"]
+    # 兼容 rich_text_nodes（详情接口用这个字段名）
+    nodes = desc.get("rich_text_nodes") or desc.get("rich_text_node") or []
+    if nodes:
+        return "".join(n.get("text", "") for n in nodes if n.get("text"))
+    return ""
 
 
 def _simplify_dynamic(it: dict) -> Optional[dict]:
@@ -137,7 +183,8 @@ def _simplify_dynamic(it: dict) -> Optional[dict]:
     if desc.get("text"):
         text = desc["text"]
     else:
-        nodes = desc.get("rich_text_node") or []
+        # 兼容 rich_text_nodes（详情接口）和 rich_text_node（列表接口旧字段名）
+        nodes = desc.get("rich_text_nodes") or desc.get("rich_text_node") or []
         if nodes:
             text = "".join(n.get("text", "") for n in nodes if n.get("text"))
 
