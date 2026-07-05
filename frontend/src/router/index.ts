@@ -138,6 +138,28 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/training',
+    name: 'Training',
+    component: () => import('@/layouts/BasicLayout.vue'),
+    meta: {
+      title: 'AI做T训练',
+      icon: 'DataAnalysis',
+      requiresAuth: true,
+      transition: 'fade'
+    },
+    children: [
+      {
+        path: '',
+        name: 'TrainingHome',
+        component: () => import('@/views/Training/index.vue'),
+        meta: {
+          title: 'AI做T训练',
+          requiresAuth: true
+        }
+      }
+    ]
+  },
+  {
     path: '/bilibili',
     name: 'Bilibili',
     component: () => import('@/layouts/BasicLayout.vue'),

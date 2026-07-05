@@ -16,6 +16,15 @@ from .stock_models import (
     CurrencyType,
     StockStatus
 )
+from .training import (
+    TrainingSessionCreate,
+    TrainingAction,
+    TrainingPosition,
+    TrainingSessionResponse,
+    TrainingReplayStep,
+    TrainingAdvice,
+    TrainingReport,
+)
 
 __all__ = [
     "StockBasicInfoExtended",
@@ -29,4 +38,12 @@ __all__ = [
     "ExchangeType",
     "CurrencyType",
     "StockStatus"
+    ,
+    "TrainingSessionCreate",
+    "TrainingAction",
+    "TrainingPosition",
+    "TrainingSessionResponse",
+    "TrainingReplayStep",
+    "TrainingAdvice",
+    "TrainingReport",
 ]

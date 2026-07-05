@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <nav class="top-nav">
     <div class="nav-inner">
       <!-- 左侧：版本号 -->
@@ -33,6 +33,7 @@
             <el-dropdown-item command="/etfs">ETF</el-dropdown-item>
             <el-dropdown-item command="/favorites">股票</el-dropdown-item>
             <el-dropdown-item command="/dashboard" divided>仪表板</el-dropdown-item>
+            <el-dropdown-item command="/training">做T训练</el-dropdown-item>
             <el-dropdown-item command="/analysis/single">单股分析</el-dropdown-item>
             <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
             <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
@@ -54,6 +55,7 @@
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item command="/dashboard">仪表板</el-dropdown-item>
+              <el-dropdown-item command="/training">做T训练</el-dropdown-item>
               <el-dropdown-item command="/analysis/single" divided>单股分析</el-dropdown-item>
               <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
               <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
@@ -126,6 +128,7 @@ import { storeToRefs } from 'pinia'
 import {
   Star,
   TrendCharts,
+  DataAnalysis,
   MoreFilled,
   Menu,
   Bell,
@@ -145,6 +148,7 @@ const { unreadCount, items } = storeToRefs(notifStore)
 // ETF 在前（左），自选股在后（右），中间用 CSS 竖线分隔
 const navLinks = [
   { path: '/etfs', label: 'ETF', icon: TrendCharts },
+  { path: '/training', label: '做T训练', icon: DataAnalysis },
   { path: '/favorites', label: '股票', icon: Star },
 ]
 
@@ -453,3 +457,5 @@ onUnmounted(() => {
   }
 }
 </style>
+
+
