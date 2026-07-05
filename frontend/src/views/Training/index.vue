@@ -2,22 +2,13 @@
   <div class="training-page">
     <section class="hero-card fade-in-up">
       <div class="hero-copy">
-        <div class="hero-badge">AI 做 T 训练</div>
-        <h1>基于真实历史行情的 A 股模拟做 T 训练</h1>
-        <p>
-          选择股票或 ETF，设定开始日期和本金，系统按时间顺序回放行情。
-          训练过程中不会展示未来数据，结束后自动对比主动交易和买入持有的收益。
-        </p>
+        <div class="hero-badge">模拟炒股</div>
       </div>
 
       <div class="hero-status">
         <div class="status-chip">
           <span class="status-label">会话</span>
           <span class="status-value">{{ session?.session_id || '未开始' }}</span>
-        </div>
-        <div class="status-chip">
-          <span class="status-label">进度</span>
-          <span class="status-value">{{ progressLabel }}</span>
         </div>
         <div class="status-chip">
           <span class="status-label">当前标的</span>
@@ -49,12 +40,8 @@
                 v-if="instrumentType === 'stock'"
                 v-model="selectedSymbol"
                 filterable
-                remote
-                reserve-keyword
                 clearable
-                placeholder="搜索股票代码或名称"
-                :remote-method="remoteSearchStocks"
-                :loading="stockSearchLoading"
+                placeholder="从自选股票中选择"
                 class="full-width"
               >
                 <el-option
@@ -70,9 +57,8 @@
                 v-model="selectedSymbol"
                 filterable
                 clearable
-                placeholder="选择 ETF"
+                placeholder="从自选 ETF 中选择"
                 class="full-width"
-                @visible-change="onEtfSelectVisible"
               >
                 <el-option
                   v-for="item in etfOptions"
@@ -83,13 +69,13 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="训练开始日期">
+            <el-form-item label="回放截止日">
               <el-date-picker
-                v-model="startDate"
+                v-model="trainingEndDate"
                 type="date"
                 value-format="YYYY-MM-DD"
                 format="YYYY-MM-DD"
-                placeholder="选择历史开始日期"
+                placeholder="选择回放截止日"
                 class="full-width"
               />
             </el-form-item>
@@ -137,6 +123,37 @@
           </el-form>
         </el-card>
 
+        <el-card v-if="archiveSessions.length" class="panel-card" shadow="never">
+          <template #header>
+            <div class="panel-header">
+              <span>训练存档</span>
+              <el-tag type="success" effect="light">{{ archiveSessions.length }} 个</el-tag>
+            </div>
+          </template>
+
+          <el-scrollbar max-height="320px">
+            <div
+              v-for="archive in archiveSessions"
+              :key="archive.session_id"
+              class="archive-item"
+            >
+              <div class="archive-main">
+                <strong>{{ archive.symbol_name || archive.symbol }}</strong>
+                <span>{{ archive.session_id }}</span>
+                <span>{{ archive.start_date }} → {{ archive.end_date || '进行中' }}</span>
+              </div>
+              <div class="archive-meta">
+                <span>步数 {{ archive.current_step }}/{{ archive.total_days }}</span>
+                <span>总资产 ¥{{ formatMoney(archive.total_equity) }}</span>
+                <span>{{ archive.status === 'finished' ? '已结束' : '进行中' }}</span>
+              </div>
+              <el-button size="small" type="primary" @click="resumeArchive(archive.session_id)">
+                继续
+              </el-button>
+            </div>
+          </el-scrollbar>
+        </el-card>
+
         <el-card v-if="session" class="panel-card" shadow="never">
           <template #header>
             <div class="panel-header">
@@ -149,8 +166,8 @@
 
           <div class="control-summary">
             <div class="summary-item">
-              <span>当前日期</span>
-              <strong>{{ step?.trade_date || session.start_date }}</strong>
+              <span>回溯起点</span>
+              <strong>{{ session.start_date }}</strong>
             </div>
             <div class="summary-item">
               <span>当前价格</span>
@@ -233,29 +250,37 @@
             </div>
           </template>
 
-          <el-table
-            v-if="step?.visible_bars?.length"
-            :data="step.visible_bars"
-            style="width: 100%"
-            height="360"
-          >
-            <el-table-column prop="trade_date" label="日期" width="120" />
-            <el-table-column prop="open" label="开盘" width="95">
-              <template #default="{ row }">{{ formatPrice(row.open) }}</template>
-            </el-table-column>
-            <el-table-column prop="high" label="最高" width="95">
-              <template #default="{ row }">{{ formatPrice(row.high) }}</template>
-            </el-table-column>
-            <el-table-column prop="low" label="最低" width="95">
-              <template #default="{ row }">{{ formatPrice(row.low) }}</template>
-            </el-table-column>
-            <el-table-column prop="close" label="收盘" width="95">
-              <template #default="{ row }">{{ formatPrice(row.close) }}</template>
-            </el-table-column>
-            <el-table-column prop="volume" label="成交量">
-              <template #default="{ row }">{{ formatVolume(row.volume) }}</template>
-            </el-table-column>
-          </el-table>
+          <div v-if="step?.visible_bars?.length" class="chart-panel" data-chart-build="2026-07-06">
+            <div class="chart-toolbar">
+              <el-tag type="success" effect="light">K线 / MA / MACD / 成交量</el-tag>
+              <span class="chart-meta">已回放 {{ step.visible_bars.length }} 根</span>
+            </div>
+
+            <div ref="chartRef" class="training-chart"></div>
+
+            <el-table
+              :data="step.visible_bars"
+              style="width: 100%"
+              height="240"
+            >
+              <el-table-column prop="trade_date" label="日期" width="120" />
+              <el-table-column prop="open" label="开盘" width="95">
+                <template #default="{ row }">{{ formatPrice(row.open) }}</template>
+              </el-table-column>
+              <el-table-column prop="high" label="最高" width="95">
+                <template #default="{ row }">{{ formatPrice(row.high) }}</template>
+              </el-table-column>
+              <el-table-column prop="low" label="最低" width="95">
+                <template #default="{ row }">{{ formatPrice(row.low) }}</template>
+              </el-table-column>
+              <el-table-column prop="close" label="收盘" width="95">
+                <template #default="{ row }">{{ formatPrice(row.close) }}</template>
+              </el-table-column>
+              <el-table-column prop="volume" label="成交量">
+                <template #default="{ row }">{{ formatVolume(row.volume) }}</template>
+              </el-table-column>
+            </el-table>
+          </div>
 
           <el-empty v-else description="先创建训练会话，才能看到回放窗口" />
         </el-card>
@@ -309,12 +334,6 @@
               <div class="metric-box">
                 <span>交易次数</span>
                 <strong>{{ session.trade_count }}</strong>
-              </div>
-            </el-col>
-            <el-col :xs="12" :sm="8" :md="6">
-              <div class="metric-box">
-                <span>当前进度</span>
-                <strong>{{ progressLabel }}</strong>
               </div>
             </el-col>
           </el-row>
@@ -431,12 +450,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { analysisApi } from '@/api/analysis'
+import * as echarts from 'echarts'
+import { use as echartsUse } from 'echarts/core'
+import { CandlestickChart, LineChart, BarChart } from 'echarts/charts'
+import { GridComponent, TooltipComponent, DataZoomComponent, LegendComponent, TitleComponent } from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
+import type { EChartsOption } from 'echarts'
+import { favoritesApi } from '@/api/favorites'
 import { etfsApi } from '@/api/etfs'
-import { trainingApi, type TrainingAdvice, type TrainingReport, type TrainingReplayStep, type TrainingSessionResponse } from '@/api/training'
+import { trainingApi, type TrainingAdvice, type TrainingReport, type TrainingReplayStep, type TrainingSessionResponse, type TrainingSessionSummary } from '@/api/training'
+
+echartsUse([CandlestickChart, LineChart, BarChart, GridComponent, TooltipComponent, DataZoomComponent, LegendComponent, TitleComponent, CanvasRenderer])
 
 interface StockOption {
   symbol: string
@@ -455,27 +482,26 @@ const router = useRouter()
 
 const instrumentType = ref<'stock' | 'etf'>('stock')
 const selectedSymbol = ref('')
-const startDate = ref('')
+const trainingEndDate = ref(getTodayDate())
 const initialCash = ref(100000)
 const totalDays = ref(30)
 const note = ref('')
 const creating = ref(false)
 const submitting = ref(false)
 const finishing = ref(false)
-const stockSearchLoading = ref(false)
 
 const stockOptions = ref<StockOption[]>([])
 const etfOptions = ref<EtfOption[]>([])
+const chartRef = ref<HTMLDivElement | null>(null)
 
 const session = ref<TrainingSessionResponse | null>(null)
 const step = ref<TrainingReplayStep | null>(null)
 const report = ref<TrainingReport | null>(null)
 const advice = ref<TrainingAdvice | null>(null)
+const archiveSessions = ref<TrainingSessionSummary[]>([])
 
 const tradeSide = ref<'buy' | 'sell'>('buy')
 const tradeQuantity = ref(100)
-
-let stockSearchTimer: number | null = null
 
 const currentPrice = computed(() => {
   const bars = step.value?.visible_bars || []
@@ -489,13 +515,6 @@ const currentPrice = computed(() => {
 
 const positionQuantity = computed(() => session.value?.positions?.[0]?.quantity ?? 0)
 const positionMarketValue = computed(() => session.value?.positions?.[0]?.market_value ?? 0)
-const progressLabel = computed(() => {
-  if (!session.value) {
-    return '0 / 0'
-  }
-  const current = Math.min(session.value.current_step + 1, session.value.total_days)
-  return `${current} / ${session.value.total_days}`
-})
 
 function formatPrice(value: unknown) {
   const num = Number(value ?? 0)
@@ -522,6 +541,14 @@ function formatPercent(value: unknown) {
   return Number.isFinite(num) ? `${(num * 100).toFixed(2)}%` : '-'
 }
 
+function getTodayDate() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 function pnlClass(value: unknown) {
   const num = Number(value ?? 0)
   if (num > 0) return 'positive'
@@ -533,93 +560,444 @@ function returnClass(value: unknown) {
   return pnlClass(value)
 }
 
+function average(values: number[]) {
+  if (values.length === 0) {
+    return null
+  }
+  const sum = values.reduce((acc, value) => acc + value, 0)
+  return sum / values.length
+}
+
+function buildMa(values: number[], period: number) {
+  return values.map((_, index) => {
+    if (index < period - 1) {
+      return null
+    }
+    return average(values.slice(index - period + 1, index + 1))
+  })
+}
+
+function buildEma(values: number[], period: number) {
+  const result: Array<number | null> = []
+  const multiplier = 2 / (period + 1)
+  values.forEach((value, index) => {
+    if (index === 0) {
+      result.push(value)
+      return
+    }
+    const prev = result[index - 1]
+    if (prev == null) {
+      result.push(value)
+      return
+    }
+    result.push((value - prev) * multiplier + prev)
+  })
+  return result
+}
+
+function buildMacd(values: number[]) {
+  const ema12 = buildEma(values, 12)
+  const ema26 = buildEma(values, 26)
+  const dif = values.map((_, index) => {
+    const a = ema12[index]
+    const b = ema26[index]
+    if (a == null || b == null) {
+      return null
+    }
+    return a - b
+  })
+  const dea = buildEma(dif.map((value) => value ?? 0), 9)
+  const hist = dif.map((value, index) => {
+    const a = value
+    const b = dea[index]
+    if (a == null || b == null) {
+      return null
+    }
+    return (a - b) * 2
+  })
+  return { dif, dea, hist }
+}
+
+const chartBars = computed(() => {
+  const bars = step.value?.visible_bars || []
+  return bars
+    .map((bar) => ({
+      trade_date: bar.trade_date,
+      open: Number(bar.open ?? NaN),
+      high: Number(bar.high ?? NaN),
+      low: Number(bar.low ?? NaN),
+      close: Number(bar.close ?? NaN),
+      volume: Number(bar.volume ?? NaN)
+    }))
+    .filter((bar) => Number.isFinite(bar.open) && Number.isFinite(bar.high) && Number.isFinite(bar.low) && Number.isFinite(bar.close))
+})
+
+const chartOption = computed<EChartsOption>(() => {
+  const bars = chartBars.value
+  const categories = bars.map((bar) => bar.trade_date)
+  const candleData = bars.map((bar) => [bar.open, bar.close, bar.low, bar.high])
+  const closes = bars.map((bar) => bar.close)
+  const ma5 = buildMa(closes, 5)
+  const ma10 = buildMa(closes, 10)
+  const ma20 = buildMa(closes, 20)
+  const macd = buildMacd(closes)
+  const volumeData = bars.map((bar, index) => {
+    const prevClose = index > 0 ? bars[index - 1]?.close : bar.open
+    const rising = bar.close >= (prevClose ?? bar.open)
+    return {
+      value: bar.volume || 0,
+      itemStyle: { color: rising ? '#ef4444' : '#22c55e' }
+    }
+  })
+
+  return {
+    animation: false,
+    legend: {
+      top: 4,
+      left: 'center',
+      textStyle: { color: '#94a3b8' },
+      data: ['K线', 'MA5', 'MA10', 'MA20', 'DIF', 'DEA', 'MACD', '成交量']
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'cross' }
+    },
+    axisPointer: {
+      link: [{ xAxisIndex: 'all' }]
+    },
+    grid: [
+      { left: 50, right: 20, top: 48, height: '48%' },
+      { left: 50, right: 20, top: '60%', height: '17%' },
+      { left: 50, right: 20, top: '80%', height: '14%' }
+    ],
+    dataZoom: [
+      { type: 'inside', xAxisIndex: [0, 1, 2], start: 55, end: 100 },
+      { type: 'slider', xAxisIndex: [0, 1, 2], top: '96%', height: 18, start: 55, end: 100 }
+    ],
+    xAxis: [
+      {
+        type: 'category',
+        data: categories,
+        boundaryGap: true,
+        axisLine: { onZero: false },
+        axisLabel: { show: false },
+        splitLine: { show: false },
+        gridIndex: 0
+      },
+      {
+        type: 'category',
+        data: categories,
+        boundaryGap: true,
+        axisLine: { onZero: false },
+        axisLabel: { show: false },
+        splitLine: { show: false },
+        gridIndex: 1
+      },
+      {
+        type: 'category',
+        data: categories,
+        boundaryGap: true,
+        axisLine: { onZero: false },
+        axisLabel: { color: '#94a3b8' },
+        splitLine: { show: false },
+        gridIndex: 2
+      }
+    ],
+    yAxis: [
+      {
+        scale: true,
+        gridIndex: 0,
+        splitArea: { show: true },
+        axisLabel: { color: '#94a3b8' }
+      },
+      {
+        scale: true,
+        gridIndex: 1,
+        splitNumber: 4,
+        axisLabel: { color: '#94a3b8' },
+        splitLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.16)' } }
+      },
+      {
+        scale: true,
+        gridIndex: 2,
+        splitNumber: 3,
+        axisLabel: { color: '#94a3b8' },
+        splitLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.16)' } }
+      }
+    ],
+    series: [
+      {
+        name: 'K线',
+        type: 'candlestick',
+        xAxisIndex: 0,
+        yAxisIndex: 0,
+        data: candleData,
+        itemStyle: {
+          color: '#ef4444',
+          color0: '#22c55e',
+          borderColor: '#ef4444',
+          borderColor0: '#22c55e'
+        }
+      },
+      {
+        name: 'MA5',
+        type: 'line',
+        xAxisIndex: 0,
+        yAxisIndex: 0,
+        data: ma5,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 1.2, color: '#f59e0b' }
+      },
+      {
+        name: 'MA10',
+        type: 'line',
+        xAxisIndex: 0,
+        yAxisIndex: 0,
+        data: ma10,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 1.2, color: '#60a5fa' }
+      },
+      {
+        name: 'MA20',
+        type: 'line',
+        xAxisIndex: 0,
+        yAxisIndex: 0,
+        data: ma20,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 1.2, color: '#a78bfa' }
+      },
+      {
+        name: 'DIF',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: macd.dif,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 1.1, color: '#f59e0b' }
+      },
+      {
+        name: 'DEA',
+        type: 'line',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: macd.dea,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { width: 1.1, color: '#60a5fa' }
+      },
+      {
+        name: 'MACD',
+        type: 'bar',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: macd.hist.map((value) => ({
+          value: value ?? 0,
+          itemStyle: { color: (value ?? 0) >= 0 ? '#ef4444' : '#22c55e' }
+        })),
+        barWidth: '55%'
+      },
+      {
+        name: '成交量',
+        type: 'bar',
+        xAxisIndex: 2,
+        yAxisIndex: 2,
+        data: volumeData,
+        barWidth: '55%'
+      }
+    ]
+  }
+})
+
+let chartInstance: echarts.ECharts | null = null
+
+async function renderChart() {
+  await nextTick()
+  if (!chartRef.value) {
+    return
+  }
+  if (!chartInstance) {
+    chartInstance = echarts.init(chartRef.value)
+  }
+  chartInstance.setOption(chartOption.value, true)
+}
+
+function resizeChart() {
+  chartInstance?.resize()
+}
+
+function disposeChart() {
+  chartInstance?.dispose()
+  chartInstance = null
+}
+
+function normalizeStockOption(item: any): StockOption | null {
+  const symbol = item?.symbol || item?.stock_code
+  const name = item?.stock_name || item?.name
+  if (!symbol || !name) {
+    return null
+  }
+  return {
+    symbol,
+    name,
+    market: item?.market
+  }
+}
+
+function normalizeEtfOption(item: any): EtfOption | null {
+  const fundCode = item?.fund_code || item?.symbol
+  const fundName = item?.fund_name || item?.name
+  if (!fundCode || !fundName) {
+    return null
+  }
+  return {
+    fund_code: fundCode,
+    fund_name: fundName,
+    fund_type: item?.fund_type || ''
+  }
+}
+
 async function loadEtfOptions() {
   if (etfOptions.value.length > 0) {
     return
   }
   try {
-    const res = await etfsApi.popular()
-    etfOptions.value = res.data || []
+    const res = await etfsApi.list()
+    const list = Array.isArray(res.data) ? res.data : []
+    etfOptions.value = list.map(normalizeEtfOption).filter(Boolean) as EtfOption[]
+    if (!selectedSymbol.value && instrumentType.value === 'etf') {
+      selectedSymbol.value = etfOptions.value[0]?.fund_code || ''
+    }
   } catch (error: any) {
     ElMessage.error(error?.message || '加载 ETF 列表失败')
   }
 }
 
-async function remoteSearchStocks(query: string) {
-  if (stockSearchTimer) {
-    window.clearTimeout(stockSearchTimer)
-  }
-  if (!query || query.trim().length < 2) {
-    stockOptions.value = []
+async function loadStockOptions() {
+  if (stockOptions.value.length > 0) {
     return
   }
-
-  stockSearchTimer = window.setTimeout(async () => {
-    stockSearchLoading.value = true
-    try {
-      const res = await analysisApi.searchStocks(query.trim(), 'A股')
-      const list = Array.isArray((res as any)?.data)
-        ? (res as any).data
-        : Array.isArray(res)
-          ? res
-          : []
-      stockOptions.value = list.slice(0, 20)
-    } catch (error: any) {
-      ElMessage.error(error?.message || '搜索股票失败')
-    } finally {
-      stockSearchLoading.value = false
+  try {
+    const res = await favoritesApi.list()
+    const list = Array.isArray(res.data) ? res.data : []
+    stockOptions.value = list.map(normalizeStockOption).filter(Boolean) as StockOption[]
+    if (!selectedSymbol.value && instrumentType.value === 'stock') {
+      selectedSymbol.value = stockOptions.value[0]?.symbol || ''
     }
-  }, 200)
+  } catch (error: any) {
+    ElMessage.error(error?.message || '加载自选股票失败')
+  }
 }
 
-async function onEtfSelectVisible(visible: boolean) {
-  if (visible) {
-    await loadEtfOptions()
+async function loadTrainingOptions() {
+  await Promise.all([loadStockOptions(), loadEtfOptions()])
+}
+
+async function loadArchiveSessions() {
+  try {
+    const res = await trainingApi.listSessions({ skipErrorHandler: true })
+    archiveSessions.value = Array.isArray(res.data) ? res.data : []
+  } catch (error: any) {
+    archiveSessions.value = []
+    if (error?.response?.status !== 404) {
+      ElMessage.error(error?.message || '加载训练存档失败')
+    }
   }
+}
+
+async function resumeArchive(sessionId: string) {
+  if (!sessionId) {
+    return
+  }
+  await router.replace({ path: '/training', query: { sessionId } })
+  await loadSession(sessionId)
+}
+
+function resolveSelectedSymbol() {
+  if (selectedSymbol.value) {
+    return selectedSymbol.value
+  }
+  if (instrumentType.value === 'stock') {
+    return stockOptions.value[0]?.symbol || etfOptions.value[0]?.fund_code || ''
+  }
+  return etfOptions.value[0]?.fund_code || stockOptions.value[0]?.symbol || ''
 }
 
 function onInstrumentTypeChange() {
   selectedSymbol.value = ''
-  stockOptions.value = []
   if (instrumentType.value === 'etf') {
     void loadEtfOptions()
+  } else {
+    void loadStockOptions()
   }
 }
 
 async function loadStep(sessionId: string) {
-  const res = await trainingApi.getStep(sessionId)
-  step.value = res.data
-  advice.value = res.data?.advice || null
-  if (res.data?.session) {
-    session.value = res.data.session
+  try {
+    const res = await trainingApi.getStep(sessionId, { skipErrorHandler: true })
+    step.value = res.data
+    advice.value = res.data?.advice || null
+    if (res.data?.session) {
+      session.value = res.data.session
+    }
+  } catch (error: any) {
+    if (error?.response?.status === 404) {
+      await resetTrainingContext()
+      return
+    }
+    throw error
   }
 }
 
 async function loadSession(sessionId: string) {
-  const res = await trainingApi.getSession(sessionId)
-  session.value = res.data
-  if (res.data.status === 'finished') {
-    const reportRes = await trainingApi.getReport(sessionId)
-    report.value = reportRes.data
+  try {
+    const res = await trainingApi.getSession(sessionId, { skipErrorHandler: true })
+    session.value = res.data
+    if (res.data.status === 'finished') {
+      const reportRes = await trainingApi.getReport(sessionId, { skipErrorHandler: true })
+      report.value = reportRes.data
+    }
+    await loadStep(sessionId)
+  } catch (error: any) {
+    if (error?.response?.status === 404) {
+      await resetTrainingContext()
+      return
+    }
+    throw error
   }
-  await loadStep(sessionId)
+}
+
+async function resetTrainingContext() {
+  session.value = null
+  step.value = null
+  report.value = null
+  advice.value = null
+  await router.replace({ path: '/training' })
+  await loadArchiveSessions()
 }
 
 async function createTraining() {
-  if (!selectedSymbol.value) {
-    ElMessage.warning('请先选择标的')
-    return
-  }
-  if (!startDate.value) {
-    ElMessage.warning('请先选择训练开始日期')
+  if (!trainingEndDate.value) {
+    ElMessage.warning('请先选择回放截止日')
     return
   }
 
   creating.value = true
   try {
+    await loadTrainingOptions()
+    const symbol = resolveSelectedSymbol()
+    if (!symbol) {
+      ElMessage.warning('请先在自选股票或 ETF 中至少加入一个标的')
+      return
+    }
+    selectedSymbol.value = symbol
+
     const res = await trainingApi.createSession({
-      symbol: selectedSymbol.value,
-      start_date: startDate.value,
+      symbol,
+      end_date: trainingEndDate.value,
       initial_cash: initialCash.value,
       total_days: totalDays.value,
       market: 'CN',
@@ -629,6 +1007,7 @@ async function createTraining() {
     report.value = null
     await router.replace({ path: '/training', query: { sessionId: res.data.session_id } })
     await loadStep(res.data.session_id)
+    await loadArchiveSessions()
     tradeQuantity.value = 100
     ElMessage.success('训练已开始')
   } catch (error: any) {
@@ -691,6 +1070,7 @@ async function finishTraining() {
     const res = await trainingApi.finish(session.value.session_id)
     report.value = res.data
     session.value = { ...session.value, status: 'finished' }
+    await loadArchiveSessions()
     ElMessage.success('训练已结束，报告已生成')
   } catch (error: any) {
     ElMessage.error(error?.message || '生成复盘报告失败')
@@ -706,6 +1086,10 @@ watch(
       try {
         await loadSession(sessionId)
       } catch (error: any) {
+        if (error?.response?.status === 404) {
+          await resetTrainingContext()
+          return
+        }
         ElMessage.error(error?.message || '恢复训练会话失败')
       }
     }
@@ -714,8 +1098,24 @@ watch(
 )
 
 onMounted(() => {
-  void loadEtfOptions()
+  void loadTrainingOptions()
+  void loadArchiveSessions()
+  void renderChart()
+  window.addEventListener('resize', resizeChart)
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resizeChart)
+  disposeChart()
+})
+
+watch(
+  chartOption,
+  () => {
+    void renderChart()
+  },
+  { deep: true }
+)
 </script>
 
 <style scoped lang="scss">
@@ -796,6 +1196,60 @@ onMounted(() => {
 .panel-card {
   margin-bottom: 20px;
   border-radius: 18px;
+}
+
+.chart-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chart-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chart-meta {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.training-chart {
+  width: 100%;
+  height: 560px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.6), rgba(241, 245, 249, 0.88));
+  border: 1px solid var(--el-border-color-lighter);
+}
+
+.archive-item {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  background: var(--el-fill-color-light);
+  border: 1px solid var(--el-border-color-lighter);
+}
+
+.archive-main,
+.archive-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+}
+
+.archive-main strong {
+  font-size: 14px;
+}
+
+.archive-main span,
+.archive-meta span {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 
 .panel-header {
@@ -977,6 +1431,15 @@ onMounted(() => {
 
   .control-summary {
     grid-template-columns: 1fr;
+  }
+
+  .chart-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .training-chart {
+    height: 420px;
   }
 }
 </style>

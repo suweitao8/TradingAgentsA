@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.core.response import ok
+from app.core.auth import get_current_user
 from app.models.training import TrainingAction, TrainingSessionCreate
 from app.services.training_service import TrainingService
 
@@ -16,10 +17,20 @@ router = APIRouter(prefix="/api/training", tags=["training"])
 training_service = TrainingService()
 
 
-@router.post("/sessions")
-async def create_session(payload: TrainingSessionCreate):
+@router.get("/sessions")
+async def list_sessions(current_user: dict = Depends(get_current_user)):
     try:
-        session = await training_service.create_session(payload)
+        sessions = await training_service.list_sessions(owner_id=current_user["id"])
+        return ok(sessions)
+    except Exception as exc:
+        logger.error("获取训练存档列表失败: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@router.post("/sessions")
+async def create_session(payload: TrainingSessionCreate, current_user: dict = Depends(get_current_user)):
+    try:
+        session = await training_service.create_session(payload, owner_id=current_user["id"])
         return ok(session.model_dump())
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -29,27 +40,27 @@ async def create_session(payload: TrainingSessionCreate):
 
 
 @router.get("/sessions/{session_id}")
-async def get_session(session_id: str):
+async def get_session(session_id: str, current_user: dict = Depends(get_current_user)):
     try:
-        session = await training_service.get_session(session_id)
+        session = await training_service.get_session(session_id, owner_id=current_user["id"])
         return ok(session.model_dump())
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
 
 
 @router.get("/sessions/{session_id}/step")
-async def get_step(session_id: str):
+async def get_step(session_id: str, current_user: dict = Depends(get_current_user)):
     try:
-        step = await training_service.get_current_step(session_id)
+        step = await training_service.get_current_step(session_id, owner_id=current_user["id"])
         return ok(step.model_dump())
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
 
 
 @router.post("/sessions/{session_id}/actions")
-async def submit_action(session_id: str, payload: TrainingAction):
+async def submit_action(session_id: str, payload: TrainingAction, current_user: dict = Depends(get_current_user)):
     try:
-        session = await training_service.submit_action(session_id, payload)
+        session = await training_service.submit_action(session_id, payload, owner_id=current_user["id"])
         return ok(session.model_dump())
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
@@ -58,27 +69,27 @@ async def submit_action(session_id: str, payload: TrainingAction):
 
 
 @router.post("/sessions/{session_id}/advance")
-async def advance_session(session_id: str):
+async def advance_session(session_id: str, current_user: dict = Depends(get_current_user)):
     try:
-        step = await training_service.advance_session(session_id)
+        step = await training_service.advance_session(session_id, owner_id=current_user["id"])
         return ok(step.model_dump())
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
 
 
 @router.post("/sessions/{session_id}/finish")
-async def finish_session(session_id: str):
+async def finish_session(session_id: str, current_user: dict = Depends(get_current_user)):
     try:
-        report = await training_service.finish_session(session_id)
+        report = await training_service.finish_session(session_id, owner_id=current_user["id"])
         return ok(report)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
 
 
 @router.get("/sessions/{session_id}/report")
-async def get_report(session_id: str):
+async def get_report(session_id: str, current_user: dict = Depends(get_current_user)):
     try:
-        report = await training_service.get_report(session_id)
+        report = await training_service.get_report(session_id, owner_id=current_user["id"])
         return ok(report)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
