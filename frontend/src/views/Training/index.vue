@@ -1,20 +1,43 @@
 <template>
   <div class="training-page">
-    <section class="hero-card fade-in-up">
-      <div class="hero-copy">
-        <div class="hero-badge">模拟炒股</div>
+    <section class="overview-card fade-in-up">
+      <div class="overview-header">
+        <div class="overview-copy">
+          <div class="overview-badge">模拟炒股</div>
+          <h1>训练总览</h1>
+          <p>基于真实历史行情的 30 日回放训练，只展示当前时间点之前的数据，并对比主动做 T、买入持有与综合评分。</p>
+        </div>
+
+        <div class="overview-actions">
+          <el-button type="primary" :loading="creating" @click="createTraining">
+            新建存档
+          </el-button>
+          <div class="overview-chip">
+            <span>会话</span>
+            <strong>{{ session?.session_id || '未开始' }}</strong>
+          </div>
+          <div class="overview-chip">
+            <span>标的</span>
+            <strong>{{ session?.symbol_name || session?.symbol || selectedSymbol || '-' }}</strong>
+          </div>
+          <div class="overview-chip">
+            <span>评分</span>
+            <strong>{{ formatScore(report?.score) }}</strong>
+          </div>
+        </div>
       </div>
 
-      <div class="hero-status">
-        <div class="status-chip">
-          <span class="status-label">会话</span>
-          <span class="status-value">{{ session?.session_id || '未开始' }}</span>
-        </div>
-        <div class="status-chip">
-          <span class="status-label">当前标的</span>
-          <span class="status-value">{{ session?.symbol || selectedSymbol || '-' }}</span>
-        </div>
-      </div>
+      <el-table :data="overviewRows" class="overview-table" size="small" :show-header="false">
+        <el-table-column prop="label" width="160" />
+        <el-table-column prop="value" min-width="220" />
+        <el-table-column prop="note" min-width="240">
+          <template #default="{ row }">
+            <div class="overview-note">
+              <span>{{ row.note }}</span>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
     </section>
 
     <el-row :gutter="20" class="training-grid">
@@ -145,6 +168,7 @@
               <div class="archive-meta">
                 <span>步数 {{ archive.current_step }}/{{ archive.total_days }}</span>
                 <span>总资产 ¥{{ formatMoney(archive.total_equity) }}</span>
+                <span v-if="archive.score != null">评分 {{ formatScore(archive.score) }}</span>
                 <span>{{ archive.status === 'finished' ? '已结束' : '进行中' }}</span>
               </div>
               <el-button size="small" type="primary" @click="resumeArchive(archive.session_id)">
@@ -391,6 +415,12 @@
                 <strong>{{ formatPercent(report.max_drawdown) }}</strong>
               </div>
             </el-col>
+            <el-col :xs="12" :sm="8" :md="6">
+              <div class="metric-box">
+                <span>综合评分</span>
+                <strong :class="scoreClass(report.score)">{{ formatScore(report.score) }}</strong>
+              </div>
+            </el-col>
           </el-row>
 
           <el-descriptions :column="2" border size="small">
@@ -515,6 +545,40 @@ const currentPrice = computed(() => {
 
 const positionQuantity = computed(() => session.value?.positions?.[0]?.quantity ?? 0)
 const positionMarketValue = computed(() => session.value?.positions?.[0]?.market_value ?? 0)
+const latestArchive = computed(() => archiveSessions.value[0] || null)
+
+const overviewRows = computed(() => {
+  const currentSessionLabel = session.value
+    ? `${session.value.session_id} · ${session.value.current_step}/${session.value.total_days}`
+    : `等待创建 · ${totalDays.value} 个交易日`
+  const currentSessionNote = session.value
+    ? `${session.value.symbol_name || session.value.symbol} · ${session.value.status === 'finished' ? '已结束' : '进行中'}`
+    : '请先选择股票或 ETF，然后点击“新建存档”'
+
+  const archiveLabel = `${archiveSessions.value.length} 个`
+  const archiveNote = latestArchive.value
+    ? `${latestArchive.value.symbol_name || latestArchive.value.symbol} · ${latestArchive.value.session_id} · ${latestArchive.value.status === 'finished' ? '已结束' : '进行中'}`
+    : '暂无历史存档'
+
+  const comparisonLabel = report.value
+    ? `${formatPercent(report.value.active_return)} / ${formatPercent(report.value.buy_and_hold_return)}`
+    : '等待训练结束'
+  const comparisonNote = report.value
+    ? `超额收益 ${formatPercent(report.value.excess_return)}`
+    : '主动做 T 和买入持有的对比会在赛后自动生成'
+
+  const scoreLabel = report.value ? `${formatScore(report.value.score)} 分` : '100 分基准'
+  const scoreNote = report.value
+    ? '与买入持有持平为 100 分，超额收益越高分数越高'
+    : '训练结束后生成综合评分'
+
+  return [
+    { label: '当前会话', value: currentSessionLabel, note: currentSessionNote },
+    { label: '历史存档', value: archiveLabel, note: archiveNote },
+    { label: '收益对比', value: comparisonLabel, note: comparisonNote },
+    { label: '综合评分', value: scoreLabel, note: scoreNote },
+  ]
+})
 
 function formatPrice(value: unknown) {
   const num = Number(value ?? 0)
@@ -558,6 +622,21 @@ function pnlClass(value: unknown) {
 
 function returnClass(value: unknown) {
   return pnlClass(value)
+}
+
+function scoreClass(value: unknown) {
+  const num = Number(value ?? 0)
+  if (!Number.isFinite(num)) {
+    return ''
+  }
+  if (num > 100) return 'positive'
+  if (num < 100) return 'negative'
+  return ''
+}
+
+function formatScore(value: unknown) {
+  const num = Number(value ?? NaN)
+  return Number.isFinite(num) ? num.toFixed(2) : '-'
 }
 
 function average(values: number[]) {
@@ -1125,68 +1204,99 @@ watch(
   gap: 20px;
 }
 
-.hero-card {
+.overview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+  border: 1px solid var(--el-border-color-lighter);
+  box-shadow: var(--glass-shadow-sm);
+}
+
+.overview-header {
   display: flex;
   justify-content: space-between;
   gap: 24px;
-  padding: 28px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(17, 24, 39, 0.94), rgba(15, 118, 110, 0.78));
-  color: #f8fafc;
-  box-shadow: var(--glass-shadow-lg);
+  align-items: flex-start;
+  flex-wrap: wrap;
 }
 
-.hero-copy {
+.overview-copy {
   max-width: 760px;
 
   h1 {
     margin: 10px 0 12px;
-    font-size: 32px;
+    font-size: 28px;
     line-height: 1.15;
   }
 
   p {
     margin: 0;
-    color: rgba(255, 255, 255, 0.82);
+    color: var(--el-text-color-secondary);
     line-height: 1.7;
     max-width: 720px;
   }
 }
 
-.hero-badge {
+.overview-badge {
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(15, 118, 110, 0.1);
+  color: #0f766e;
   font-size: 13px;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
-.hero-status {
+.overview-actions {
   display: grid;
-  gap: 12px;
-  min-width: 240px;
+  gap: 10px;
+  min-width: 260px;
 }
 
-.status-chip {
-  padding: 14px 16px;
+.overview-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--el-fill-color-light);
+  border: 1px solid var(--el-border-color-lighter);
 }
 
-.status-label {
-  display: block;
+.overview-chip span {
   font-size: 12px;
-  opacity: 0.7;
-  margin-bottom: 6px;
+  color: var(--el-text-color-secondary);
 }
 
-.status-value {
+.overview-chip strong {
   font-size: 14px;
-  font-weight: 600;
+}
+
+.overview-table {
+  width: 100%;
+
+  :deep(.el-table__cell) {
+    background: transparent;
+  }
+
+  :deep(.el-table__row:hover > td) {
+    background: rgba(15, 118, 110, 0.03) !important;
+  }
+}
+
+.overview-note {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 
 .training-grid {

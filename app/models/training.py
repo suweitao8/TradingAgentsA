@@ -101,6 +101,10 @@ class TrainingSessionSummary(BaseModel):
     cash: float = 100000
     total_equity: float = 100000
     trade_count: int = 0
+    active_return: Optional[float] = None
+    buy_and_hold_return: Optional[float] = None
+    excess_return: Optional[float] = None
+    score: Optional[float] = None
     status: Literal["active", "finished", "paused"] = "active"
     note: Optional[str] = None
     created_at: datetime = Field(default_factory=now_tz)
@@ -133,6 +137,7 @@ class TrainingReport(BaseModel):
     active_return: float
     buy_and_hold_return: float
     excess_return: float
+    score: float
     trade_count: int
     max_drawdown: float
     good_trades: List[Dict[str, Any]] = Field(default_factory=list)

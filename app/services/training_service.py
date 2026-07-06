@@ -56,6 +56,13 @@ class TrainingService:
 
     @staticmethod
     def _build_session_summary(state: Dict[str, Any]) -> TrainingSessionSummary:
+        report = state.get("report") if isinstance(state.get("report"), dict) else {}
+        active_return = report.get("active_return", state.get("active_return"))
+        buy_and_hold_return = report.get("buy_and_hold_return", state.get("buy_and_hold_return"))
+        excess_return = report.get("excess_return", state.get("excess_return"))
+        score = report.get("score", state.get("score"))
+        if score is None and excess_return is not None:
+            score = TrainingService._calculate_score(float(excess_return))
         return TrainingSessionSummary(
             session_id=state["session_id"],
             symbol=state["symbol"],
@@ -69,6 +76,10 @@ class TrainingService:
             cash=float(state.get("cash", 100000)),
             total_equity=float(state.get("total_equity", state.get("cash", 100000))),
             trade_count=int(state.get("trade_count", len(state.get("actions", [])))),
+            active_return=float(active_return) if active_return is not None else None,
+            buy_and_hold_return=float(buy_and_hold_return) if buy_and_hold_return is not None else None,
+            excess_return=float(excess_return) if excess_return is not None else None,
+            score=float(score) if score is not None else None,
             status=state.get("status", "active"),
             note=state.get("note"),
             created_at=state.get("created_at", now_tz()),
@@ -90,6 +101,10 @@ class TrainingService:
         state.setdefault("cash", state.get("initial_cash", 100000))
         state.setdefault("trade_count", len(state.get("actions", [])))
         return state
+
+    @staticmethod
+    def _calculate_score(excess_return: float) -> float:
+        return round(100 + float(excess_return) * 100, 2)
 
     async def _persist_state(self, state: Dict[str, Any]) -> None:
         collection = self._get_session_collection()
@@ -294,6 +309,9 @@ class TrainingService:
         state = await self._load_session_state(session_id, owner_id=owner_id)
         report = state.get("report")
         if isinstance(report, dict):
+            if report.get("score") is None and report.get("excess_return") is not None:
+                report = dict(report)
+                report["score"] = self._calculate_score(float(report["excess_return"]))
             return report
         return self._build_report_from_state(state)
 
@@ -446,6 +464,7 @@ class TrainingService:
         benchmark = self._buy_and_hold_benchmark(initial_cash, price_series)
         buy_and_hold_return = benchmark.return_rate
         excess_return = round(active_return - buy_and_hold_return, 6)
+        score = self._calculate_score(excess_return)
 
         equity_curve = self._resolve_equity_curve(session, price_series)
         max_drawdown = self._max_drawdown(equity_curve)
@@ -465,6 +484,7 @@ class TrainingService:
             active_return=round(active_return, 6),
             buy_and_hold_return=round(buy_and_hold_return, 6),
             excess_return=excess_return,
+            score=score,
             trade_count=int(session.get("trade_count", len(trades))),
             max_drawdown=max_drawdown,
             good_trades=good_trades,

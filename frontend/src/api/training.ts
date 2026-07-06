@@ -71,6 +71,10 @@ export interface TrainingSessionSummary {
   cash: number
   total_equity: number
   trade_count: number
+  active_return?: number | null
+  buy_and_hold_return?: number | null
+  excess_return?: number | null
+  score?: number | null
   status: 'active' | 'finished' | 'paused'
   note?: string | null
   created_at: string
@@ -109,6 +113,7 @@ export interface TrainingReport {
   active_return: number
   buy_and_hold_return: number
   excess_return: number
+  score: number
   trade_count: number
   max_drawdown: number
   good_trades: Array<Record<string, any>>
