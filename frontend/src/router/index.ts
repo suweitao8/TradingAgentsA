@@ -142,7 +142,7 @@ const routes: RouteRecordRaw[] = [
     name: 'Training',
     component: () => import('@/layouts/BasicLayout.vue'),
     meta: {
-      title: 'AI做T训练',
+      title: '模拟炒股',
       icon: 'DataAnalysis',
       requiresAuth: true,
       transition: 'fade'
@@ -153,7 +153,7 @@ const routes: RouteRecordRaw[] = [
         name: 'TrainingHome',
         component: () => import('@/views/Training/index.vue'),
         meta: {
-          title: 'AI做T训练',
+          title: '模拟炒股',
           requiresAuth: true
         }
       }

@@ -3,6 +3,9 @@
     <div class="nav-inner">
       <!-- 左侧：版本号 -->
       <div class="nav-brand">
+        <router-link to="/" class="brand-logo-link" aria-label="返回首页">
+          <img class="brand-logo" src="/logo.svg" alt="TradingAgentsA logo" />
+        </router-link>
         <span class="version-badge" v-if="appStore.apiVersion">
           <el-icon><MagicStick /></el-icon>
           {{ appStore.apiVersion }}
@@ -30,10 +33,11 @@
         </div>
         <template #dropdown>
           <el-dropdown-menu>
+            <el-dropdown-item command="/bilibili">B站</el-dropdown-item>
             <el-dropdown-item command="/etfs">ETF</el-dropdown-item>
             <el-dropdown-item command="/favorites">股票</el-dropdown-item>
             <el-dropdown-item command="/dashboard" divided>仪表板</el-dropdown-item>
-            <el-dropdown-item command="/training">做T训练</el-dropdown-item>
+            <el-dropdown-item command="/training">模拟炒股</el-dropdown-item>
             <el-dropdown-item command="/analysis/single">单股分析</el-dropdown-item>
             <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
             <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
@@ -54,8 +58,9 @@
           </button>
           <template #dropdown>
             <el-dropdown-menu>
+              <el-dropdown-item command="/bilibili">B站</el-dropdown-item>
               <el-dropdown-item command="/dashboard">仪表板</el-dropdown-item>
-              <el-dropdown-item command="/training">做T训练</el-dropdown-item>
+              <el-dropdown-item command="/training">模拟炒股</el-dropdown-item>
               <el-dropdown-item command="/analysis/single" divided>单股分析</el-dropdown-item>
               <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
               <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
@@ -66,13 +71,6 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-
-        <!-- 主题切换 -->
-        <el-tooltip :content="isDark ? '切换到浅色模式' : '切换到深色模式'" placement="bottom">
-          <button class="action-btn" @click="toggleTheme">
-            <el-icon><Sunny v-if="isDark" /><Moon v-else /></el-icon>
-          </button>
-        </el-tooltip>
 
         <!-- 通知 -->
         <el-tooltip content="通知" placement="bottom">
@@ -129,13 +127,12 @@ import {
   Star,
   TrendCharts,
   DataAnalysis,
+  VideoCamera,
   MoreFilled,
   Menu,
   Bell,
   Setting,
-  MagicStick,
-  Sunny,
-  Moon
+  MagicStick
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -145,10 +142,11 @@ const notifStore = useNotificationStore()
 const { unreadCount, items } = storeToRefs(notifStore)
 
 // ---- 导航链接 ----
-// ETF 在前（左），自选股在后（右），中间用 CSS 竖线分隔
+// 主入口：B站、ETF、训练、股票
 const navLinks = [
+  { path: '/bilibili', label: 'B站', icon: VideoCamera },
   { path: '/etfs', label: 'ETF', icon: TrendCharts },
-  { path: '/training', label: '做T训练', icon: DataAnalysis },
+  { path: '/training', label: '模拟炒股', icon: DataAnalysis },
   { path: '/favorites', label: '股票', icon: Star },
 ]
 
@@ -176,13 +174,6 @@ const onNavCommand = (command: string) => {
 // ---- 操作按钮 ----
 const goSettings = () => {
   router.push('/settings')
-}
-
-// ---- 主题切换（深色/浅色二态切换）----
-const isDark = computed(() => appStore.isDarkTheme)
-const toggleTheme = () => {
-  // 二态切换：当前深色 → 切浅色；当前浅色/auto → 切深色
-  appStore.setTheme(isDark.value ? 'light' : 'dark')
 }
 
 // ---- 通知抽屉 ----
@@ -253,6 +244,20 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+
+  .brand-logo-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    line-height: 0;
+  }
+
+  .brand-logo {
+    width: 28px;
+    height: 28px;
+    display: block;
+  }
 
   .version-badge {
     display: inline-flex;
@@ -457,5 +462,3 @@ onUnmounted(() => {
   }
 }
 </style>
-
-

@@ -18,7 +18,8 @@ class TrainingSessionCreate(BaseModel):
     """创建训练会话请求。"""
 
     symbol: str = Field(..., min_length=6, max_length=10, description="股票或 ETF 代码")
-    start_date: str = Field(..., description="训练开始日期，YYYY-MM-DD")
+    start_date: Optional[str] = Field(default=None, description="训练开始日期，YYYY-MM-DD")
+    end_date: Optional[str] = Field(default=None, description="训练结束日期，YYYY-MM-DD")
     initial_cash: float = Field(default=100000, gt=0, description="初始本金")
     total_days: int = Field(default=30, ge=1, le=120, description="训练交易日数")
     market: TrainingMarket = Field(default="CN", description="市场类型")
@@ -68,6 +69,7 @@ class TrainingSessionResponse(BaseModel):
     symbol_name: Optional[str] = None
     market: TrainingMarket = "CN"
     start_date: str
+    end_date: str = ""
     current_step: int = 0
     total_days: int = 30
     initial_cash: float = 100000
@@ -78,6 +80,33 @@ class TrainingSessionResponse(BaseModel):
     total_equity: float = 100000
     trade_count: int = 0
     status: Literal["active", "finished", "paused"] = "active"
+    created_at: datetime = Field(default_factory=now_tz)
+    updated_at: datetime = Field(default_factory=now_tz)
+
+
+class TrainingSessionSummary(BaseModel):
+    """璁粌存档摘要銆?"""
+
+    model_config = ConfigDict(extra="allow")
+
+    session_id: str
+    symbol: str
+    symbol_name: Optional[str] = None
+    market: TrainingMarket = "CN"
+    start_date: str
+    end_date: str = ""
+    current_step: int = 0
+    total_days: int = 30
+    initial_cash: float = 100000
+    cash: float = 100000
+    total_equity: float = 100000
+    trade_count: int = 0
+    active_return: Optional[float] = None
+    buy_and_hold_return: Optional[float] = None
+    excess_return: Optional[float] = None
+    score: Optional[float] = None
+    status: Literal["active", "finished", "paused"] = "active"
+    note: Optional[str] = None
     created_at: datetime = Field(default_factory=now_tz)
     updated_at: datetime = Field(default_factory=now_tz)
 
@@ -108,6 +137,7 @@ class TrainingReport(BaseModel):
     active_return: float
     buy_and_hold_return: float
     excess_return: float
+    score: float
     trade_count: int
     max_drawdown: float
     good_trades: List[Dict[str, Any]] = Field(default_factory=list)

@@ -17,6 +17,7 @@ from app.models.training import (
     TrainingReplayStep,
     TrainingSessionCreate,
     TrainingSessionResponse,
+    TrainingSessionSummary,
 )
 from app.utils.timezone import now_tz
 
@@ -38,22 +39,138 @@ class TrainingService:
 
     _sessions: Dict[str, Dict[str, Any]] = {}
 
-    def __init__(self, historical_loader: Optional[PriceSeriesLoader] = None) -> None:
+    def __init__(self, historical_loader: Optional[PriceSeriesLoader] = None, session_collection: Any = None) -> None:
         self._historical_loader = historical_loader
+        self._session_collection = session_collection
 
-    async def create_session(self, payload: TrainingSessionCreate) -> TrainingSessionResponse:
+    def _get_session_collection(self):
+        if self._session_collection is not None:
+            return self._session_collection
+        try:
+            from app.core.database import get_mongo_db
+
+            db = get_mongo_db()
+            return db.training_sessions
+        except Exception:
+            return None
+
+    @staticmethod
+    def _build_session_summary(state: Dict[str, Any]) -> TrainingSessionSummary:
+        report = state.get("report") if isinstance(state.get("report"), dict) else {}
+        active_return = report.get("active_return", state.get("active_return"))
+        buy_and_hold_return = report.get("buy_and_hold_return", state.get("buy_and_hold_return"))
+        excess_return = report.get("excess_return", state.get("excess_return"))
+        score = report.get("score", state.get("score"))
+        if score is None and excess_return is not None:
+            score = TrainingService._calculate_score(float(excess_return))
+        return TrainingSessionSummary(
+            session_id=state["session_id"],
+            symbol=state["symbol"],
+            symbol_name=state.get("symbol_name"),
+            market=state.get("market", "CN"),
+            start_date=state["start_date"],
+            end_date=str(state.get("end_date", "")),
+            current_step=int(state.get("current_step", 0)),
+            total_days=int(state.get("total_days", 30)),
+            initial_cash=float(state.get("initial_cash", 100000)),
+            cash=float(state.get("cash", 100000)),
+            total_equity=float(state.get("total_equity", state.get("cash", 100000))),
+            trade_count=int(state.get("trade_count", len(state.get("actions", [])))),
+            active_return=float(active_return) if active_return is not None else None,
+            buy_and_hold_return=float(buy_and_hold_return) if buy_and_hold_return is not None else None,
+            excess_return=float(excess_return) if excess_return is not None else None,
+            score=float(score) if score is not None else None,
+            status=state.get("status", "active"),
+            note=state.get("note"),
+            created_at=state.get("created_at", now_tz()),
+            updated_at=state.get("updated_at", now_tz()),
+        )
+
+    def _serialize_state(self, state: Dict[str, Any]) -> Dict[str, Any]:
+        doc = dict(state)
+        doc.setdefault("created_at", now_tz())
+        doc.setdefault("updated_at", now_tz())
+        return doc
+
+    def _hydrate_state(self, doc: Dict[str, Any]) -> Dict[str, Any]:
+        state = dict(doc)
+        state.setdefault("actions", [])
+        state.setdefault("equity_curve", [])
+        state.setdefault("report", None)
+        state.setdefault("current_step", 0)
+        state.setdefault("cash", state.get("initial_cash", 100000))
+        state.setdefault("trade_count", len(state.get("actions", [])))
+        return state
+
+    @staticmethod
+    def _calculate_score(excess_return: float) -> float:
+        return round(100 + float(excess_return) * 100, 2)
+
+    async def _persist_state(self, state: Dict[str, Any]) -> None:
+        collection = self._get_session_collection()
+        if collection is None:
+            return
+        doc = self._serialize_state(state)
+        await collection.replace_one({"session_id": state["session_id"]}, doc, upsert=True)
+
+    async def _load_session_state(self, session_id: str, owner_id: Optional[str] = None) -> Dict[str, Any]:
+        state = self._sessions.get(session_id)
+        if state and (owner_id is None or state.get("owner_id") == owner_id):
+            return state
+
+        collection = self._get_session_collection()
+        if collection is None:
+            raise KeyError(f"training session not found: {session_id}")
+        query: Dict[str, Any] = {"session_id": session_id}
+        if owner_id:
+            query["owner_id"] = owner_id
+        doc = await collection.find_one(query)
+        if not doc:
+            raise KeyError(f"training session not found: {session_id}")
+        state = self._hydrate_state(doc)
+        self._sessions[session_id] = state
+        return state
+
+    async def list_sessions(self, owner_id: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+        collection = self._get_session_collection()
+        if collection is None:
+            sessions = [
+                self._build_session_summary(state).model_dump()
+                for state in self._sessions.values()
+                if owner_id is None or state.get("owner_id") == owner_id
+            ]
+            sessions.sort(key=lambda item: item.get("updated_at") or item.get("created_at"), reverse=True)
+            return sessions[:limit] if limit > 0 else sessions
+        query: Dict[str, Any] = {}
+        if owner_id:
+            query["owner_id"] = owner_id
+        cursor = collection.find(query).sort("updated_at", -1)
+        if limit > 0:
+            cursor = cursor.limit(limit)
+        docs = await cursor.to_list(length=limit if limit > 0 else None)
+        return [self._build_session_summary(self._hydrate_state(doc)).model_dump() for doc in docs]
+
+    async def create_session(self, payload: TrainingSessionCreate, owner_id: str = "admin") -> TrainingSessionResponse:
         """创建一局训练。"""
-        price_series = await self._load_price_series(payload.symbol, payload.start_date, payload.total_days)
+        training_end_date = payload.end_date or self._derive_default_end_date()
+        if payload.end_date or not payload.start_date:
+            price_series = await self._load_price_series_until(payload.symbol, training_end_date, payload.total_days)
+        else:
+            price_series = await self._load_price_series(payload.symbol, payload.start_date, payload.total_days)
         if not price_series:
             raise ValueError("未找到可用于训练的历史行情数据")
 
         cash = float(payload.initial_cash)
         first_bar = price_series[0]
+        last_bar = price_series[-1]
+        start_date = str(first_bar.get("trade_date") or first_bar.get("date") or payload.start_date or "")
+        end_date = str(last_bar.get("trade_date") or last_bar.get("date") or training_end_date)
         session_id = f"train_{uuid4().hex[:16]}"
         session = TrainingSessionResponse(
             session_id=session_id,
             symbol=payload.symbol,
-            start_date=payload.start_date,
+            start_date=start_date,
+            end_date=end_date,
             total_days=payload.total_days,
             initial_cash=cash,
             cash=cash,
@@ -67,6 +184,7 @@ class TrainingService:
 
         self._sessions[session_id] = {
             **session.model_dump(),
+            "owner_id": owner_id,
             "market": payload.market,
             "note": payload.note,
             "price_series": price_series,
@@ -75,16 +193,18 @@ class TrainingService:
             "equity_curve": [round(cash, 2)],
             "report": None,
             "current_price": float(first_bar.get("close", cash) or cash),
-            "last_visible_date": str(first_bar.get("trade_date") or first_bar.get("date") or payload.start_date),
+            "last_visible_date": start_date,
+            "end_date": end_date,
         }
+        await self._persist_state(self._sessions[session_id])
         return session
 
-    async def get_session(self, session_id: str) -> TrainingSessionResponse:
-        state = self._require_session(session_id)
+    async def get_session(self, session_id: str, owner_id: Optional[str] = None) -> TrainingSessionResponse:
+        state = await self._load_session_state(session_id, owner_id=owner_id)
         return self._build_session_response(state)
 
-    async def get_current_step(self, session_id: str) -> TrainingReplayStep:
-        state = self._require_session(session_id)
+    async def get_current_step(self, session_id: str, owner_id: Optional[str] = None) -> TrainingReplayStep:
+        state = await self._load_session_state(session_id, owner_id=owner_id)
         price_series = state.get("price_series", [])
         current_step = int(state.get("current_step", 0))
         visible_bars = price_series[: current_step + 1] if price_series else []
@@ -109,18 +229,19 @@ class TrainingService:
             session=session,
         )
 
-    async def advance_session(self, session_id: str) -> TrainingReplayStep:
-        state = self._require_session(session_id)
+    async def advance_session(self, session_id: str, owner_id: Optional[str] = None) -> TrainingReplayStep:
+        state = await self._load_session_state(session_id, owner_id=owner_id)
         price_series = state.get("price_series", [])
         current_step = int(state.get("current_step", 0))
         max_step = max(len(price_series) - 1, 0)
         state["current_step"] = min(current_step + 1, max_step)
         state["updated_at"] = now_tz()
         self._refresh_mark_to_market(state)
-        return await self.get_current_step(session_id)
+        await self._persist_state(state)
+        return await self.get_current_step(session_id, owner_id=owner_id)
 
-    async def submit_action(self, session_id: str, action: TrainingAction | Dict[str, Any]) -> TrainingSessionResponse:
-        state = self._require_session(session_id)
+    async def submit_action(self, session_id: str, action: TrainingAction | Dict[str, Any], owner_id: Optional[str] = None) -> TrainingSessionResponse:
+        state = await self._load_session_state(session_id, owner_id=owner_id)
         if not isinstance(action, TrainingAction):
             action = TrainingAction.model_validate(action)
         current_price = self._get_current_price(state)
@@ -172,20 +293,25 @@ class TrainingService:
         state["updated_at"] = now_tz()
         state["current_price"] = round(current_price, 4)
         self._append_equity_curve(state)
+        await self._persist_state(state)
         return self._build_session_response(state)
 
-    async def finish_session(self, session_id: str) -> Dict[str, Any]:
-        state = self._require_session(session_id)
+    async def finish_session(self, session_id: str, owner_id: Optional[str] = None) -> Dict[str, Any]:
+        state = await self._load_session_state(session_id, owner_id=owner_id)
         state["status"] = "finished"
         state["updated_at"] = now_tz()
         report = self._build_report_from_state(state)
         state["report"] = report
+        await self._persist_state(state)
         return report
 
-    async def get_report(self, session_id: str) -> Dict[str, Any]:
-        state = self._require_session(session_id)
+    async def get_report(self, session_id: str, owner_id: Optional[str] = None) -> Dict[str, Any]:
+        state = await self._load_session_state(session_id, owner_id=owner_id)
         report = state.get("report")
         if isinstance(report, dict):
+            if report.get("score") is None and report.get("excess_return") is not None:
+                report = dict(report)
+                report["score"] = self._calculate_score(float(report["excess_return"]))
             return report
         return self._build_report_from_state(state)
 
@@ -230,6 +356,39 @@ class TrainingService:
             return self._normalize_price_series(rows, total_days)
         except Exception:
             return []
+
+    async def _load_price_series_until(self, symbol: str, end_date: str, total_days: int) -> List[PriceSeriesRow]:
+        """按回放截止日向前加载训练所需的历史行情。"""
+        try:
+            if self._historical_loader is not None:
+                fallback_start = end_date
+                loaded = self._historical_loader(symbol, fallback_start, total_days)
+                if inspect.isawaitable(loaded):
+                    loaded = await loaded
+                normalized = self._normalize_price_series(loaded, total_days)
+                if len(normalized) > total_days:
+                    normalized = normalized[-total_days:]
+                return normalized
+
+            from app.services.historical_data_service import get_historical_data_service
+
+            service = await get_historical_data_service()
+            rows = await service.get_historical_data(
+                symbol=symbol,
+                end_date=end_date,
+                period="daily",
+                limit=max(total_days * 8, 120),
+            )
+            normalized = self._normalize_price_series(rows, total_days)
+            if len(normalized) > total_days:
+                normalized = normalized[-total_days:]
+            return normalized
+        except Exception:
+            return []
+
+    @staticmethod
+    def _derive_default_end_date() -> str:
+        return now_tz().strftime("%Y-%m-%d")
 
     def generate_rule_advice(
         self,
@@ -305,6 +464,7 @@ class TrainingService:
         benchmark = self._buy_and_hold_benchmark(initial_cash, price_series)
         buy_and_hold_return = benchmark.return_rate
         excess_return = round(active_return - buy_and_hold_return, 6)
+        score = self._calculate_score(excess_return)
 
         equity_curve = self._resolve_equity_curve(session, price_series)
         max_drawdown = self._max_drawdown(equity_curve)
@@ -324,6 +484,7 @@ class TrainingService:
             active_return=round(active_return, 6),
             buy_and_hold_return=round(buy_and_hold_return, 6),
             excess_return=excess_return,
+            score=score,
             trade_count=int(session.get("trade_count", len(trades))),
             max_drawdown=max_drawdown,
             good_trades=good_trades,
@@ -346,6 +507,7 @@ class TrainingService:
             symbol_name=state.get("symbol_name"),
             market=state.get("market", "CN"),
             start_date=state["start_date"],
+            end_date=str(state.get("end_date", "")),
             current_step=int(state.get("current_step", 0)),
             total_days=int(state.get("total_days", 30)),
             initial_cash=float(state.get("initial_cash", 100000)),
@@ -603,6 +765,8 @@ class TrainingService:
 
     @staticmethod
     def _resolve_end_date(session: Dict[str, Any], price_series: List[Dict[str, Any]]) -> str:
+        if session.get("end_date"):
+            return str(session.get("end_date"))
         if price_series:
             last_bar = price_series[-1]
             return str(last_bar.get("trade_date") or last_bar.get("date") or session.get("start_date", ""))

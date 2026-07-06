@@ -1,8 +1,9 @@
-import { request, type ApiResponse } from './request'
+import { request, type ApiResponse, type RequestConfig } from './request'
 
 export interface TrainingSessionCreateRequest {
   symbol: string
-  start_date: string
+  start_date?: string
+  end_date?: string
   initial_cash?: number
   total_days?: number
   market?: 'CN'
@@ -42,6 +43,7 @@ export interface TrainingSessionResponse {
   symbol_name?: string
   market?: 'CN'
   start_date: string
+  end_date: string
   current_step: number
   total_days: number
   initial_cash: number
@@ -52,6 +54,29 @@ export interface TrainingSessionResponse {
   total_equity: number
   trade_count: number
   status: 'active' | 'finished' | 'paused'
+  created_at: string
+  updated_at: string
+}
+
+export interface TrainingSessionSummary {
+  session_id: string
+  symbol: string
+  symbol_name?: string
+  market?: 'CN'
+  start_date: string
+  end_date: string
+  current_step: number
+  total_days: number
+  initial_cash: number
+  cash: number
+  total_equity: number
+  trade_count: number
+  active_return?: number | null
+  buy_and_hold_return?: number | null
+  excess_return?: number | null
+  score?: number | null
+  status: 'active' | 'finished' | 'paused'
+  note?: string | null
   created_at: string
   updated_at: string
 }
@@ -88,6 +113,7 @@ export interface TrainingReport {
   active_return: number
   buy_and_hold_return: number
   excess_return: number
+  score: number
   trade_count: number
   max_drawdown: number
   good_trades: Array<Record<string, any>>
@@ -100,12 +126,16 @@ export const trainingApi = {
     return request.post('/api/training/sessions', payload)
   },
 
-  getSession(sessionId: string): Promise<ApiResponse<TrainingSessionResponse>> {
-    return request.get(`/api/training/sessions/${sessionId}`)
+  getSession(sessionId: string, config?: RequestConfig): Promise<ApiResponse<TrainingSessionResponse>> {
+    return request.get(`/api/training/sessions/${sessionId}`, config)
   },
 
-  getStep(sessionId: string): Promise<ApiResponse<TrainingReplayStep>> {
-    return request.get(`/api/training/sessions/${sessionId}/step`)
+  listSessions(config?: RequestConfig): Promise<ApiResponse<TrainingSessionSummary[]>> {
+    return request.get('/api/training/sessions', config)
+  },
+
+  getStep(sessionId: string, config?: RequestConfig): Promise<ApiResponse<TrainingReplayStep>> {
+    return request.get(`/api/training/sessions/${sessionId}/step`, config)
   },
 
   submitAction(sessionId: string, payload: TrainingActionRequest): Promise<ApiResponse<TrainingSessionResponse>> {
@@ -120,7 +150,7 @@ export const trainingApi = {
     return request.post(`/api/training/sessions/${sessionId}/finish`, {})
   },
 
-  getReport(sessionId: string): Promise<ApiResponse<TrainingReport>> {
-    return request.get(`/api/training/sessions/${sessionId}/report`)
+  getReport(sessionId: string, config?: RequestConfig): Promise<ApiResponse<TrainingReport>> {
+    return request.get(`/api/training/sessions/${sessionId}/report`, config)
   },
 }
