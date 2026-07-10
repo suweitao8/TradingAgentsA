@@ -236,25 +236,26 @@ function pctClass(pct: number): string {
   return ''
 }
 
-// 均线斜率：>0上升↑ <0下降↓ =0走平→
+// 均线斜率（度数）：>0上升↑ <0下降↓ ≈0走平→
 function slopeArrow(val?: number): string {
   if (val === undefined || val === null) return '-'
-  if (val > 0.00005) return '↑'
-  if (val < -0.00005) return '↓'
+  if (val > 0.1) return '↑'
+  if (val < -0.1) return '↓'
   return '→'
 }
 
 function slopeClass(val?: number): string {
   if (val === undefined || val === null) return 'text-muted'
-  if (val > 0.00005) return 'text-danger'   // 上升=红（A 股惯例）
-  if (val < -0.00005) return 'text-success'  // 下降=绿
-  return 'text-muted'                        // 走平=灰
+  if (val > 0.1) return 'text-danger'   // 上升=红（A 股惯例）
+  if (val < -0.1) return 'text-success'  // 下降=绿
+  return 'text-muted'                    // 走平=灰
 }
 
-// 格式化斜率数值显示：0.0012 → "0.0012"，-0.0003 → "-0.0003"
+// 格式化度数显示：-2.9 → "-2.9°"，0.0 → "0°"
 function slopeVal(val?: number): string {
   if (val === undefined || val === null) return ''
-  return val.toFixed(4).replace(/0+$/, '').replace(/\.$/, '')
+  if (val === 0) return '0°'
+  return `${val.toFixed(1)}°`
 }
 
 function typeTagType(type: string): '' | 'success' | 'warning' | 'info' | 'danger' {

@@ -347,7 +347,11 @@ def _calc_ma_slope(closes: list, window: int) -> dict:
         end_b = len(vals) - 1 - offset
         ma_a = sum(vals[end_a - window:end_a]) / window
         ma_b = sum(vals[end_b - window:end_b]) / window
-        return round(ma_a - ma_b, 4)
+        diff = ma_a - ma_b
+        # 转角度：arctan(diff * 100) 放大到有区分度的度数范围
+        # 微弱趋势 ±2-3°，明显趋势 ±15-25°，剧烈趋势 ±45°+
+        import math
+        return round(math.degrees(math.atan(diff * 100)), 1)
 
     return {"now": _slope(closes, 0), "prev": _slope(closes, 1)}
 
