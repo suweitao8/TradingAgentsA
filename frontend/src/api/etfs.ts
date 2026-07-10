@@ -31,22 +31,9 @@ export interface AddEtfReq {
   notes?: string
 }
 
-/** 预置热门 ETF 条目（含实时行情 + 是否已加入） */
-export interface PopularEtf {
-  fund_code: string
-  fund_name: string
-  fund_type: string
-  current_price?: number | null
-  change_percent?: number | null
-  is_added?: boolean
-}
-
 export const etfsApi = {
   /** 获取 ETF 自选列表（含实时行情） */
   list: () => ApiClient.get<EtfItem[]>('/api/etfs/'),
-
-  /** 获取预置热门 ETF 清单 */
-  popular: () => ApiClient.get<PopularEtf[]>('/api/etfs/popular'),
 
   /** 添加 ETF */
   add: (payload: AddEtfReq) => ApiClient.post('/api/etfs/', payload),
