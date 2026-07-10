@@ -26,7 +26,7 @@ import asyncio
 from pathlib import Path
 
 from app.core.config import settings
-from app.core.database import init_db, close_db
+from app.core.database import init_db, close_db, get_mongo_db
 from app.core.logging_config import setup_logging
 from app.core.redis_client import init_redis, close_redis
 from app.routers import settings_api, analysis, screening, queue, sse, health, favorites, etfs, config, reports, database, operation_logs, tags, tushare_init, akshare_init, baostock_init, historical_data, multi_period_sync, financial_data, news_data, internal_messages, usage_statistics, model_capabilities, cache, logs, data_collection
@@ -717,6 +717,44 @@ async def lifespan(app: FastAPI):
             name="概念板块词表每日刷新（盘前08:50）",
         )
         logger.info("📋 概念板块每日刷新已配置: 工作日 08:50")
+
+        # ---- ETF 均线斜率后台刷新（每分钟，交易时段内持续刷新 Redis 缓存）----
+        async def run_etf_ma_refresh():
+            """后台定时拉取用户 ETF 的分时 K 线，计算 MA5/MA10 斜率写入 Redis。
+
+            前端打开 ETF 页面时直接读 Redis 缓存秒出，无需等待实时拉取。
+            """
+            try:
+                from app.services.etfs_service import etfs_service
+                from app.services.quotes_service import refresh_etf_ma_slopes_cache
+
+                # 获取所有用户的 ETF 代码（单用户模式下只有一个用户）
+                db = get_mongo_db()
+                cursor = db.user_etfs.find({}, {"etfs.fund_code": 1, "_id": 0})
+                docs = await cursor.to_list(length=None)
+
+                all_codes = set()
+                for doc in docs:
+                    for etf in (doc.get("etfs") or []):
+                        code = etf.get("fund_code")
+                        if code:
+                            all_codes.add(str(code).strip().zfill(6))
+
+                if all_codes:
+                    await refresh_etf_ma_slopes_cache(list(all_codes))
+            except Exception as e:
+                logger.error(f"❌ [ETF MA] 后台刷新失败: {e}")
+
+        scheduler.add_job(
+            run_etf_ma_refresh,
+            "interval",
+            seconds=60,
+            id="etf_ma_refresh",
+            name="ETF 均线斜率后台刷新（每分钟）",
+            max_instances=1,
+            coalesce=True,
+        )
+        logger.info("📈 ETF 均线斜率后台刷新已配置: 每 60 秒")
 
         scheduler.start()
 
