@@ -33,7 +33,6 @@
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item command="/bilibili">B站</el-dropdown-item>
             <el-dropdown-item command="/etfs">ETF</el-dropdown-item>
             <el-dropdown-item command="/favorites">股票</el-dropdown-item>
             <el-dropdown-item command="/dashboard" divided>仪表板</el-dropdown-item>
@@ -58,7 +57,6 @@
           </button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="/bilibili">B站</el-dropdown-item>
               <el-dropdown-item command="/dashboard">仪表板</el-dropdown-item>
               <el-dropdown-item command="/training">模拟炒股</el-dropdown-item>
               <el-dropdown-item command="/analysis/single" divided>单股分析</el-dropdown-item>
@@ -127,7 +125,6 @@ import {
   Star,
   TrendCharts,
   DataAnalysis,
-  VideoCamera,
   MoreFilled,
   Menu,
   Bell,
@@ -142,9 +139,8 @@ const notifStore = useNotificationStore()
 const { unreadCount, items } = storeToRefs(notifStore)
 
 // ---- 导航链接 ----
-// 主入口：B站、ETF、训练、股票
+// 主入口：ETF、模拟炒股、股票
 const navLinks = [
-  { path: '/bilibili', label: 'B站', icon: VideoCamera },
   { path: '/etfs', label: 'ETF', icon: TrendCharts },
   { path: '/training', label: '模拟炒股', icon: DataAnalysis },
   { path: '/favorites', label: '股票', icon: Star },

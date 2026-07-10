@@ -29,7 +29,7 @@ from app.core.config import settings
 from app.core.database import init_db, close_db
 from app.core.logging_config import setup_logging
 from app.core.redis_client import init_redis, close_redis
-from app.routers import settings_api, analysis, screening, queue, sse, health, favorites, etfs, bilibili, config, reports, database, operation_logs, tags, tushare_init, akshare_init, baostock_init, historical_data, multi_period_sync, financial_data, news_data, internal_messages, usage_statistics, model_capabilities, cache, logs, data_collection, training
+from app.routers import settings_api, analysis, screening, queue, sse, health, favorites, etfs, config, reports, database, operation_logs, tags, tushare_init, akshare_init, baostock_init, historical_data, multi_period_sync, financial_data, news_data, internal_messages, usage_statistics, model_capabilities, cache, logs, data_collection, training
 from app.routers import sync as sync_router, multi_source_sync
 from app.routers import stocks as stocks_router
 from app.routers import stock_data as stock_data_router
@@ -789,7 +789,6 @@ app.include_router(screening.router, prefix="/api/screening", tags=["screening"]
 app.include_router(queue.router, prefix="/api/queue", tags=["queue"])
 app.include_router(favorites.router, prefix="/api", tags=["favorites"])
 app.include_router(etfs.router, prefix="/api", tags=["etfs"])
-app.include_router(bilibili.router, prefix="/api", tags=["bilibili"])
 app.include_router(stocks_router.router, prefix="/api", tags=["stocks"])
 app.include_router(stock_data_router.router, tags=["stock-data"])
 app.include_router(stock_sync_router.router, tags=["stock-sync"])
