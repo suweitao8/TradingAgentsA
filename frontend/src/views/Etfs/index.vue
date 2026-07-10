@@ -83,41 +83,49 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="1分MA" width="85" align="center">
+        <el-table-column label="1分MA" width="95" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_1m">
-              <span :class="slopeClass(row.ma_slope_1m.ma5)">MA5 {{ slopeArrow(row.ma_slope_1m.ma5) }}</span>
-              <span :class="slopeClass(row.ma_slope_1m.ma10)">MA10 {{ slopeArrow(row.ma_slope_1m.ma10) }}</span>
+              <span :class="slopeClass(row.ma_slope_1m.ma5?.prev)">5P {{ slopeArrow(row.ma_slope_1m.ma5?.prev) }}</span>
+              <span :class="slopeClass(row.ma_slope_1m.ma5?.now)">5N {{ slopeArrow(row.ma_slope_1m.ma5?.now) }}</span>
+              <span :class="slopeClass(row.ma_slope_1m.ma10?.prev)">10P {{ slopeArrow(row.ma_slope_1m.ma10?.prev) }}</span>
+              <span :class="slopeClass(row.ma_slope_1m.ma10?.now)">10N {{ slopeArrow(row.ma_slope_1m.ma10?.now) }}</span>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="5分MA" width="85" align="center">
+        <el-table-column label="5分MA" width="95" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_5m">
-              <span :class="slopeClass(row.ma_slope_5m.ma5)">MA5 {{ slopeArrow(row.ma_slope_5m.ma5) }}</span>
-              <span :class="slopeClass(row.ma_slope_5m.ma10)">MA10 {{ slopeArrow(row.ma_slope_5m.ma10) }}</span>
+              <span :class="slopeClass(row.ma_slope_5m.ma5?.prev)">5P {{ slopeArrow(row.ma_slope_5m.ma5?.prev) }}</span>
+              <span :class="slopeClass(row.ma_slope_5m.ma5?.now)">5N {{ slopeArrow(row.ma_slope_5m.ma5?.now) }}</span>
+              <span :class="slopeClass(row.ma_slope_5m.ma10?.prev)">10P {{ slopeArrow(row.ma_slope_5m.ma10?.prev) }}</span>
+              <span :class="slopeClass(row.ma_slope_5m.ma10?.now)">10N {{ slopeArrow(row.ma_slope_5m.ma10?.now) }}</span>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="15分MA" width="85" align="center">
+        <el-table-column label="15分MA" width="95" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_15m">
-              <span :class="slopeClass(row.ma_slope_15m.ma5)">MA5 {{ slopeArrow(row.ma_slope_15m.ma5) }}</span>
-              <span :class="slopeClass(row.ma_slope_15m.ma10)">MA10 {{ slopeArrow(row.ma_slope_15m.ma10) }}</span>
+              <span :class="slopeClass(row.ma_slope_15m.ma5?.prev)">5P {{ slopeArrow(row.ma_slope_15m.ma5?.prev) }}</span>
+              <span :class="slopeClass(row.ma_slope_15m.ma5?.now)">5N {{ slopeArrow(row.ma_slope_15m.ma5?.now) }}</span>
+              <span :class="slopeClass(row.ma_slope_15m.ma10?.prev)">10P {{ slopeArrow(row.ma_slope_15m.ma10?.prev) }}</span>
+              <span :class="slopeClass(row.ma_slope_15m.ma10?.now)">10N {{ slopeArrow(row.ma_slope_15m.ma10?.now) }}</span>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="30分MA" width="85" align="center">
+        <el-table-column label="30分MA" width="95" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_30m">
-              <span :class="slopeClass(row.ma_slope_30m.ma5)">MA5 {{ slopeArrow(row.ma_slope_30m.ma5) }}</span>
-              <span :class="slopeClass(row.ma_slope_30m.ma10)">MA10 {{ slopeArrow(row.ma_slope_30m.ma10) }}</span>
+              <span :class="slopeClass(row.ma_slope_30m.ma5?.prev)">5P {{ slopeArrow(row.ma_slope_30m.ma5?.prev) }}</span>
+              <span :class="slopeClass(row.ma_slope_30m.ma5?.now)">5N {{ slopeArrow(row.ma_slope_30m.ma5?.now) }}</span>
+              <span :class="slopeClass(row.ma_slope_30m.ma10?.prev)">10P {{ slopeArrow(row.ma_slope_30m.ma10?.prev) }}</span>
+              <span :class="slopeClass(row.ma_slope_30m.ma10?.now)">10N {{ slopeArrow(row.ma_slope_30m.ma10?.now) }}</span>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
@@ -217,13 +225,15 @@ function pctClass(pct: number): string {
 }
 
 // 均线斜率方向：1=上升↑ -1=下降↓ 0=走平→
-function slopeArrow(val: number): string {
+function slopeArrow(val?: number): string {
+  if (val === undefined || val === null) return '-'
   if (val > 0) return '↑'
   if (val < 0) return '↓'
   return '→'
 }
 
-function slopeClass(val: number): string {
+function slopeClass(val?: number): string {
+  if (val === undefined || val === null) return 'text-muted'
   if (val > 0) return 'text-danger'   // 上升=红（A 股惯例）
   if (val < 0) return 'text-success'  // 下降=绿
   return 'text-muted'                  // 走平=灰

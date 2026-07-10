@@ -16,10 +16,16 @@ export interface EtfItem {
   turnover_rate?: number | null  // 换手率(%)
   volume_ratio?: number | null   // 量比
   // 分时均线斜率（1=上升, -1=下降, 0=走平）
-  ma_slope_1m?: { ma5: number; ma10: number }
-  ma_slope_5m?: { ma5: number; ma10: number }
-  ma_slope_15m?: { ma5: number; ma10: number }
-  ma_slope_30m?: { ma5: number; ma10: number }
+  // now=当前斜率, prev=上一根斜率
+  ma_slope_1m?: { ma5: SlopeDir; ma10: SlopeDir }
+  ma_slope_5m?: { ma5: SlopeDir; ma10: SlopeDir }
+  ma_slope_15m?: { ma5: SlopeDir; ma10: SlopeDir }
+  ma_slope_30m?: { ma5: SlopeDir; ma10: SlopeDir }
+}
+
+interface SlopeDir {
+  now: number
+  prev: number
 }
 
 /** 添加 ETF 请求 */

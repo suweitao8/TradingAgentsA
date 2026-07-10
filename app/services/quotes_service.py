@@ -319,23 +319,27 @@ def _aggregate_closes(closes_1m: list, period: int) -> list:
     return result
 
 
-def _calc_ma_slope(closes: list, window: int) -> int:
-    """计算 MA(window) 的斜率方向。
+def _calc_ma_slope(closes: list, window: int) -> dict:
+    """计算 MA(window) 的当前斜率和上一根斜率方向。
 
-    斜率 = 最后一个 MA 值 - 倒数第二个 MA 值。
-    返回 1(上升)/-1(下降)/0(走平或数据不足)。
+    返回 {"now": int, "prev": int}
+    - now: 当前斜率（最后一根 MA - 倒数第二根 MA）
+    - prev: 上一根斜率（倒数第二根 MA - 倒数第三根 MA）
+    值含义: 1=上升, -1=下降, 0=走平或数据不足
     """
-    if len(closes) < window + 1:
+    def _slope(vals, offset=0):
+        if len(vals) < window + 1 + offset:
+            return 0
+        ma_a = sum(vals[-(window + offset):(len(vals) - offset) if offset > 0 else None]) / window
+        ma_b = sum(vals[-(window + 1 + offset):-(1 + offset) if (1 + offset) > 0 else None]) / window
+        diff = ma_a - ma_b
+        if diff > 0.0001:
+            return 1
+        elif diff < -0.0001:
+            return -1
         return 0
-    # 计算 MA 序列的最后两个值
-    ma_now = sum(closes[-window:]) / window
-    ma_prev = sum(closes[-window - 1:-1]) / window
-    diff = ma_now - ma_prev
-    if diff > 0.0001:
-        return 1
-    elif diff < -0.0001:
-        return -1
-    return 0
+
+    return {"now": _slope(closes, 0), "prev": _slope(closes, 1)}
 
 
 # Redis 缓存键前缀和 TTL
@@ -354,7 +358,7 @@ async def get_etf_ma_slopes(codes: list) -> dict:
         codes: ETF 代码列表
 
     Returns:
-        {code: {"ma_slope_1m": {"ma5": int, "ma10": int}, ...}}
+        {code: {"ma_slope_1m": {"ma5": {"now": int, "prev": int}, "ma10": {"now": int, "prev": int}}, ...}}
         int 含义: 1=上升, -1=下降, 0=走平
     """
     import json as _json
@@ -404,10 +408,10 @@ async def get_etf_ma_slopes(codes: list) -> dict:
     for code in codes:
         if code not in result:
             result[code] = {
-                "ma_slope_1m": {"ma5": 0, "ma10": 0},
-                "ma_slope_5m": {"ma5": 0, "ma10": 0},
-                "ma_slope_15m": {"ma5": 0, "ma10": 0},
-                "ma_slope_30m": {"ma5": 0, "ma10": 0},
+                "ma_slope_1m": {"ma5": {"now": 0, "prev": 0}, "ma10": {"now": 0, "prev": 0}},
+                "ma_slope_5m": {"ma5": {"now": 0, "prev": 0}, "ma10": {"now": 0, "prev": 0}},
+                "ma_slope_15m": {"ma5": {"now": 0, "prev": 0}, "ma10": {"now": 0, "prev": 0}},
+                "ma_slope_30m": {"ma5": {"now": 0, "prev": 0}, "ma10": {"now": 0, "prev": 0}},
             }
 
     return result
@@ -423,10 +427,10 @@ async def _fetch_and_calc_slopes(codes: list) -> dict:
         closes_1m = await asyncio.to_thread(_fetch_kline_closes, code)
         if not closes_1m:
             return code, {
-                "ma_slope_1m": {"ma5": 0, "ma10": 0},
-                "ma_slope_5m": {"ma5": 0, "ma10": 0},
-                "ma_slope_15m": {"ma5": 0, "ma10": 0},
-                "ma_slope_30m": {"ma5": 0, "ma10": 0},
+                "ma_slope_1m": {"ma5": {"now": 0, "prev": 0}, "ma10": {"now": 0, "prev": 0}},
+                "ma_slope_5m": {"ma5": {"now": 0, "prev": 0}, "ma10": {"now": 0, "prev": 0}},
+                "ma_slope_15m": {"ma5": {"now": 0, "prev": 0}, "ma10": {"now": 0, "prev": 0}},
+                "ma_slope_30m": {"ma5": {"now": 0, "prev": 0}, "ma10": {"now": 0, "prev": 0}},
             }
 
         closes_5m = _aggregate_closes(closes_1m, 5)
