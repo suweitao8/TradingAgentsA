@@ -28,6 +28,7 @@
         :data="filteredEtfs"
         v-loading="loading"
         style="width: 100%"
+        border
         :row-class-name="({ row }) => getEtfTypeClass(row.fund_type)"
         @row-contextmenu="handleRowContextMenu"
       >
@@ -437,10 +438,6 @@ onBeforeUnmount(() => {
 
 .etfs-list-card {
   min-height: 400px;
-
-  :deep(.el-table__cell) {
-    border-right: none !important;
-  }
 }
 
 .fund-code-link {
