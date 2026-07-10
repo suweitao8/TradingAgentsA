@@ -30,28 +30,6 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '文档跳转', hideInMenu: true, requiresAuth: false }
   },
   {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: () => import('@/layouts/BasicLayout.vue'),
-    meta: {
-      title: '仪表板',
-      icon: 'Dashboard',
-      requiresAuth: true,
-      transition: 'fade'
-    },
-    children: [
-      {
-        path: '',
-        name: 'DashboardHome',
-        component: () => import('@/views/Dashboard/index.vue'),
-        meta: {
-          title: '仪表板',
-          requiresAuth: true
-        }
-      }
-    ]
-  },
-  {
     path: '/analysis',
     name: 'Analysis',
     component: () => import('@/layouts/BasicLayout.vue'),

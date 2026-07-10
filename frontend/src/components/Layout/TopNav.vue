@@ -35,8 +35,7 @@
           <el-dropdown-menu>
             <el-dropdown-item command="/etfs">ETF</el-dropdown-item>
             <el-dropdown-item command="/favorites">股票</el-dropdown-item>
-            <el-dropdown-item command="/dashboard" divided>仪表板</el-dropdown-item>
-            <el-dropdown-item command="/analysis/single">单股分析</el-dropdown-item>
+            <el-dropdown-item command="/analysis/single" divided>单股分析</el-dropdown-item>
             <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
             <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
             <el-dropdown-item command="/tasks">任务中心</el-dropdown-item>
@@ -56,8 +55,7 @@
           </button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="/dashboard">仪表板</el-dropdown-item>
-              <el-dropdown-item command="/analysis/single" divided>单股分析</el-dropdown-item>
+              <el-dropdown-item command="/analysis/single">单股分析</el-dropdown-item>
               <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
               <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
               <el-dropdown-item command="/tasks" divided>任务中心</el-dropdown-item>
@@ -147,10 +145,9 @@ const isActive = (link: { path: string }) => {
   return route.path === link.path || route.path.startsWith(link.path + '/')
 }
 
-// 「更多」下拉涵盖了仪表板/分析/报告/任务中心/学习中心/数据采集/关于
+// 「更多」下拉涵盖了分析/报告/任务中心/学习中心/数据采集/关于
 const isMoreActive = computed(() => {
   return (
-    route.path.startsWith('/dashboard') ||
     route.path.startsWith('/analysis') ||
     route.path.startsWith('/reports') ||
     route.path.startsWith('/tasks') ||
