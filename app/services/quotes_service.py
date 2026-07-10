@@ -109,6 +109,7 @@ class QuotesService:
                         "amount": _safe_float(item.get("f6")),
                         "turnover_rate": _safe_float(item.get("f8")),
                         "volume_ratio": _safe_float(item.get("f10")),
+                        "name": item.get("f14", ""),
                     }
                 # 已拉完全部
                 if total and len(result) >= total:
@@ -181,7 +182,7 @@ class QuotesService:
                 "invt": "2",
                 "fid": "f12",
                 "fs": "b:MK0021",  # 沪深 ETF 基金
-                "fields": "f2,f3,f6,f8,f10,f12",
+                "fields": "f2,f3,f6,f8,f10,f12,f14",  # f14=名称
             }
 
             result: Dict[str, Dict[str, Optional[float]]] = {}
@@ -210,6 +211,7 @@ class QuotesService:
                         "amount": _safe_float(item.get("f6")),
                         "turnover_rate": _safe_float(item.get("f8")),
                         "volume_ratio": _safe_float(item.get("f10")),
+                        "name": item.get("f14", ""),
                     }
                 if total and len(result) >= total:
                     break
