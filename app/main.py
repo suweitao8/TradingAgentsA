@@ -640,7 +640,6 @@ async def lifespan(app: FastAPI):
             logger.info("⏸️ 自选股分析报告定时任务未启用（FAVORITE_REPORT_ENABLED=False）")
 
         # ==================== 快讯实时拉取 + 板块利好利空分析 ====================
-        from apscheduler.triggers.interval import IntervalTrigger
         from app.utils.trading_time import is_trading_time as _is_trading_time
         from app.worker.news_data_sync_service import get_news_data_sync_service as _get_news_sync_svc
         from app.services.sector_analysis_service import get_sector_analysis_service as _get_sector_svc
