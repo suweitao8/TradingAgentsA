@@ -338,14 +338,17 @@ def _calc_ma_slope(closes: list, window: int) -> int:
     return 0
 
 
+# Redis 缓存键前缀和 TTL
+_ETF_MA_CACHE_PREFIX = "etf_ma:"
+_ETF_MA_CACHE_TTL = 120  # 2 分钟，后台定时任务每分钟刷新
+
+
 async def get_etf_ma_slopes(codes: list) -> dict:
     """批量获取 ETF 的分时 MA5/MA10 斜率方向。
 
-    优化策略：push2delay 只有 1 分钟 K 线有数据，所以每只 ETF 只请求一次
-    1 分钟 K 线（240 根），然后本地聚合出 5/15/30 分钟序列再算 MA5/MA10。
-    将 N×4 次请求降到 N 次，耗时从 ~10s 降到 ~2s。
-
-    结果 60s 内存缓存（均线斜率不需要实时性，1 分钟更新一次足够）。
+    数据流：Redis 缓存（后台定时任务每分钟刷新）→ 未命中的实时拉取。
+    前端打开页面时大部分数据已在 Redis 里，直接 mget 秒出；
+    只有新添加的 ETF 首次访问时需实时拉取（0.7s），之后由后台任务接管。
 
     Args:
         codes: ETF 代码列表
@@ -354,20 +357,69 @@ async def get_etf_ma_slopes(codes: list) -> dict:
         {code: {"ma_slope_1m": {"ma5": int, "ma10": int}, ...}}
         int 含义: 1=上升, -1=下降, 0=走平
     """
+    import json as _json
+
     codes = [c.strip().zfill(6) for c in codes if c]
     if not codes:
         return {}
 
-    # 缓存（60s，均线斜率不需要高频更新）
-    now = time.time()
-    cache_key = ",".join(codes)
-    if hasattr(get_etf_ma_slopes, "_cache"):
-        cached = get_etf_ma_slopes._cache
-        if cached.get("key") == cache_key and (now - cached.get("ts", 0)) < 60:
-            return cached["data"]
+    result = {}
+    missing_codes = []
 
-    async def _fetch_and_calc(code: str) -> tuple:
-        """拉取单只 ETF 的 1 分钟 K 线，聚合算 4 个周期的 MA 斜率。"""
+    # 1) 优先从 Redis 批量读取（后台任务已缓存的）
+    try:
+        from app.core.redis_client import get_redis
+        redis = get_redis()
+        keys = [f"{_ETF_MA_CACHE_PREFIX}{c}" for c in codes]
+        values = await redis.mget(keys)
+        for code, val in zip(codes, values):
+            if val:
+                try:
+                    result[code] = _json.loads(val)
+                except Exception:
+                    missing_codes.append(code)
+            else:
+                missing_codes.append(code)
+    except Exception as e:
+        logger.debug(f"ETF MA Redis 缓存读取跳过: {e}")
+        missing_codes = list(codes)
+
+    # 2) 未命中的实时拉取（新添加的 ETF 首次访问）
+    if missing_codes:
+        fresh_data = await _fetch_and_calc_slopes(missing_codes)
+        result.update(fresh_data)
+
+        # 回写 Redis 供后续使用
+        try:
+            from app.core.redis_client import get_redis
+            redis = get_redis()
+            pipe = redis.pipeline()
+            for code, slopes in fresh_data.items():
+                pipe.setex(f"{_ETF_MA_CACHE_PREFIX}{code}", _ETF_MA_CACHE_TTL, _json.dumps(slopes))
+            await pipe.execute()
+        except Exception as e:
+            logger.debug(f"ETF MA Redis 缓存写入跳过: {e}")
+
+    # 3) 对仍无数据的 ETF 填充默认值
+    for code in codes:
+        if code not in result:
+            result[code] = {
+                "ma_slope_1m": {"ma5": 0, "ma10": 0},
+                "ma_slope_5m": {"ma5": 0, "ma10": 0},
+                "ma_slope_15m": {"ma5": 0, "ma10": 0},
+                "ma_slope_30m": {"ma5": 0, "ma10": 0},
+            }
+
+    return result
+
+
+async def _fetch_and_calc_slopes(codes: list) -> dict:
+    """拉取多只 ETF 的 1 分钟 K 线并计算 4 周期 MA 斜率。
+
+    每只 ETF 只请求 1 次 1 分钟 K 线（用全局 Session 复用连接），
+    本地聚合算 5/15/30 分钟，再算 MA5/MA10 斜率。
+    """
+    async def _fetch_one(code: str) -> tuple:
         closes_1m = await asyncio.to_thread(_fetch_kline_closes, code)
         if not closes_1m:
             return code, {
@@ -377,7 +429,6 @@ async def get_etf_ma_slopes(codes: list) -> dict:
                 "ma_slope_30m": {"ma5": 0, "ma10": 0},
             }
 
-        # 本地聚合 5/15/30 分钟收盘价序列
         closes_5m = _aggregate_closes(closes_1m, 5)
         closes_15m = _aggregate_closes(closes_1m, 15)
         closes_30m = _aggregate_closes(closes_1m, 30)
@@ -389,11 +440,9 @@ async def get_etf_ma_slopes(codes: list) -> dict:
             "ma_slope_30m": {"ma5": _calc_ma_slope(closes_30m, 5), "ma10": _calc_ma_slope(closes_30m, 10)},
         }
 
-    # 并行请求：每只 ETF 只 1 次 HTTP 请求
-    tasks = [_fetch_and_calc(code) for code in codes]
+    tasks = [_fetch_one(code) for code in codes]
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    # 组装结果
     slope_data = {}
     for result in results:
         if isinstance(result, Exception):
@@ -402,17 +451,40 @@ async def get_etf_ma_slopes(codes: list) -> dict:
         code, slopes = result
         slope_data[code] = slopes
 
-    # 对失败的 ETF 填充默认值
-    for code in codes:
-        if code not in slope_data:
-            slope_data[code] = {
-                "ma_slope_1m": {"ma5": 0, "ma10": 0},
-                "ma_slope_5m": {"ma5": 0, "ma10": 0},
-                "ma_slope_15m": {"ma5": 0, "ma10": 0},
-                "ma_slope_30m": {"ma5": 0, "ma10": 0},
-            }
-
-    # 写缓存
-    get_etf_ma_slopes._cache = {"key": cache_key, "ts": now, "data": slope_data}
     return slope_data
+
+
+async def refresh_etf_ma_slopes_cache(codes: list) -> int:
+    """后台定时任务：刷新 ETF 均线斜率到 Redis。
+
+    由 APScheduler 每分钟调用，拉取所有用户 ETF 的最新 K 线，
+    计算斜率后写入 Redis（TTL=120s）。前端读取时直接命中 Redis 秒出。
+
+    Returns:
+        成功刷新的 ETF 数量
+    """
+    import json as _json
+
+    codes = [c.strip().zfill(6) for c in codes if c]
+    if not codes:
+        return 0
+
+    # 实时拉取并计算
+    fresh_data = await _fetch_and_calc_slopes(codes)
+    if not fresh_data:
+        return 0
+
+    # 写入 Redis
+    try:
+        from app.core.redis_client import get_redis
+        redis = get_redis()
+        pipe = redis.pipeline()
+        for code, slopes in fresh_data.items():
+            pipe.setex(f"{_ETF_MA_CACHE_PREFIX}{code}", _ETF_MA_CACHE_TTL, _json.dumps(slopes))
+        await pipe.execute()
+        logger.info(f"[ETF MA] 后台刷新 {len(fresh_data)}/{len(codes)} 只 ETF 均线斜率到 Redis")
+        return len(fresh_data)
+    except Exception as e:
+        logger.warning(f"[ETF MA] Redis 写入失败: {e}")
+        return 0
 
