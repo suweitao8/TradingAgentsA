@@ -718,17 +718,19 @@ async def lifespan(app: FastAPI):
         )
         logger.info("📋 概念板块每日刷新已配置: 工作日 08:50")
 
-        # ---- ETF 均线斜率后台刷新（每分钟，交易时段内持续刷新 Redis 缓存）----
+        # ---- ETF 行情+均线斜率后台刷新（每分钟，交易时段内持续刷新 Redis 缓存）----
         async def run_etf_ma_refresh():
-            """后台定时拉取用户 ETF 的分时 K 线，计算 MA5/MA10 斜率写入 Redis。
+            """后台定时拉取全市场 ETF 行情 + 用户 ETF 均线斜率，写入 Redis。
 
             前端打开 ETF 页面时直接读 Redis 缓存秒出，无需等待实时拉取。
             """
             try:
-                from app.services.etfs_service import etfs_service
-                from app.services.quotes_service import refresh_etf_ma_slopes_cache
+                from app.services.quotes_service import refresh_etf_ma_slopes_cache, refresh_etf_spot_cache
 
-                # 获取所有用户的 ETF 代码（单用户模式下只有一个用户）
+                # 1) 刷新全市场 ETF spot 快照到 Redis（避免前端偶发性超长等待）
+                await refresh_etf_spot_cache()
+
+                # 2) 刷新用户 ETF 均线斜率到 Redis
                 db = get_mongo_db()
                 cursor = db.user_etfs.find({}, {"etfs.fund_code": 1, "_id": 0})
                 docs = await cursor.to_list(length=None)
@@ -743,14 +745,14 @@ async def lifespan(app: FastAPI):
                 if all_codes:
                     await refresh_etf_ma_slopes_cache(list(all_codes))
             except Exception as e:
-                logger.error(f"❌ [ETF MA] 后台刷新失败: {e}")
+                logger.error(f"❌ [ETF] 后台刷新失败: {e}")
 
         scheduler.add_job(
             run_etf_ma_refresh,
             "interval",
             seconds=60,
             id="etf_ma_refresh",
-            name="ETF 均线斜率后台刷新（每分钟）",
+            name="ETF 行情+均线斜率后台刷新（每分钟）",
             max_instances=1,
             coalesce=True,
         )
