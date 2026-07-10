@@ -83,49 +83,65 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="1分MA" width="95" align="center">
+        <el-table-column label="1分MA" width="90" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_1m">
-              <span :class="slopeClass(row.ma_slope_1m.ma5?.prev)">5P {{ slopeArrow(row.ma_slope_1m.ma5?.prev) }}</span>
-              <span :class="slopeClass(row.ma_slope_1m.ma5?.now)">5N {{ slopeArrow(row.ma_slope_1m.ma5?.now) }}</span>
-              <span :class="slopeClass(row.ma_slope_1m.ma10?.prev)">10P {{ slopeArrow(row.ma_slope_1m.ma10?.prev) }}</span>
-              <span :class="slopeClass(row.ma_slope_1m.ma10?.now)">10N {{ slopeArrow(row.ma_slope_1m.ma10?.now) }}</span>
+              <div class="ma-row">
+                <span :class="slopeClass(row.ma_slope_1m.ma5?.prev)">5{{ slopeArrow(row.ma_slope_1m.ma5?.prev) }}</span>
+                <span :class="slopeClass(row.ma_slope_1m.ma10?.prev)">10{{ slopeArrow(row.ma_slope_1m.ma10?.prev) }}</span>
+              </div>
+              <div class="ma-row">
+                <span :class="slopeClass(row.ma_slope_1m.ma5?.now)">5{{ slopeArrow(row.ma_slope_1m.ma5?.now) }}</span>
+                <span :class="slopeClass(row.ma_slope_1m.ma10?.now)">10{{ slopeArrow(row.ma_slope_1m.ma10?.now) }}</span>
+              </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="5分MA" width="95" align="center">
+        <el-table-column label="5分MA" width="90" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_5m">
-              <span :class="slopeClass(row.ma_slope_5m.ma5?.prev)">5P {{ slopeArrow(row.ma_slope_5m.ma5?.prev) }}</span>
-              <span :class="slopeClass(row.ma_slope_5m.ma5?.now)">5N {{ slopeArrow(row.ma_slope_5m.ma5?.now) }}</span>
-              <span :class="slopeClass(row.ma_slope_5m.ma10?.prev)">10P {{ slopeArrow(row.ma_slope_5m.ma10?.prev) }}</span>
-              <span :class="slopeClass(row.ma_slope_5m.ma10?.now)">10N {{ slopeArrow(row.ma_slope_5m.ma10?.now) }}</span>
+              <div class="ma-row">
+                <span :class="slopeClass(row.ma_slope_5m.ma5?.prev)">5{{ slopeArrow(row.ma_slope_5m.ma5?.prev) }}</span>
+                <span :class="slopeClass(row.ma_slope_5m.ma10?.prev)">10{{ slopeArrow(row.ma_slope_5m.ma10?.prev) }}</span>
+              </div>
+              <div class="ma-row">
+                <span :class="slopeClass(row.ma_slope_5m.ma5?.now)">5{{ slopeArrow(row.ma_slope_5m.ma5?.now) }}</span>
+                <span :class="slopeClass(row.ma_slope_5m.ma10?.now)">10{{ slopeArrow(row.ma_slope_5m.ma10?.now) }}</span>
+              </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="15分MA" width="95" align="center">
+        <el-table-column label="15分MA" width="90" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_15m">
-              <span :class="slopeClass(row.ma_slope_15m.ma5?.prev)">5P {{ slopeArrow(row.ma_slope_15m.ma5?.prev) }}</span>
-              <span :class="slopeClass(row.ma_slope_15m.ma5?.now)">5N {{ slopeArrow(row.ma_slope_15m.ma5?.now) }}</span>
-              <span :class="slopeClass(row.ma_slope_15m.ma10?.prev)">10P {{ slopeArrow(row.ma_slope_15m.ma10?.prev) }}</span>
-              <span :class="slopeClass(row.ma_slope_15m.ma10?.now)">10N {{ slopeArrow(row.ma_slope_15m.ma10?.now) }}</span>
+              <div class="ma-row">
+                <span :class="slopeClass(row.ma_slope_15m.ma5?.prev)">5{{ slopeArrow(row.ma_slope_15m.ma5?.prev) }}</span>
+                <span :class="slopeClass(row.ma_slope_15m.ma10?.prev)">10{{ slopeArrow(row.ma_slope_15m.ma10?.prev) }}</span>
+              </div>
+              <div class="ma-row">
+                <span :class="slopeClass(row.ma_slope_15m.ma5?.now)">5{{ slopeArrow(row.ma_slope_15m.ma5?.now) }}</span>
+                <span :class="slopeClass(row.ma_slope_15m.ma10?.now)">10{{ slopeArrow(row.ma_slope_15m.ma10?.now) }}</span>
+              </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="30分MA" width="95" align="center">
+        <el-table-column label="30分MA" width="90" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_30m">
-              <span :class="slopeClass(row.ma_slope_30m.ma5?.prev)">5P {{ slopeArrow(row.ma_slope_30m.ma5?.prev) }}</span>
-              <span :class="slopeClass(row.ma_slope_30m.ma5?.now)">5N {{ slopeArrow(row.ma_slope_30m.ma5?.now) }}</span>
-              <span :class="slopeClass(row.ma_slope_30m.ma10?.prev)">10P {{ slopeArrow(row.ma_slope_30m.ma10?.prev) }}</span>
-              <span :class="slopeClass(row.ma_slope_30m.ma10?.now)">10N {{ slopeArrow(row.ma_slope_30m.ma10?.now) }}</span>
+              <div class="ma-row">
+                <span :class="slopeClass(row.ma_slope_30m.ma5?.prev)">5{{ slopeArrow(row.ma_slope_30m.ma5?.prev) }}</span>
+                <span :class="slopeClass(row.ma_slope_30m.ma10?.prev)">10{{ slopeArrow(row.ma_slope_30m.ma10?.prev) }}</span>
+              </div>
+              <div class="ma-row">
+                <span :class="slopeClass(row.ma_slope_30m.ma5?.now)">5{{ slopeArrow(row.ma_slope_30m.ma5?.now) }}</span>
+                <span :class="slopeClass(row.ma_slope_30m.ma10?.now)">10{{ slopeArrow(row.ma_slope_30m.ma10?.now) }}</span>
+              </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
@@ -251,15 +267,17 @@ function typeTagType(type: string): '' | 'success' | 'warning' | 'info' | 'dange
 }
 
 // ---- 数据加载 ----
+// 首次加载显示 loading；有旧数据时静默刷新（不转圈），拉取成功后才更新
 async function loadEtfs() {
-  loading.value = true
+  const isFirstLoad = etfs.value.length === 0
+  if (isFirstLoad) loading.value = true
   try {
     const res = await etfsApi.list()
     etfs.value = res.data || []
   } catch (e: any) {
-    showError(e?.message || '加载 ETF 列表失败')
+    if (isFirstLoad) showError(e?.message || '加载 ETF 列表失败')
   } finally {
-    loading.value = false
+    if (isFirstLoad) loading.value = false
   }
 }
 
@@ -437,9 +455,15 @@ onBeforeUnmount(() => {
 .ma-slope-cell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   font-size: 12px;
   font-family: 'Courier New', monospace;
-  line-height: 1.4;
+  line-height: 1.5;
+}
+
+.ma-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
 }
 </style>
