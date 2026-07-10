@@ -72,6 +72,10 @@ class EtfsService:
                     it["change_percent"] = q.get("pct_chg")
                     it["turnover_rate"] = q.get("turnover_rate")
                     it["volume_ratio"] = q.get("volume_ratio")
+                    # 自动修正假名（批量导入时只输代码自动补的 ETF{代码}）
+                    real_name = q.get("name")
+                    if real_name and (it.get("fund_name", "").startswith("ETF") or not it.get("fund_name")):
+                        it["fund_name"] = real_name
         except Exception as e:
             logger.warning(f"ETF 行情富集失败: {e}")
 
