@@ -45,7 +45,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="fund_name" label="名称" min-width="110">
+        <el-table-column prop="fund_name" label="名称" min-width="90" show-overflow-tooltip>
           <template #default="{ row }">
             <span>{{ row.fund_name }}</span>
           </template>

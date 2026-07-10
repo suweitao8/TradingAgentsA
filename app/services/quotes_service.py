@@ -256,32 +256,25 @@ def _etf_secid(code: str) -> str:
     elif code.startswith("15"):
         return f"0.{code}"
     return f"1.{code}"  # 默认沪市
-    """根据 ETF 代码生成东方财富 secid（市场前缀+代码）。
-
-    51/56/58 开头 → 沪市(1)，15 开头 → 深市(0)。
-    """
-    code = str(code).strip().zfill(6)
-    if code.startswith(("51", "56", "58")):
-        return f"1.{code}"
-    elif code.startswith("15"):
-        return f"0.{code}"
-    return f"1.{code}"  # 默认沪市
 
 
 def _fetch_kline_closes(code: str, lmt: int = 30) -> list:
     """从东方财富拉取 ETF 1 分钟 K 线的收盘价序列。
 
-    push2delay 延迟域名只有 1 分钟 K 线有数据（5/15/30 分钟返回 0 根），
-    所以统一拉 1 分钟 K 线，由调用方本地聚合算其他周期。
-
-    使用全局 requests.Session 复用 TCP 连接，29 只 ETF 并行只需 ~0.7s。
-
-    Args:
-        code: 6 位 ETF 代码
-        lmt: 返回最近多少根 1 分钟 K 线（30 根足够算 30 分 MA10）
-
     Returns:
         收盘价列表（按时间正序），失败返回空列表
+    """
+    result = _fetch_kline_raw(code, lmt)
+    return result[0] if result else []
+
+
+def _fetch_kline_raw(code: str, lmt: int = 30) -> tuple:
+    """拉取 ETF 1 分钟 K 线，返回 (收盘价列表, ETF名称)。
+
+    K 线接口的 data.name 包含真实 ETF 名称，可用于修正 spot 快照中找不到的名称。
+
+    Returns:
+        (closes, name)，失败返回 ([], "")
     """
     try:
         secid = _etf_secid(code)
@@ -291,30 +284,29 @@ def _fetch_kline_closes(code: str, lmt: int = 30) -> list:
             "ut": "bd1d9ddb04089700cf9c27f6f7426281",
             "fields1": "f1,f2,f3,f4,f5,f6",
             "fields2": "f51,f52,f53,f54,f55,f56,f57",
-            "klt": "1",      # 只拉 1 分钟
+            "klt": "1",
             "fqt": "0",
             "end": "20500101",
             "lmt": str(lmt),
         }
-        # 用全局 Session 复用连接池（避免每次 TLS 握手）
         resp = _kline_session.get(url, params=params, timeout=8)
         if resp.status_code != 200:
-            return []
+            return [], ""
         data = resp.json().get("data") or {}
+        name = data.get("name", "")
         klines = data.get("klines") or []
-        # 每行格式: "2026-07-01,09:31,5.01,5.02,5.03,5.00,12345,67890"
         closes = []
         for line in klines:
             parts = line.split(",")
             if len(parts) >= 3:
                 try:
-                    closes.append(float(parts[2]))  # f53=收盘价
+                    closes.append(float(parts[2]))
                 except (ValueError, IndexError):
                     continue
-        return closes
+        return closes, name
     except Exception as e:
         logger.debug(f"获取 {code} 1分钟K线失败: {e}")
-        return []
+        return [], ""
 
 
 def _aggregate_closes(closes_1m: list, period: int) -> list:
@@ -442,7 +434,17 @@ async def _fetch_and_calc_slopes(codes: list) -> dict:
     本地聚合算 5/15/30 分钟，再算 MA5/MA10 斜率。
     """
     async def _fetch_one(code: str) -> tuple:
-        closes_1m = await asyncio.to_thread(_fetch_kline_closes, code)
+        closes_1m, name = await asyncio.to_thread(_fetch_kline_raw, code)
+
+        # 顺带把名称存到 Redis（供 etfs_service 修正假名）
+        if name:
+            try:
+                from app.core.redis_client import get_redis
+                redis = get_redis()
+                await redis.setex(f"etf_name:{code}", 86400, name)
+            except Exception:
+                pass
+
         if not closes_1m:
             return code, {
                 "ma_slope_1m": {"ma5": {"now": 0, "prev": 0}, "ma10": {"now": 0, "prev": 0}},

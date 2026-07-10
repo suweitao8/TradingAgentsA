@@ -79,6 +79,26 @@ class EtfsService:
         except Exception as e:
             logger.warning(f"ETF 行情富集失败: {e}")
 
+        # 对 spot 快照中找不到的 ETF（名称仍是假名），从 Redis etf_name:{code} 兜底
+        try:
+            from app.core.redis_client import get_redis
+            import json as _json
+            redis = get_redis()
+            need_name = [it["fund_code"] for it in items
+                         if it.get("fund_name", "").startswith("ETF") and it.get("fund_code")]
+            if need_name:
+                keys = [f"etf_name:{c}" for c in need_name]
+                vals = await redis.mget(keys)
+                for it in items:
+                    code = it.get("fund_code")
+                    if code in need_name:
+                        idx = need_name.index(code)
+                        name = vals[idx]
+                        if name:
+                            it["fund_name"] = name.decode() if isinstance(name, bytes) else name
+        except Exception as e:
+            logger.debug(f"ETF 名称兜底跳过: {e}")
+
         # 批量拉取分时均线斜率（MA5/MA10，1分/5分/15分/30分）
         try:
             from app.services.quotes_service import get_etf_ma_slopes
