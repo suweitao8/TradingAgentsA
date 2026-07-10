@@ -1,6 +1,20 @@
 import { ApiClient } from './request'
 
 /**
+ * 板块利好利空分析结果
+ */
+export interface SectorImpact {
+  name: string
+  impact: '利好' | '利空' | '中性'
+  reason: string
+}
+
+export interface SectorAnalysis {
+  sectors: SectorImpact[]
+  overall_sentiment: '利好' | '利空' | '中性'
+}
+
+/**
  * 新闻数据接口
  */
 export interface NewsItem {
@@ -16,6 +30,8 @@ export interface NewsItem {
   sentiment?: string
   importance?: number
   data_source?: string
+  sector_analysis?: SectorAnalysis | null
+  sector_analyzed?: boolean
 }
 
 /**

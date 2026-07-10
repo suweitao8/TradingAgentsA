@@ -388,6 +388,10 @@ class NewsDataService:
             "importance": news_data.get("importance", "medium"),
             # 注意：不包含 language 字段，避免与 MongoDB 文本索引冲突
 
+            # 板块利好利空分析（由 sector_analysis_service 后处理写入，拉取阶段通常为空）
+            "sector_analysis": news_data.get("sector_analysis"),          # List[Dict] 或 None
+            "sector_analyzed": news_data.get("sector_analyzed", False),   # 是否已完成板块分析
+
             # 元数据
             "data_source": data_source,
             "created_at": now,

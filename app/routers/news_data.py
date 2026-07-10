@@ -510,3 +510,52 @@ async def _execute_market_news_sync(sync_service, request: NewsSyncRequest):
         )
     except Exception as e:
         logger.error(f"❌ 后台市场新闻同步失败: {e}")
+
+
+# ==================== 板块利好利空分析 ====================
+
+@router.post("/sector-analysis/trigger")
+async def trigger_sector_analysis(
+    batch_size: int = Query(10, ge=1, le=50, description="单轮分析最大快讯数"),
+    current_user: dict = Depends(get_current_user),
+):
+    """手动触发板块利好利空分析（调试用，立即对未分析的快讯执行 LLM 分析）"""
+    try:
+        from app.services.sector_analysis_service import get_sector_analysis_service
+
+        service = get_sector_analysis_service()
+        result = await service.analyze_unanalyzed_news(batch_size=batch_size)
+
+        return ok(
+            data={
+                "total": result["total"],
+                "analyzed": result["analyzed"],
+                "failed": result["failed"],
+            },
+            message=f"板块分析完成: 共 {result['total']} 条, 成功 {result['analyzed']} 条",
+        )
+    except Exception as e:
+        logger.error(f"❌ 手动触发板块分析失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"板块分析失败: {str(e)}")
+
+
+@router.get("/sector-analysis/sectors")
+async def get_concept_sectors(
+    force_refresh: bool = Query(False, description="强制刷新缓存"),
+    current_user: dict = Depends(get_current_user),
+):
+    """获取概念板块列表（带缓存），用于查看当前板块词表"""
+    try:
+        from app.services.sector_analysis_service import get_sector_analysis_service
+
+        service = get_sector_analysis_service()
+        sectors = await service.get_concept_sectors(force_refresh=force_refresh)
+
+        return ok(
+            data={"count": len(sectors), "sectors": sectors[:100]},  # 只返回前100个，避免响应过大
+            message=f"概念板块列表: 共 {len(sectors)} 个",
+        )
+    except Exception as e:
+        logger.error(f"❌ 获取概念板块列表失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"获取板块列表失败: {str(e)}")
+
