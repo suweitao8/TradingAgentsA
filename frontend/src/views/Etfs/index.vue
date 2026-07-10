@@ -11,10 +11,6 @@
             <el-icon><Refresh /></el-icon>
             刷新
           </el-button>
-          <el-button type="warning" @click="loadPopularEtfs" :loading="popularLoading">
-            <el-icon><StarFilled /></el-icon>
-            加载热门 ETF
-          </el-button>
           <el-button type="success" @click="showBatchImportDialog">
             <el-icon><Upload /></el-icon>
             批量导入
@@ -151,8 +147,8 @@
       </el-table>
 
       <!-- 空状态 -->
-      <el-empty v-if="!loading && etfs.length === 0" description="还没有 ETF，点击「加载热门 ETF」快速添加">
-        <el-button type="primary" @click="loadPopularEtfs">加载热门 ETF</el-button>
+      <el-empty v-if="!loading && etfs.length === 0" description="还没有 ETF，点击「批量导入」添加">
+        <el-button type="primary" @click="showBatchImportDialog">批量导入</el-button>
       </el-empty>
     </el-card>
 
@@ -207,92 +203,22 @@
         <el-button type="primary" @click="handleBatchImport" :loading="batchLoading">导入</el-button>
       </template>
     </el-dialog>
-
-    <!-- 热门 ETF 预览对话框 -->
-    <el-dialog v-model="popularDialogVisible" title="热门板块 ETF（按涨幅排名）" width="780px" top="6vh">
-      <div v-loading="popularLoading" style="min-height: 200px">
-        <div class="popular-toolbar">
-          <el-checkbox v-model="popularSelectAll" :indeterminate="popularIndeterminate" @change="onSelectAll">
-            全选 {{ popularSelected.length > 0 ? `(${popularSelected.length})` : '' }}
-          </el-checkbox>
-          <span class="popular-summary">
-            共 {{ popularList.length }} 只，已加入 {{ popularList.filter(e => e.is_added).length }} 只
-          </span>
-        </div>
-        <el-table :data="popularList" max-height="480" size="small" @row-click="onPopularRowClick">
-          <el-table-column width="45" align="center">
-            <template #default="{ row }">
-              <el-checkbox
-                :model-value="popularSelected.includes(row.fund_code)"
-                :disabled="row.is_added"
-                @change="(val: boolean) => onPopularCheck(row, val)"
-                @click.stop
-              />
-            </template>
-          </el-table-column>
-          <el-table-column prop="fund_code" label="代码" width="85" />
-          <el-table-column prop="fund_name" label="名称" min-width="140" />
-          <el-table-column label="类型" width="70" align="center">
-            <template #default="{ row }">
-              <el-tag :type="typeTagType(row.fund_type)" size="small">{{ row.fund_type }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="最新价" width="80" align="right">
-            <template #default="{ row }">
-              <span v-if="row.current_price != null">{{ row.current_price.toFixed(3) }}</span>
-              <span v-else class="text-muted">-</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="涨跌幅" width="85" align="right">
-            <template #default="{ row }">
-              <span v-if="row.change_percent != null" :class="pctClass(row.change_percent)">
-                {{ row.change_percent > 0 ? '+' : '' }}{{ row.change_percent.toFixed(2) }}%
-              </span>
-              <span v-else class="text-muted">-</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" width="75" align="center">
-            <template #default="{ row }">
-              <el-tag v-if="row.is_added" type="info" size="small">已加入</el-tag>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-      <template #footer>
-        <el-button @click="popularDialogVisible = false">取消</el-button>
-        <el-button
-          type="primary"
-          :disabled="popularSelected.length === 0"
-          :loading="popularImporting"
-          @click="confirmImportPopular"
-        >
-          导入选中 {{ popularSelected.length }} 只
-        </el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, Upload, StarFilled } from '@element-plus/icons-vue'
+import { Search, Refresh, Upload } from '@element-plus/icons-vue'
 import WatchlistTabs from '@/components/Layout/WatchlistTabs.vue'
 import { getEtfTypeClass } from '@/utils/industryColor'
-import { etfsApi, type EtfItem, type AddEtfReq, type PopularEtf } from '@/api/etfs'
+import { etfsApi, type EtfItem, type AddEtfReq } from '@/api/etfs'
 import { showError } from '@/utils/message'
 
 // ---- 状态 ----
 const etfs = ref<EtfItem[]>([])
 const loading = ref(false)
 const searchKeyword = ref('')
-
-// 热门 ETF 预览弹窗
-const popularDialogVisible = ref(false)
-const popularLoading = ref(false)
-const popularImporting = ref(false)
-const popularList = ref<PopularEtf[]>([])
-const popularSelected = ref<string[]>([])
 
 // 编辑对话框
 const editDialogVisible = ref(false)
@@ -362,88 +288,6 @@ async function loadEtfs() {
 async function refreshData() {
   await loadEtfs()
   ElMessage.success('已刷新')
-}
-
-// ---- 热门 ETF ----
-
-// 全选计算属性
-const popularSelectAll = computed({
-  get: () => {
-    const selectable = popularList.value.filter((e) => !e.is_added)
-    return selectable.length > 0 && selectable.every((e) => popularSelected.value.includes(e.fund_code))
-  },
-  set: () => {}, // onSelectAll 处理
-})
-const popularIndeterminate = computed(() => {
-  const selectable = popularList.value.filter((e) => !e.is_added)
-  const checkedCount = selectable.filter((e) => popularSelected.value.includes(e.fund_code)).length
-  return checkedCount > 0 && checkedCount < selectable.length
-})
-
-// 打开弹窗：拉取热门清单（含行情 + 已加入标记）
-async function loadPopularEtfs() {
-  popularDialogVisible.value = true
-  popularLoading.value = true
-  popularSelected.value = []
-  try {
-    const res = await etfsApi.popular()
-    popularList.value = res.data || []
-  } catch (e: any) {
-    showError(e?.message || '加载热门 ETF 失败')
-  } finally {
-    popularLoading.value = false
-  }
-}
-
-function onSelectAll(val: boolean) {
-  if (val) {
-    popularSelected.value = popularList.value
-      .filter((e) => !e.is_added)
-      .map((e) => e.fund_code)
-  } else {
-    popularSelected.value = []
-  }
-}
-
-function onPopularCheck(row: PopularEtf, val: boolean) {
-  if (row.is_added) return
-  if (val) {
-    if (!popularSelected.value.includes(row.fund_code)) {
-      popularSelected.value.push(row.fund_code)
-    }
-  } else {
-    popularSelected.value = popularSelected.value.filter((c) => c !== row.fund_code)
-  }
-}
-
-// 点击行切换勾选
-function onPopularRowClick(row: PopularEtf) {
-  onPopularCheck(row, !popularSelected.value.includes(row.fund_code))
-}
-
-// 确认导入选中的 ETF
-async function confirmImportPopular() {
-  if (popularSelected.value.length === 0) return
-  popularImporting.value = true
-  try {
-    const toAdd = popularList.value
-      .filter((e) => popularSelected.value.includes(e.fund_code))
-      .map((e) => ({
-        fund_code: e.fund_code,
-        fund_name: e.fund_name,
-        fund_type: e.fund_type,
-      }))
-    const result = await etfsApi.batchAdd(toAdd)
-    ElMessage.success(
-      `导入完成: 成功 ${result.data.added.length} / 已存在 ${result.data.existed.length} / 失败 ${result.data.failed.length}`,
-    )
-    popularDialogVisible.value = false
-    await loadEtfs()
-  } catch (e: any) {
-    showError(e?.message || '导入失败')
-  } finally {
-    popularImporting.value = false
-  }
 }
 
 // ---- 编辑 ----
@@ -635,18 +479,5 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-family: 'Courier New', monospace;
   line-height: 1.4;
-}
-
-.popular-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  padding: 0 4px;
-}
-
-.popular-summary {
-  font-size: 13px;
-  color: var(--el-text-color-secondary);
 }
 </style>
