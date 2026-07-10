@@ -35,9 +35,9 @@
         :row-class-name="({ row }) => getEtfTypeClass(row.fund_type)"
         @row-contextmenu="handleRowContextMenu"
       >
-        <el-table-column type="index" label="#" width="55" align="center" />
+        <el-table-column type="index" label="#" width="45" align="center" />
 
-        <el-table-column prop="fund_code" label="ETF代码" min-width="100">
+        <el-table-column prop="fund_code" label="代码" width="75" align="center">
           <template #default="{ row }">
             <router-link :to="`/stocks/${row.fund_code}`" class="fund-code-link">
               {{ row.fund_code }}
@@ -45,7 +45,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="fund_name" label="ETF名称" min-width="160">
+        <el-table-column prop="fund_name" label="名称" min-width="110">
           <template #default="{ row }">
             <span>{{ row.fund_name }}</span>
           </template>
