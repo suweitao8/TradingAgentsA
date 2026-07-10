@@ -131,14 +131,33 @@ class QuotesService:
     async def get_etf_quotes(self, codes: List[str]) -> Dict[str, Dict[str, Optional[float]]]:
         """获取一批 ETF 的近实时快照（最新价、涨跌幅、换手率、量比）。
 
-        东方财富的 ETF 和 A 股是不同的市场分类（fs 参数不同），不能用 A 股的
-        _fetch_spot_akshare 拉取。本方法使用独立的 ETF 缓存。
+        优先读 Redis 缓存（后台定时任务刷新），未命中再查内存缓存，
+        都没有才实时拉取。避免 API 请求时因全市场拉取导致超长等待。
         """
+        import json as _json
+
         codes = [c.strip() for c in codes if c]
+        if not codes:
+            return {}
+
+        # 1) 优先从 Redis 读（后台任务每分钟刷新的全市场快照）
+        redis_key = "etf_spot_all"
+        try:
+            from app.core.redis_client import get_redis
+            redis = get_redis()
+            cached = await redis.get(redis_key)
+            if cached:
+                all_quotes = _json.loads(cached)
+                return {c: all_quotes[c] for c in codes if c in all_quotes and all_quotes[c]}
+        except Exception as e:
+            logger.debug(f"ETF spot Redis 读取跳过: {e}")
+
+        # 2) 内存缓存（30s TTL，Redis 不可用时的降级）
         now = time.time()
         async with self._etf_lock:
             if self._etf_cache and (now - self._etf_cache_ts) < self._ttl:
                 return {c: q for c, q in self._etf_cache.items() if c in codes and q}
+            # 3) 实时拉取（最后的降级手段）
             data = await asyncio.to_thread(self._fetch_etf_spot)
             self._etf_cache = data
             self._etf_cache_ts = time.time()
@@ -490,5 +509,33 @@ async def refresh_etf_ma_slopes_cache(codes: list) -> int:
         return len(fresh_data)
     except Exception as e:
         logger.warning(f"[ETF MA] Redis 写入失败: {e}")
+        return 0
+
+
+async def refresh_etf_spot_cache() -> int:
+    """后台定时任务：刷新全市场 ETF 行情快照到 Redis。
+
+    拉取全市场 ETF spot（约 1200 只），整体序列化为一个 JSON 存入 Redis。
+    前端读取时直接命中 Redis 秒出，避免分页拉取导致的偶发性超长等待。
+    TTL=90s，由每分钟定时任务刷新。
+    """
+    import json as _json
+
+    svc = get_quotes_service()
+    data = await asyncio.to_thread(svc._fetch_etf_spot)
+    if not data:
+        return 0
+
+    try:
+        from app.core.redis_client import get_redis
+        redis = get_redis()
+        await redis.setex("etf_spot_all", 90, _json.dumps(data, default=str))
+        # 同步更新内存缓存
+        svc._etf_cache = data
+        svc._etf_cache_ts = time.time()
+        logger.info(f"[ETF Spot] 后台刷新 {len(data)} 只 ETF 行情到 Redis")
+        return len(data)
+    except Exception as e:
+        logger.warning(f"[ETF Spot] Redis 写入失败: {e}")
         return 0
 
