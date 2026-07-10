@@ -4,10 +4,6 @@
     <el-card class="action-card fade-in-up" shadow="never">
       <div class="action-bar">
         <div class="action-buttons">
-          <el-button @click="refreshData" :loading="loading">
-            <el-icon><Refresh /></el-icon>
-            刷新
-          </el-button>
           <el-button type="success" @click="showBatchImportDialog">
             <el-icon><Upload /></el-icon>
             批量导入
@@ -198,7 +194,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, Upload } from '@element-plus/icons-vue'
+import { Search, Upload } from '@element-plus/icons-vue'
 import { getEtfTypeClass } from '@/utils/industryColor'
 import { etfsApi, type EtfItem, type AddEtfReq } from '@/api/etfs'
 import { showError } from '@/utils/message'
@@ -287,11 +283,6 @@ async function loadEtfs() {
   }
 }
 
-async function refreshData() {
-  await loadEtfs()
-  ElMessage.success('已刷新')
-}
-
 // ---- 移除 ----
 async function removeEtf(row: EtfItem | null) {
   if (!row) return
@@ -363,27 +354,57 @@ async function handleBatchImport() {
   }
 }
 
-// ---- 生命周期 ----
-// 每分钟自动刷新（静默，不显示 loading）
-let etfRefreshTimer: ReturnType<typeof setInterval> | null = null
+// ---- 自动刷新：盘中递归轮询（刷新成功后立刻下一次），盘后不刷新 ----
 
-onMounted(() => {
-  loadEtfs()
-  etfRefreshTimer = setInterval(async () => {
-    try {
-      const res = await etfsApi.list()
-      etfs.value = res.data || []
-    } catch (e) {
-      // 静默忽略
-    }
-  }, 60000)
+// 判断是否在 A 股交易时段（9:25-11:30, 13:00-15:00，周一至周五）
+function isTradingTime(): boolean {
+  const now = new Date()
+  const day = now.getDay()
+  if (day === 0 || day === 6) return false  // 周末
+
+  const h = now.getHours()
+  const m = now.getMinutes()
+  const minutes = h * 60 + m
+
+  // 集合竞价 9:20 + 连续竞价 9:30-11:30 + 13:00-15:00
+  if (minutes >= 560 && minutes <= 690) return true   // 9:20-11:30
+  if (minutes >= 780 && minutes <= 900) return true   // 13:00-15:00
+  return false
+}
+
+let autoRefreshActive = false
+
+async function autoRefreshLoop() {
+  if (!autoRefreshActive) return
+
+  // 非交易时段：每 30 秒检查一次是否进入交易时段
+  if (!isTradingTime()) {
+    setTimeout(autoRefreshLoop, 30000)
+    return
+  }
+
+  // 交易时段：拉取数据，成功后立刻下一轮
+  try {
+    const res = await etfsApi.list()
+    etfs.value = res.data || []
+  } catch {
+    // 静默忽略
+  }
+  // 递归（成功或失败都继续下一轮，保持盘中持续刷新）
+  if (autoRefreshActive) {
+    setTimeout(autoRefreshLoop, 2000)  // 2 秒间隔，接近实时
+  }
+}
+
+onMounted(async () => {
+  await loadEtfs()
+  // 启动自动刷新循环
+  autoRefreshActive = true
+  autoRefreshLoop()
 })
 
 onBeforeUnmount(() => {
-  if (etfRefreshTimer) {
-    clearInterval(etfRefreshTimer)
-    etfRefreshTimer = null
-  }
+  autoRefreshActive = false
 })
 </script>
 
