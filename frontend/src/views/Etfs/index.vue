@@ -50,12 +50,6 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="fund_type" label="类型" width="90" align="center">
-          <template #default="{ row }">
-            <el-tag :type="typeTagType(row.fund_type)" size="small">{{ row.fund_type || '主题' }}</el-tag>
-          </template>
-        </el-table-column>
-
         <el-table-column label="最新价" width="90" align="right">
           <template #default="{ row }">
             <span v-if="row.current_price != null" class="price-value">{{ row.current_price.toFixed(3) }}</span>
@@ -125,20 +119,6 @@
               <span :class="slopeClass(row.ma_slope_30m.ma10)">MA10 {{ slopeArrow(row.ma_slope_30m.ma10) }}</span>
             </div>
             <span v-else class="text-muted">-</span>
-          </template>
-        </el-table-column>
-
-        <el-table-column label="备注" min-width="120">
-          <template #default="{ row }">
-            <span v-if="row.notes" class="notes-text">{{ row.notes }}</span>
-            <span v-else class="text-muted">-</span>
-          </template>
-        </el-table-column>
-
-        <el-table-column label="操作" width="120" align="center" fixed="right">
-          <template #default="{ row }">
-            <el-button size="small" text type="primary" @click="editEtf(row)">编辑</el-button>
-            <el-button size="small" text type="danger" @click="removeEtf(row)">移除</el-button>
           </template>
         </el-table-column>
       </el-table>
