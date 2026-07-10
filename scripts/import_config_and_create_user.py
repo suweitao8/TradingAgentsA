@@ -128,8 +128,6 @@ CONFIG_COLLECTIONS = [
 
     # 交易系统
     "trading_systems",
-    "paper_accounts",
-    "paper_market_rules",
     "real_accounts",
 
     # 提示词
@@ -158,9 +156,6 @@ CONFIG_COLLECTIONS = [
     "email_records",
 
     # 交易记录（可选）
-    "paper_positions",
-    "paper_orders",
-    "paper_trades",
     "real_positions",
     "capital_transactions",
     "position_changes",

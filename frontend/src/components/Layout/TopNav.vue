@@ -36,7 +36,6 @@
             <el-dropdown-item command="/etfs">ETF</el-dropdown-item>
             <el-dropdown-item command="/favorites">股票</el-dropdown-item>
             <el-dropdown-item command="/dashboard" divided>仪表板</el-dropdown-item>
-            <el-dropdown-item command="/training">模拟炒股</el-dropdown-item>
             <el-dropdown-item command="/analysis/single">单股分析</el-dropdown-item>
             <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
             <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
@@ -58,7 +57,6 @@
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item command="/dashboard">仪表板</el-dropdown-item>
-              <el-dropdown-item command="/training">模拟炒股</el-dropdown-item>
               <el-dropdown-item command="/analysis/single" divided>单股分析</el-dropdown-item>
               <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
               <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
@@ -139,10 +137,9 @@ const notifStore = useNotificationStore()
 const { unreadCount, items } = storeToRefs(notifStore)
 
 // ---- 导航链接 ----
-// 主入口：ETF、模拟炒股、股票
+// 主入口：ETF、股票
 const navLinks = [
   { path: '/etfs', label: 'ETF', icon: TrendCharts },
-  { path: '/training', label: '模拟炒股', icon: DataAnalysis },
   { path: '/favorites', label: '股票', icon: Star },
 ]
 

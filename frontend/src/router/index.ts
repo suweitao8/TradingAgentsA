@@ -138,28 +138,6 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
-    path: '/training',
-    name: 'Training',
-    component: () => import('@/layouts/BasicLayout.vue'),
-    meta: {
-      title: '模拟炒股',
-      icon: 'DataAnalysis',
-      requiresAuth: true,
-      transition: 'fade'
-    },
-    children: [
-      {
-        path: '',
-        name: 'TrainingHome',
-        component: () => import('@/views/Training/index.vue'),
-        meta: {
-          title: '模拟炒股',
-          requiresAuth: true
-        }
-      }
-    ]
-  },
-  {
     path: '/learning',
     name: 'Learning',
     component: () => import('@/layouts/BasicLayout.vue'),

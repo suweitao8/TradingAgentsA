@@ -29,7 +29,7 @@ from app.core.config import settings
 from app.core.database import init_db, close_db
 from app.core.logging_config import setup_logging
 from app.core.redis_client import init_redis, close_redis
-from app.routers import settings_api, analysis, screening, queue, sse, health, favorites, etfs, config, reports, database, operation_logs, tags, tushare_init, akshare_init, baostock_init, historical_data, multi_period_sync, financial_data, news_data, internal_messages, usage_statistics, model_capabilities, cache, logs, data_collection, training
+from app.routers import settings_api, analysis, screening, queue, sse, health, favorites, etfs, config, reports, database, operation_logs, tags, tushare_init, akshare_init, baostock_init, historical_data, multi_period_sync, financial_data, news_data, internal_messages, usage_statistics, model_capabilities, cache, logs, data_collection
 from app.routers import sync as sync_router, multi_source_sync
 from app.routers import stocks as stocks_router
 from app.routers import stock_data as stock_data_router
@@ -825,7 +825,6 @@ app.include_router(financial_data.router, tags=["financial-data"])
 app.include_router(news_data.router, tags=["news-data"])
 app.include_router(data_collection.router, prefix="/api", tags=["data-collection"])
 app.include_router(internal_messages.router, tags=["internal-messages"])
-app.include_router(training.router, tags=["training"])
 
 
 @app.get("/")
