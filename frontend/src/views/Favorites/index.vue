@@ -1,8 +1,5 @@
 <template>
   <div class="favorites">
-    <!-- 股票/ETF 切换 Tab -->
-    <WatchlistTabs active="stocks" />
-
     <!-- 操作栏：按钮在左，搜索在右 -->
     <el-card class="action-card fade-in-up" shadow="never">
       <div class="action-bar">
@@ -306,7 +303,6 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
-import WatchlistTabs from '@/components/Layout/WatchlistTabs.vue'
 import { getIndustryClass } from '@/utils/industryColor'
 import {
   Search,

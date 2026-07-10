@@ -1,8 +1,5 @@
 <template>
   <div class="etfs-page">
-    <!-- 股票/ETF 切换 Tab -->
-    <WatchlistTabs active="etfs" />
-
     <!-- 操作栏 -->
     <el-card class="action-card fade-in-up" shadow="never">
       <div class="action-bar">
@@ -210,7 +207,6 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Refresh, Upload } from '@element-plus/icons-vue'
-import WatchlistTabs from '@/components/Layout/WatchlistTabs.vue'
 import { getEtfTypeClass } from '@/utils/industryColor'
 import { etfsApi, type EtfItem, type AddEtfReq } from '@/api/etfs'
 import { showError } from '@/utils/message'
