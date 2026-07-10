@@ -75,6 +75,25 @@ class EtfsService:
         except Exception as e:
             logger.warning(f"ETF 行情富集失败: {e}")
 
+        # 批量拉取分时均线斜率（MA5/MA10，1分/5分/15分/30分）
+        try:
+            from app.services.quotes_service import get_etf_ma_slopes
+            slope_data = await get_etf_ma_slopes(codes)
+            for it in items:
+                code = it.get("fund_code")
+                slopes = slope_data.get(code, {})
+                for period in ("1m", "5m", "15m", "30m"):
+                    key = f"ma_slope_{period}"
+                    if key in slopes:
+                        it[key] = slopes[key]
+                    else:
+                        it[key] = {"ma5": 0, "ma10": 0}
+        except Exception as e:
+            logger.warning(f"ETF 均线斜率计算失败: {e}")
+            for it in items:
+                for period in ("1m", "5m", "15m", "30m"):
+                    it[f"ma_slope_{period}"] = {"ma5": 0, "ma10": 0}
+
         return items
 
     async def add_etf(
