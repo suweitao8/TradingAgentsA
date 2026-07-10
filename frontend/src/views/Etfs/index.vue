@@ -409,6 +409,10 @@ onBeforeUnmount(() => {
 
 .etfs-list-card {
   min-height: 400px;
+
+  :deep(.el-table__cell) {
+    border-right: none !important;
+  }
 }
 
 .fund-code-link {
