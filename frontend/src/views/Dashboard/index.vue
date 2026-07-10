@@ -157,7 +157,15 @@
         <!-- 市场快讯 -->
         <el-card class="market-news-card" style="margin-top: 24px;">
           <template #header>
-            <span>市场快讯</span>
+            <div class="card-header">
+              <span>市场快讯</span>
+              <el-tooltip content="交易时段每分钟自动刷新 + LLM 板块利好利空分析" placement="top">
+                <el-tag size="small" type="warning" effect="plain" class="live-badge">
+                  <el-icon class="is-loading"><Loading /></el-icon>
+                  实时
+                </el-tag>
+              </el-tooltip>
+            </div>
           </template>
           <div v-if="marketNews.length > 0" class="news-list">
             <div
@@ -169,6 +177,19 @@
               <div class="news-content">
                 <span class="news-title">{{ news.title }}</span>
                 <span class="news-time">{{ formatTime(news.time) }}</span>
+              </div>
+              <!-- 板块利好利空分析结果 -->
+              <div v-if="news.sectorAnalysis && news.sectorAnalysis.sectors.length > 0" class="news-sectors" @click.stop>
+                <el-tag
+                  v-for="(s, idx) in news.sectorAnalysis.sectors.slice(0, 3)"
+                  :key="idx"
+                  size="small"
+                  :type="s.impact === '利好' ? 'success' : s.impact === '利空' ? 'danger' : 'info'"
+                  effect="light"
+                  class="sector-tag"
+                >
+                  {{ s.name }} · {{ s.impact }}
+                </el-tag>
               </div>
             </div>
           </div>
@@ -238,7 +259,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import {
@@ -250,7 +271,8 @@ import {
   ArrowRight,
   InfoFilled,
   Reading,
-  DataAnalysis
+  DataAnalysis,
+  Loading
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { AnalysisTask, AnalysisStatus } from '@/types/analysis'
@@ -468,7 +490,9 @@ const loadMarketNews = async () => {
         title: (item.title || '').replace(/<[^>]+>/g, ''),
         time: item.publish_time,
         url: item.url,
-        source: item.source
+        source: item.source,
+        // 板块利好利空分析结果（由后端 LLM 分析写入）
+        sectorAnalysis: item.sector_analysis || null,
       }))
     }
   } catch (error) {
@@ -478,6 +502,9 @@ const loadMarketNews = async () => {
   }
 }
 
+// 市场快讯自动轮询（30 秒刷新一次，交易时段后端每分钟拉取新快讯+分析）
+let newsPollingTimer: ReturnType<typeof setInterval> | null = null
+
 // 生命周期
 onMounted(async () => {
   // 加载自选股数据
@@ -486,6 +513,16 @@ onMounted(async () => {
   await loadRecentAnalyses()
   // 加载市场快讯
   await loadMarketNews()
+  // 启动快讯轮询（30 秒一次）
+  newsPollingTimer = setInterval(loadMarketNews, 30_000)
+})
+
+onUnmounted(() => {
+  // 组件卸载时清理轮询定时器，避免内存泄漏
+  if (newsPollingTimer) {
+    clearInterval(newsPollingTimer)
+    newsPollingTimer = null
+  }
 })
 </script>
 
@@ -698,6 +735,18 @@ onMounted(async () => {
   }
 
   .market-news-card {
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+    }
+
     .news-list {
       .news-item {
         padding: 12px 0;
@@ -735,6 +784,17 @@ onMounted(async () => {
           color: var(--el-text-color-placeholder);
           white-space: nowrap;
           padding-top: 2px;
+        }
+
+        .news-sectors {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 8px;
+
+          .sector-tag {
+            font-size: 12px;
+          }
         }
       }
     }

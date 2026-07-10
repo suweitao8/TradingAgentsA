@@ -639,6 +639,84 @@ async def lifespan(app: FastAPI):
         else:
             logger.info("⏸️ 自选股分析报告定时任务未启用（FAVORITE_REPORT_ENABLED=False）")
 
+        # ==================== 快讯实时拉取 + 板块利好利空分析 ====================
+        from apscheduler.triggers.interval import IntervalTrigger
+        from app.utils.trading_time import is_trading_time as _is_trading_time
+        from app.worker.news_data_sync_service import get_news_data_sync_service as _get_news_sync_svc
+        from app.services.sector_analysis_service import get_sector_analysis_service as _get_sector_svc
+
+        async def run_flash_news_sync():
+            """每分钟拉取最新市场快讯 + LLM 板块利好利空分析（仅交易时段）"""
+            try:
+                # 非交易时段直接跳过（快讯主要集中在交易时段发布）
+                if not _is_trading_time():
+                    logger.debug("⏭️ [快讯同步] 非交易时段，跳过")
+                    return
+
+                logger.info("⚡ [快讯同步] 开始拉取最新市场快讯...")
+
+                # 第一步：拉取最新快讯入库（hours_back=2 只拉最近 2 小时，减少重复）
+                sync_svc = await _get_news_sync_svc()
+                stats = await sync_svc.sync_market_news(
+                    data_sources=["realtime"],
+                    hours_back=2,
+                    max_news_per_source=50,
+                )
+                logger.info(
+                    f"⚡ [快讯同步] 拉取完成: 新增 {stats.successful_saves} 条, "
+                    f"重复跳过 {stats.duplicate_skipped} 条"
+                )
+
+                # 第二步：对未分析的新快讯做 LLM 板块利好利空分析
+                sector_svc = _get_sector_svc()
+                result = await sector_svc.analyze_unanalyzed_news()
+                if result["total"] > 0:
+                    logger.info(
+                        f"⚡ [快讯同步] 板块分析: 共 {result['total']} 条, "
+                        f"成功 {result['analyzed']} 条, 失败 {result['failed']} 条"
+                    )
+            except Exception as e:
+                logger.error(f"❌ [快讯同步] 失败: {e}", exc_info=True)
+
+        if settings.NEWS_FLASH_SYNC_ENABLED:
+            scheduler.add_job(
+                run_flash_news_sync,
+                IntervalTrigger(
+                    seconds=settings.NEWS_FLASH_SYNC_INTERVAL,
+                    timezone=settings.TIMEZONE,
+                ),
+                id="flash_news_sync",
+                name="快讯实时拉取+板块利好利空分析（交易时段每分钟）",
+                max_instances=1,           # 防止任务叠加（拉取慢于间隔时跳过）
+                coalesce=True,             # 合并错过的执行（不补跑堆积的）
+                misfire_grace_time=30,     # 错过 30 秒内仍可执行，否则跳过
+            )
+            logger.info(
+                f"⚡ 快讯实时同步已配置: 每 {settings.NEWS_FLASH_SYNC_INTERVAL} 秒"
+                f"（板块分析: {'启用' if settings.NEWS_FLASH_ANALYSIS_ENABLED else '禁用'}）"
+            )
+        else:
+            logger.info("⏸️ 快讯实时同步未启用（NEWS_FLASH_SYNC_ENABLED=False）")
+
+        # 概念板块词表每日刷新（盘前 08:50 拉取，确保开盘前缓存就绪）
+        async def run_concept_sector_refresh():
+            """每日刷新概念板块缓存"""
+            try:
+                logger.info("📋 [概念板块] 开始每日刷新...")
+                sector_svc = _get_sector_svc()
+                count = len(await sector_svc.get_concept_sectors(force_refresh=True))
+                logger.info(f"📋 [概念板块] 刷新完成: {count} 个板块")
+            except Exception as e:
+                logger.error(f"❌ [概念板块] 刷新失败: {e}")
+
+        scheduler.add_job(
+            run_concept_sector_refresh,
+            CronTrigger.from_crontab("50 8 * * 1-6", timezone=settings.TIMEZONE),
+            id="concept_sector_refresh",
+            name="概念板块词表每日刷新（盘前08:50）",
+        )
+        logger.info("📋 概念板块每日刷新已配置: 工作日 08:50")
+
         scheduler.start()
 
         # 设置调度器实例到服务中，以便API可以管理任务

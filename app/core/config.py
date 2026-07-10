@@ -314,6 +314,14 @@ class Settings(BaseSettings):
     NEWS_SYNC_HOURS_BACK: int = Field(default=24)
     NEWS_SYNC_MAX_PER_SOURCE: int = Field(default=50)
 
+    # ===== 快讯实时分析配置 =====
+    # 每分钟拉取最新市场快讯 + LLM 分析对概念板块的利好利空
+    NEWS_FLASH_SYNC_ENABLED: bool = Field(default=True, description="启用快讯实时拉取+板块分析")
+    NEWS_FLASH_SYNC_INTERVAL: int = Field(default=60, ge=10, description="快讯拉取间隔（秒），默认60=每分钟")
+    NEWS_FLASH_ANALYSIS_ENABLED: bool = Field(default=True, description="启用LLM板块利好利空分析")
+    NEWS_FLASH_SECTOR_CACHE_TTL: int = Field(default=86400, ge=3600, description="概念板块缓存TTL（秒，默认24h）")
+    NEWS_FLASH_ANALYSIS_BATCH: int = Field(default=10, ge=1, le=50, description="单轮分析最大快讯数（防打爆LLM）")
+
     # ===== 自选股分析报告配置 =====
     # 每日报告：工作日 09:05 生成（避开 09:00 开盘高峰），复用完整分析（深度=快速）
     # 盘中实时报告：交易时段每小时刷新一次，内部用 is_trading_time() 判断是否执行
