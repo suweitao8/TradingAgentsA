@@ -33,6 +33,7 @@
         v-loading="loading"
         style="width: 100%"
         :row-class-name="({ row }) => getEtfTypeClass(row.fund_type)"
+        @row-contextmenu="handleRowContextMenu"
       >
         <el-table-column type="index" label="#" width="55" align="center" />
 
@@ -123,39 +124,26 @@
         </el-table-column>
       </el-table>
 
+      <!-- 右键菜单 -->
+      <el-dropdown
+        trigger="contextmenu"
+        placement="bottom-start"
+        :visible="contextMenuVisible"
+        @visible-change="(v: boolean) => contextMenuVisible = v"
+      >
+        <template #default><span /></template>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click="removeEtf(contextMenuRow)" divided>移除</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+
       <!-- 空状态 -->
       <el-empty v-if="!loading && etfs.length === 0" description="还没有 ETF，点击「批量导入」添加">
         <el-button type="primary" @click="showBatchImportDialog">批量导入</el-button>
       </el-empty>
     </el-card>
-
-    <!-- 编辑对话框 -->
-    <el-dialog v-model="editDialogVisible" title="编辑 ETF" width="480px">
-      <el-form :model="editForm" label-width="80px">
-        <el-form-item label="代码">
-          <el-input :model-value="editForm.fund_code" disabled />
-        </el-form-item>
-        <el-form-item label="名称">
-          <el-input :model-value="editForm.fund_name" disabled />
-        </el-form-item>
-        <el-form-item label="类型">
-          <el-select v-model="editForm.fund_type" placeholder="选择类型" style="width: 100%">
-            <el-option label="宽基" value="宽基" />
-            <el-option label="行业" value="行业" />
-            <el-option label="主题" value="主题" />
-            <el-option label="跨境" value="跨境" />
-            <el-option label="策略" value="策略" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="editForm.notes" type="textarea" :rows="3" placeholder="添加备注" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="editDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleUpdateEtf">保存</el-button>
-      </template>
-    </el-dialog>
 
     <!-- 批量导入对话框 -->
     <el-dialog v-model="batchDialogVisible" title="批量导入 ETF" width="560px">
@@ -196,11 +184,15 @@ const etfs = ref<EtfItem[]>([])
 const loading = ref(false)
 const searchKeyword = ref('')
 
-// 编辑对话框
-const editDialogVisible = ref(false)
-const editForm = ref<{ fund_code: string; fund_name: string; fund_type: string; notes: string }>({
-  fund_code: '', fund_name: '', fund_type: '主题', notes: '',
-})
+// 右键菜单
+const contextMenuVisible = ref(false)
+const contextMenuRow = ref<EtfItem | null>(null)
+
+const handleRowContextMenu = (row: EtfItem, _column: any, event: MouseEvent) => {
+  event.preventDefault()
+  contextMenuRow.value = row
+  contextMenuVisible.value = true
+}
 
 // 批量导入
 const batchDialogVisible = ref(false)
@@ -266,33 +258,9 @@ async function refreshData() {
   ElMessage.success('已刷新')
 }
 
-// ---- 编辑 ----
-function editEtf(row: EtfItem) {
-  editForm.value = {
-    fund_code: row.fund_code,
-    fund_name: row.fund_name,
-    fund_type: row.fund_type || '主题',
-    notes: row.notes || '',
-  }
-  editDialogVisible.value = true
-}
-
-async function handleUpdateEtf() {
-  try {
-    await etfsApi.update(editForm.value.fund_code, {
-      fund_type: editForm.value.fund_type,
-      notes: editForm.value.notes,
-    })
-    ElMessage.success('更新成功')
-    editDialogVisible.value = false
-    loadEtfs()
-  } catch (e: any) {
-    showError(e?.message || '更新失败')
-  }
-}
-
 // ---- 移除 ----
-async function removeEtf(row: EtfItem) {
+async function removeEtf(row: EtfItem | null) {
+  if (!row) return
   try {
     await ElMessageBox.confirm(`确定移除 ${row.fund_name}（${row.fund_code}）？`, '移除 ETF', {
       confirmButtonText: '移除',
