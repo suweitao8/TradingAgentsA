@@ -83,60 +83,60 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="1分MA" width="90" align="center">
+        <el-table-column label="1分MA" width="70" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_1m">
-              <div class="ma-row">
-                <span :class="slopeClass(row.ma_slope_1m.ma5?.prev)">5{{ slopeArrow(row.ma_slope_1m.ma5?.prev) }}</span>
-                <span :class="slopeClass(row.ma_slope_1m.ma10?.prev)">10{{ slopeArrow(row.ma_slope_1m.ma10?.prev) }}</span>
+              <div class="ma-row" :title="'上: MA5前/MA10前  下: MA5当前/MA10当前'">
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_1m.ma5?.prev)" :title="'MA5 之前'">{{ slopeArrow(row.ma_slope_1m.ma5?.prev) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_1m.ma10?.prev)" :title="'MA10 之前'">{{ slopeArrow(row.ma_slope_1m.ma10?.prev) }}</span>
               </div>
               <div class="ma-row">
-                <span :class="slopeClass(row.ma_slope_1m.ma5?.now)">5{{ slopeArrow(row.ma_slope_1m.ma5?.now) }}</span>
-                <span :class="slopeClass(row.ma_slope_1m.ma10?.now)">10{{ slopeArrow(row.ma_slope_1m.ma10?.now) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_1m.ma5?.now)" :title="'MA5 当前'">{{ slopeArrow(row.ma_slope_1m.ma5?.now) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_1m.ma10?.now)" :title="'MA10 当前'">{{ slopeArrow(row.ma_slope_1m.ma10?.now) }}</span>
               </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="5分MA" width="90" align="center">
+        <el-table-column label="5分MA" width="70" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_5m">
               <div class="ma-row">
-                <span :class="slopeClass(row.ma_slope_5m.ma5?.prev)">5{{ slopeArrow(row.ma_slope_5m.ma5?.prev) }}</span>
-                <span :class="slopeClass(row.ma_slope_5m.ma10?.prev)">10{{ slopeArrow(row.ma_slope_5m.ma10?.prev) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_5m.ma5?.prev)" :title="'MA5 之前'">{{ slopeArrow(row.ma_slope_5m.ma5?.prev) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_5m.ma10?.prev)" :title="'MA10 之前'">{{ slopeArrow(row.ma_slope_5m.ma10?.prev) }}</span>
               </div>
               <div class="ma-row">
-                <span :class="slopeClass(row.ma_slope_5m.ma5?.now)">5{{ slopeArrow(row.ma_slope_5m.ma5?.now) }}</span>
-                <span :class="slopeClass(row.ma_slope_5m.ma10?.now)">10{{ slopeArrow(row.ma_slope_5m.ma10?.now) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_5m.ma5?.now)" :title="'MA5 当前'">{{ slopeArrow(row.ma_slope_5m.ma5?.now) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_5m.ma10?.now)" :title="'MA10 当前'">{{ slopeArrow(row.ma_slope_5m.ma10?.now) }}</span>
               </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="15分MA" width="90" align="center">
+        <el-table-column label="15分MA" width="70" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_15m">
               <div class="ma-row">
-                <span :class="slopeClass(row.ma_slope_15m.ma5?.prev)">5{{ slopeArrow(row.ma_slope_15m.ma5?.prev) }}</span>
-                <span :class="slopeClass(row.ma_slope_15m.ma10?.prev)">10{{ slopeArrow(row.ma_slope_15m.ma10?.prev) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_15m.ma5?.prev)" :title="'MA5 之前'">{{ slopeArrow(row.ma_slope_15m.ma5?.prev) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_15m.ma10?.prev)" :title="'MA10 之前'">{{ slopeArrow(row.ma_slope_15m.ma10?.prev) }}</span>
               </div>
               <div class="ma-row">
-                <span :class="slopeClass(row.ma_slope_15m.ma5?.now)">5{{ slopeArrow(row.ma_slope_15m.ma5?.now) }}</span>
-                <span :class="slopeClass(row.ma_slope_15m.ma10?.now)">10{{ slopeArrow(row.ma_slope_15m.ma10?.now) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_15m.ma5?.now)" :title="'MA5 当前'">{{ slopeArrow(row.ma_slope_15m.ma5?.now) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_15m.ma10?.now)" :title="'MA10 当前'">{{ slopeArrow(row.ma_slope_15m.ma10?.now) }}</span>
               </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="30分MA" width="90" align="center">
+        <el-table-column label="30分MA" width="70" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_30m">
               <div class="ma-row">
-                <span :class="slopeClass(row.ma_slope_30m.ma5?.prev)">5{{ slopeArrow(row.ma_slope_30m.ma5?.prev) }}</span>
-                <span :class="slopeClass(row.ma_slope_30m.ma10?.prev)">10{{ slopeArrow(row.ma_slope_30m.ma10?.prev) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_30m.ma5?.prev)" :title="'MA5 之前'">{{ slopeArrow(row.ma_slope_30m.ma5?.prev) }}</span>
+                <span class="ma-arrow" :class="slopeClass(row.ma_slope_30m.ma10?.prev)" :title="'MA10 之前'">{{ slopeArrow(row.ma_slope_30m.ma10?.prev) }}</span>
               </div>
               <div class="ma-row">
                 <span :class="slopeClass(row.ma_slope_30m.ma5?.now)">5{{ slopeArrow(row.ma_slope_30m.ma5?.now) }}</span>
@@ -459,15 +459,19 @@ onBeforeUnmount(() => {
 .ma-slope-cell {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  font-size: 12px;
-  font-family: 'Courier New', monospace;
-  line-height: 1.5;
+  gap: 2px;
+  line-height: 1.4;
 }
 
 .ma-row {
   display: flex;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.ma-arrow {
+  font-size: 16px;
+  font-weight: 700;
+  cursor: default;
 }
 </style>
