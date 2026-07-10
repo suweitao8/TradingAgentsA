@@ -95,6 +95,46 @@
           </template>
         </el-table-column>
 
+        <el-table-column label="1分MA" width="85" align="center">
+          <template #default="{ row }">
+            <div class="ma-slope-cell" v-if="row.ma_slope_1m">
+              <span :class="slopeClass(row.ma_slope_1m.ma5)">MA5 {{ slopeArrow(row.ma_slope_1m.ma5) }}</span>
+              <span :class="slopeClass(row.ma_slope_1m.ma10)">MA10 {{ slopeArrow(row.ma_slope_1m.ma10) }}</span>
+            </div>
+            <span v-else class="text-muted">-</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="5分MA" width="85" align="center">
+          <template #default="{ row }">
+            <div class="ma-slope-cell" v-if="row.ma_slope_5m">
+              <span :class="slopeClass(row.ma_slope_5m.ma5)">MA5 {{ slopeArrow(row.ma_slope_5m.ma5) }}</span>
+              <span :class="slopeClass(row.ma_slope_5m.ma10)">MA10 {{ slopeArrow(row.ma_slope_5m.ma10) }}</span>
+            </div>
+            <span v-else class="text-muted">-</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="15分MA" width="85" align="center">
+          <template #default="{ row }">
+            <div class="ma-slope-cell" v-if="row.ma_slope_15m">
+              <span :class="slopeClass(row.ma_slope_15m.ma5)">MA5 {{ slopeArrow(row.ma_slope_15m.ma5) }}</span>
+              <span :class="slopeClass(row.ma_slope_15m.ma10)">MA10 {{ slopeArrow(row.ma_slope_15m.ma10) }}</span>
+            </div>
+            <span v-else class="text-muted">-</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="30分MA" width="85" align="center">
+          <template #default="{ row }">
+            <div class="ma-slope-cell" v-if="row.ma_slope_30m">
+              <span :class="slopeClass(row.ma_slope_30m.ma5)">MA5 {{ slopeArrow(row.ma_slope_30m.ma5) }}</span>
+              <span :class="slopeClass(row.ma_slope_30m.ma10)">MA10 {{ slopeArrow(row.ma_slope_30m.ma10) }}</span>
+            </div>
+            <span v-else class="text-muted">-</span>
+          </template>
+        </el-table-column>
+
         <el-table-column label="备注" min-width="120">
           <template #default="{ row }">
             <span v-if="row.notes" class="notes-text">{{ row.notes }}</span>
@@ -280,6 +320,19 @@ function pctClass(pct: number): string {
   if (pct > 0) return 'text-danger'
   if (pct < 0) return 'text-success'
   return ''
+}
+
+// 均线斜率方向：1=上升↑ -1=下降↓ 0=走平→
+function slopeArrow(val: number): string {
+  if (val > 0) return '↑'
+  if (val < 0) return '↓'
+  return '→'
+}
+
+function slopeClass(val: number): string {
+  if (val > 0) return 'text-danger'   // 上升=红（A 股惯例）
+  if (val < 0) return 'text-success'  // 下降=绿
+  return 'text-muted'                  // 走平=灰
 }
 
 function typeTagType(type: string): '' | 'success' | 'warning' | 'info' | 'danger' {
@@ -573,6 +626,15 @@ onBeforeUnmount(() => {
 .notes-text {
   color: var(--el-text-color-secondary);
   font-size: 13px;
+}
+
+.ma-slope-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  line-height: 1.4;
 }
 
 .popular-toolbar {

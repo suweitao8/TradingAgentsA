@@ -214,3 +214,142 @@ def get_quotes_service() -> QuotesService:
         _quotes_service = QuotesService(ttl_seconds=30)
     return _quotes_service
 
+
+# ---------------------------------------------------------------------------
+# ETF 分时均线斜率（MA5/MA10）
+# ---------------------------------------------------------------------------
+
+def _etf_secid(code: str) -> str:
+    """根据 ETF 代码生成东方财富 secid（市场前缀+代码）。
+
+    51/56/58 开头 → 沪市(1)，15 开头 → 深市(0)。
+    """
+    code = str(code).strip().zfill(6)
+    if code.startswith(("51", "56", "58")):
+        return f"1.{code}"
+    elif code.startswith("15"):
+        return f"0.{code}"
+    return f"1.{code}"  # 默认沪市
+
+
+def _fetch_kline_closes(code: str, klt: str, lmt: int = 15) -> list:
+    """从东方财富拉取 ETF 分时 K 线的收盘价序列。
+
+    Args:
+        code: 6 位 ETF 代码
+        klt: K 线周期（1=1分钟, 5=5分钟, 15=15分钟, 30=30分钟）
+        lmt: 返回最近多少根 K 线
+
+    Returns:
+        收盘价列表（按时间正序），失败返回空列表
+    """
+    import requests
+
+    try:
+        secid = _etf_secid(code)
+        url = "https://push2delay.eastmoney.com/api/qt/stock/kline/get"
+        params = {
+            "secid": secid,
+            "ut": "bd1d9ddb04089700cf9c27f6f7426281",
+            "fields1": "f1,f2,f3,f4,f5,f6",
+            "fields2": "f51,f52,f53,f54,f55,f56,f57",
+            "klt": klt,
+            "fqt": "0",
+            "end": "20500101",
+            "lmt": str(lmt),
+        }
+        resp = requests.get(url, params=params, timeout=8)
+        if resp.status_code != 200:
+            return []
+        data = resp.json().get("data") or {}
+        klines = data.get("klines") or []
+        # 每行格式: "2026-07-01,09:31,5.01,5.02,5.03,5.00,12345,67890"
+        # f51=时间, f52=开, f53=收, f54=高, f55=低, f56=量, f57=额
+        closes = []
+        for line in klines:
+            parts = line.split(",")
+            if len(parts) >= 3:
+                try:
+                    closes.append(float(parts[2]))  # f53=收盘价
+                except (ValueError, IndexError):
+                    continue
+        return closes
+    except Exception as e:
+        logger.debug(f"获取 {code} klt={klt} K线失败: {e}")
+        return []
+
+
+def _calc_ma_slope(closes: list, window: int) -> int:
+    """计算 MA(window) 的斜率方向。
+
+    斜率 = 最后一个 MA 值 - 倒数第二个 MA 值。
+    返回 1(上升)/-1(下降)/0(走平或数据不足)。
+    """
+    if len(closes) < window + 1:
+        return 0
+    # 计算 MA 序列的最后两个值
+    ma_now = sum(closes[-window:]) / window
+    ma_prev = sum(closes[-window - 1:-1]) / window
+    diff = ma_now - ma_prev
+    if diff > 0.0001:
+        return 1
+    elif diff < -0.0001:
+        return -1
+    return 0
+
+
+async def get_etf_ma_slopes(codes: list) -> dict:
+    """批量获取 ETF 的分时 MA5/MA10 斜率方向。
+
+    对每只 ETF 请求 4 个周期（1分/5分/15分/30分）的 K 线，
+    计算 MA5 和 MA10 的斜率方向。结果 30s 内存缓存。
+
+    Args:
+        codes: ETF 代码列表
+
+    Returns:
+        {code: {"ma5": int, "ma10": int, ...}} 每个周期一组
+        int 含义: 1=上升, -1=下降, 0=走平
+    """
+    codes = [c.strip().zfill(6) for c in codes if c]
+    if not codes:
+        return {}
+
+    # 缓存
+    now = time.time()
+    cache_key = ",".join(codes)
+    if hasattr(get_etf_ma_slopes, "_cache"):
+        cached = get_etf_ma_slopes._cache
+        if cached.get("key") == cache_key and (now - cached.get("ts", 0)) < 30:
+            return cached["data"]
+
+    periods = [("1m", "1"), ("5m", "5"), ("15m", "15"), ("30m", "30")]
+
+    async def _fetch_one_period(code: str, klt: str) -> tuple:
+        closes = await asyncio.to_thread(_fetch_kline_closes, code, klt)
+        return code, {
+            "ma5": _calc_ma_slope(closes, 5),
+            "ma10": _calc_ma_slope(closes, 10),
+        }
+
+    # 并行请求：每只 ETF × 4 周期
+    tasks = []
+    for code in codes:
+        for period_label, klt in periods:
+            tasks.append((code, period_label, _fetch_one_period(code, klt)))
+
+    results = await asyncio.gather(*[t[2] for t in tasks], return_exceptions=True)
+
+    # 组装结果
+    slope_data = {code: {} for code in codes}
+    for (code, period_label, _), result in zip(tasks, results):
+        if isinstance(result, Exception):
+            slope_data[code][f"ma_slope_{period_label}"] = {"ma5": 0, "ma10": 0}
+        else:
+            _, slopes = result
+            slope_data[code][f"ma_slope_{period_label}"] = slopes
+
+    # 写缓存
+    get_etf_ma_slopes._cache = {"key": cache_key, "ts": now, "data": slope_data}
+    return slope_data
+

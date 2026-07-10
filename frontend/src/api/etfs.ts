@@ -15,6 +15,11 @@ export interface EtfItem {
   change_percent?: number | null
   turnover_rate?: number | null  // 换手率(%)
   volume_ratio?: number | null   // 量比
+  // 分时均线斜率（1=上升, -1=下降, 0=走平）
+  ma_slope_1m?: { ma5: number; ma10: number }
+  ma_slope_5m?: { ma5: number; ma10: number }
+  ma_slope_15m?: { ma5: number; ma10: number }
+  ma_slope_30m?: { ma5: number; ma10: number }
 }
 
 /** 添加 ETF 请求 */
