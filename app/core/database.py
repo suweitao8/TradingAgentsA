@@ -365,9 +365,6 @@ async def create_database_indexes(db):
         # user_etfs 的索引（ETF 自选功能）
         user_etfs = db["user_etfs"]
         await user_etfs.create_index([("user_id", 1)], unique=True)
-        training_sessions = db["training_sessions"]
-        await training_sessions.create_index([("session_id", 1)], unique=True)
-        await training_sessions.create_index([("owner_id", 1), ("updated_at", -1)])
 
         logger.info("✅ 数据库索引创建完成")
 

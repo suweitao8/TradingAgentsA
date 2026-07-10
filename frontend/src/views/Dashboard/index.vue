@@ -89,17 +89,6 @@
               <el-icon class="action-arrow"><ArrowRight /></el-icon>
             </div>
 
-            <div class="action-item" @click="goToTraining">
-              <div class="action-icon">
-                <el-icon><DataAnalysis /></el-icon>
-              </div>
-              <div class="action-content">
-                <h3>AI 做 T 训练</h3>
-                <p>回放真实历史行情，练习盘中模拟买卖和做 T 复盘。</p>
-              </div>
-              <el-icon class="action-arrow"><ArrowRight /></el-icon>
-            </div>
-
             <div class="action-item" @click="goToQueue">
               <div class="action-icon">
                 <el-icon><List /></el-icon>
@@ -271,7 +260,6 @@ import {
   ArrowRight,
   InfoFilled,
   Reading,
-  DataAnalysis,
   Loading
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -318,10 +306,6 @@ const goToBatchAnalysis = () => {
 
 const goToScreening = () => {
   router.push('/screening')
-}
-
-const goToTraining = () => {
-  router.push('/training')
 }
 
 const goToQueue = () => {
