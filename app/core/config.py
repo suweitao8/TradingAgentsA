@@ -322,10 +322,6 @@ class Settings(BaseSettings):
     FAVORITE_REALTIME_REPORT_CRON: str = Field(default="0 9-15 * * 1-5", description="盘中实时报告 cron（工作日9-15点每小时）")
     FAVORITE_REPORT_MAX_CONCURRENT: int = Field(default=2, ge=1, le=10, description="每日报告最大并发数（防止打爆LLM）")
 
-    # ===== B站 UP 主动态抓取配置 =====
-    # 从浏览器 F12 → Network → 复制 Cookie 头粘贴到这里（需含 SESSDATA）
-    BILI_COOKIE: str = Field(default="", description="B站 cookie（含 SESSDATA，用于抓取 UP 主动态）")
-
     @property
     def is_production(self) -> bool:
         """是否为生产环境"""
