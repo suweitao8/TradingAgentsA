@@ -180,7 +180,7 @@
     <!-- 批量导入对话框 -->
     <el-dialog v-model="batchDialogVisible" title="批量导入 ETF" width="560px">
       <el-alert type="info" :closable="false" style="margin-bottom: 12px">
-        每行一个 ETF，格式：代码,名称 或 代码,名称,类型（如 510300,沪深300ETF,宽基）
+        每行一个，支持以下格式：① 每行一个代码（如 510300）② 代码,名称 ③ 代码,名称,类型
       </el-alert>
       <el-input
         v-model="batchInputText"
@@ -345,20 +345,26 @@ async function handleBatchImport() {
 
   batchLoading.value = true
   try {
+    // 支持两种格式：
+    // ① 每行一个代码（6位数字），名称和类型自动补
+    // ② 代码,名称 或 代码,名称,类型
     const lines = text.split('\n').filter((l) => l.trim())
     const items: AddEtfReq[] = []
     for (const line of lines) {
-      const parts = line.trim().split(/[,，\s]+/)
-      if (parts.length < 2) continue
+      const parts = line.trim().split(/[,，\s]+/).filter((p) => p)
+      if (!parts.length) continue
+      const code = parts[0].trim()
+      // 跳过明显不是代码的行（非数字开头且不足5位）
+      if (!/^\d{5,6}$/.test(code)) continue
       items.push({
-        fund_code: parts[0].trim(),
-        fund_name: parts[1].trim(),
+        fund_code: code,
+        fund_name: parts[1]?.trim() || `ETF${code}`,
         fund_type: parts[2]?.trim() || '主题',
       })
     }
 
     if (!items.length) {
-      ElMessage.warning('未解析到有效条目')
+      ElMessage.warning('未解析到有效条目，请输入6位ETF代码（每行一个或用逗号分隔代码和名称）')
       return
     }
 
