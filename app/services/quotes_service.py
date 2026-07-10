@@ -341,24 +341,21 @@ def _aggregate_closes(closes_1m: list, period: int) -> list:
 
 
 def _calc_ma_slope(closes: list, window: int) -> dict:
-    """计算 MA(window) 的当前斜率和上一根斜率方向。
+    """计算 MA(window) 的当前斜率和上一根斜率（具体数值）。
 
-    返回 {"now": int, "prev": int}
-    - now: 当前斜率（最后一根 MA - 倒数第二根 MA）
-    - prev: 上一根斜率（倒数第二根 MA - 倒数第三根 MA）
-    值含义: 1=上升, -1=下降, 0=走平或数据不足
+    返回 {"now": float, "prev": float}
+    - now: 当前斜率 = 最后一个 MA 值 - 倒数第二个 MA 值
+    - prev: 上一根斜率 = 倒数第二个 MA 值 - 倒数第三个 MA 值
+    数据不足时返回 0.0
     """
     def _slope(vals, offset=0):
         if len(vals) < window + 1 + offset:
-            return 0
-        ma_a = sum(vals[-(window + offset):(len(vals) - offset) if offset > 0 else None]) / window
-        ma_b = sum(vals[-(window + 1 + offset):-(1 + offset) if (1 + offset) > 0 else None]) / window
-        diff = ma_a - ma_b
-        if diff > 0.0001:
-            return 1
-        elif diff < -0.0001:
-            return -1
-        return 0
+            return 0.0
+        end_a = len(vals) - offset
+        end_b = len(vals) - 1 - offset
+        ma_a = sum(vals[end_a - window:end_a]) / window
+        ma_b = sum(vals[end_b - window:end_b]) / window
+        return round(ma_a - ma_b, 4)
 
     return {"now": _slope(closes, 0), "prev": _slope(closes, 1)}
 

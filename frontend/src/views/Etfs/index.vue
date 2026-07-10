@@ -83,64 +83,64 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="1分MA" width="70" align="center">
+        <el-table-column label="1分MA" width="95" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_1m">
-              <div class="ma-row" :title="'上: MA5前/MA10前  下: MA5当前/MA10当前'">
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_1m.ma5?.prev)" :title="'MA5 之前'">{{ slopeArrow(row.ma_slope_1m.ma5?.prev) }}</span>
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_1m.ma10?.prev)" :title="'MA10 之前'">{{ slopeArrow(row.ma_slope_1m.ma10?.prev) }}</span>
+              <div class="ma-row" title="上行=之前(MA5 MA10) 下行=当前(MA5 MA10)">
+                <span :class="slopeClass(row.ma_slope_1m.ma5?.prev)">{{ slopeArrow(row.ma_slope_1m.ma5?.prev) }}{{ slopeVal(row.ma_slope_1m.ma5?.prev) }}</span>
+                <span :class="slopeClass(row.ma_slope_1m.ma10?.prev)">{{ slopeArrow(row.ma_slope_1m.ma10?.prev) }}{{ slopeVal(row.ma_slope_1m.ma10?.prev) }}</span>
               </div>
               <div class="ma-row">
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_1m.ma5?.now)" :title="'MA5 当前'">{{ slopeArrow(row.ma_slope_1m.ma5?.now) }}</span>
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_1m.ma10?.now)" :title="'MA10 当前'">{{ slopeArrow(row.ma_slope_1m.ma10?.now) }}</span>
+                <span :class="slopeClass(row.ma_slope_1m.ma5?.now)">{{ slopeArrow(row.ma_slope_1m.ma5?.now) }}{{ slopeVal(row.ma_slope_1m.ma5?.now) }}</span>
+                <span :class="slopeClass(row.ma_slope_1m.ma10?.now)">{{ slopeArrow(row.ma_slope_1m.ma10?.now) }}{{ slopeVal(row.ma_slope_1m.ma10?.now) }}</span>
               </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="5分MA" width="70" align="center">
+        <el-table-column label="5分MA" width="95" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_5m">
               <div class="ma-row">
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_5m.ma5?.prev)" :title="'MA5 之前'">{{ slopeArrow(row.ma_slope_5m.ma5?.prev) }}</span>
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_5m.ma10?.prev)" :title="'MA10 之前'">{{ slopeArrow(row.ma_slope_5m.ma10?.prev) }}</span>
+                <span :class="slopeClass(row.ma_slope_5m.ma5?.prev)">{{ slopeArrow(row.ma_slope_5m.ma5?.prev) }}{{ slopeVal(row.ma_slope_5m.ma5?.prev) }}</span>
+                <span :class="slopeClass(row.ma_slope_5m.ma10?.prev)">{{ slopeArrow(row.ma_slope_5m.ma10?.prev) }}{{ slopeVal(row.ma_slope_5m.ma10?.prev) }}</span>
               </div>
               <div class="ma-row">
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_5m.ma5?.now)" :title="'MA5 当前'">{{ slopeArrow(row.ma_slope_5m.ma5?.now) }}</span>
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_5m.ma10?.now)" :title="'MA10 当前'">{{ slopeArrow(row.ma_slope_5m.ma10?.now) }}</span>
+                <span :class="slopeClass(row.ma_slope_5m.ma5?.now)">{{ slopeArrow(row.ma_slope_5m.ma5?.now) }}{{ slopeVal(row.ma_slope_5m.ma5?.now) }}</span>
+                <span :class="slopeClass(row.ma_slope_5m.ma10?.now)">{{ slopeArrow(row.ma_slope_5m.ma10?.now) }}{{ slopeVal(row.ma_slope_5m.ma10?.now) }}</span>
               </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="15分MA" width="70" align="center">
+        <el-table-column label="15分MA" width="95" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_15m">
               <div class="ma-row">
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_15m.ma5?.prev)" :title="'MA5 之前'">{{ slopeArrow(row.ma_slope_15m.ma5?.prev) }}</span>
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_15m.ma10?.prev)" :title="'MA10 之前'">{{ slopeArrow(row.ma_slope_15m.ma10?.prev) }}</span>
+                <span :class="slopeClass(row.ma_slope_15m.ma5?.prev)">{{ slopeArrow(row.ma_slope_15m.ma5?.prev) }}{{ slopeVal(row.ma_slope_15m.ma5?.prev) }}</span>
+                <span :class="slopeClass(row.ma_slope_15m.ma10?.prev)">{{ slopeArrow(row.ma_slope_15m.ma10?.prev) }}{{ slopeVal(row.ma_slope_15m.ma10?.prev) }}</span>
               </div>
               <div class="ma-row">
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_15m.ma5?.now)" :title="'MA5 当前'">{{ slopeArrow(row.ma_slope_15m.ma5?.now) }}</span>
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_15m.ma10?.now)" :title="'MA10 当前'">{{ slopeArrow(row.ma_slope_15m.ma10?.now) }}</span>
+                <span :class="slopeClass(row.ma_slope_15m.ma5?.now)">{{ slopeArrow(row.ma_slope_15m.ma5?.now) }}{{ slopeVal(row.ma_slope_15m.ma5?.now) }}</span>
+                <span :class="slopeClass(row.ma_slope_15m.ma10?.now)">{{ slopeArrow(row.ma_slope_15m.ma10?.now) }}{{ slopeVal(row.ma_slope_15m.ma10?.now) }}</span>
               </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="30分MA" width="70" align="center">
+        <el-table-column label="30分MA" width="95" align="center">
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_30m">
               <div class="ma-row">
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_30m.ma5?.prev)" :title="'MA5 之前'">{{ slopeArrow(row.ma_slope_30m.ma5?.prev) }}</span>
-                <span class="ma-arrow" :class="slopeClass(row.ma_slope_30m.ma10?.prev)" :title="'MA10 之前'">{{ slopeArrow(row.ma_slope_30m.ma10?.prev) }}</span>
+                <span :class="slopeClass(row.ma_slope_30m.ma5?.prev)">{{ slopeArrow(row.ma_slope_30m.ma5?.prev) }}{{ slopeVal(row.ma_slope_30m.ma5?.prev) }}</span>
+                <span :class="slopeClass(row.ma_slope_30m.ma10?.prev)">{{ slopeArrow(row.ma_slope_30m.ma10?.prev) }}{{ slopeVal(row.ma_slope_30m.ma10?.prev) }}</span>
               </div>
               <div class="ma-row">
-                <span :class="slopeClass(row.ma_slope_30m.ma5?.now)">5{{ slopeArrow(row.ma_slope_30m.ma5?.now) }}</span>
-                <span :class="slopeClass(row.ma_slope_30m.ma10?.now)">10{{ slopeArrow(row.ma_slope_30m.ma10?.now) }}</span>
+                <span :class="slopeClass(row.ma_slope_30m.ma5?.now)">{{ slopeArrow(row.ma_slope_30m.ma5?.now) }}{{ slopeVal(row.ma_slope_30m.ma5?.now) }}</span>
+                <span :class="slopeClass(row.ma_slope_30m.ma10?.now)">{{ slopeArrow(row.ma_slope_30m.ma10?.now) }}{{ slopeVal(row.ma_slope_30m.ma10?.now) }}</span>
               </div>
             </div>
             <span v-else class="text-muted">-</span>
@@ -240,19 +240,25 @@ function pctClass(pct: number): string {
   return ''
 }
 
-// 均线斜率方向：1=上升↑ -1=下降↓ 0=走平→
+// 均线斜率：>0上升↑ <0下降↓ =0走平→
 function slopeArrow(val?: number): string {
   if (val === undefined || val === null) return '-'
-  if (val > 0) return '↑'
-  if (val < 0) return '↓'
+  if (val > 0.00005) return '↑'
+  if (val < -0.00005) return '↓'
   return '→'
 }
 
 function slopeClass(val?: number): string {
   if (val === undefined || val === null) return 'text-muted'
-  if (val > 0) return 'text-danger'   // 上升=红（A 股惯例）
-  if (val < 0) return 'text-success'  // 下降=绿
-  return 'text-muted'                  // 走平=灰
+  if (val > 0.00005) return 'text-danger'   // 上升=红（A 股惯例）
+  if (val < -0.00005) return 'text-success'  // 下降=绿
+  return 'text-muted'                        // 走平=灰
+}
+
+// 格式化斜率数值显示：0.0012 → "0.0012"，-0.0003 → "-0.0003"
+function slopeVal(val?: number): string {
+  if (val === undefined || val === null) return ''
+  return val.toFixed(4).replace(/0+$/, '').replace(/\.$/, '')
 }
 
 function typeTagType(type: string): '' | 'success' | 'warning' | 'info' | 'danger' {
@@ -459,14 +465,16 @@ onBeforeUnmount(() => {
 .ma-slope-cell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   line-height: 1.4;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
 }
 
 .ma-row {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .ma-arrow {
