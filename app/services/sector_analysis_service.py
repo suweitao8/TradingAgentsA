@@ -101,32 +101,52 @@ class SectorAnalysisService:
         return sectors
 
     async def _fetch_concept_sectors_from_akshare(self) -> List[str]:
-        """从 AKShare 拉取东方财富概念板块列表"""
+        """拉取概念板块列表（多数据源容错，优先同花顺）"""
+        import akshare as ak
+
+        # 方案1（首选）：同花顺概念板块（stock_board_concept_name_ths）
+        # 同花顺数据源不依赖 push2.eastmoney.com，容器内网络兼容性更好
         try:
-            import akshare as ak
-
-            # stock_board_concept_name_em() 返回 DataFrame，含"板块名称"列
-            df = ak.stock_board_concept_name_em()
-            if df is None or df.empty:
-                logger.warning("⚠️ AKShare 概念板块返回空")
-                return []
-
-            # 取"板块名称"列，去重去空
-            col = "板块名称" if "板块名称" in df.columns else df.columns[1]
-            sectors = df[col].dropna().astype(str).str.strip().tolist()
-            sectors = [s for s in sectors if s]
-            # 去重保序
-            seen = set()
-            unique = []
-            for s in sectors:
-                if s not in seen:
-                    seen.add(s)
-                    unique.append(s)
-            logger.info(f"✅ AKShare 概念板块拉取成功: {len(unique)} 个")
-            return unique
+            df = ak.stock_board_concept_name_ths()
+            if df is not None and not df.empty and "name" in df.columns:
+                sectors = df["name"].dropna().astype(str).str.strip().tolist()
+                sectors = [s for s in sectors if s]
+                sectors = list(dict.fromkeys(sectors))  # 去重保序
+                if sectors:
+                    logger.info(f"✅ 同花顺概念板块拉取成功: {len(sectors)} 个")
+                    return sectors
         except Exception as e:
-            logger.error(f"❌ AKShare 概念板块拉取失败: {e}")
-            return []
+            logger.warning(f"⚠️ 同花顺概念板块拉取失败: {e}，尝试东方财富")
+
+        # 方案2：东方财富概念板块（stock_board_concept_name_em，依赖 push2 域名）
+        try:
+            df = ak.stock_board_concept_name_em()
+            if df is not None and not df.empty:
+                col = "板块名称" if "板块名称" in df.columns else df.columns[1]
+                sectors = df[col].dropna().astype(str).str.strip().tolist()
+                sectors = [s for s in sectors if s]
+                sectors = list(dict.fromkeys(sectors))
+                if sectors:
+                    logger.info(f"✅ 东方财富概念板块拉取成功: {len(sectors)} 个")
+                    return sectors
+        except Exception as e:
+            logger.warning(f"⚠️ 东方财富概念板块拉取失败: {e}，尝试资金流接口")
+
+        # 方案3：东方财富概念资金流（stock_fund_flow_concept，另一域名）
+        try:
+            df = ak.stock_fund_flow_concept()
+            if df is not None and not df.empty and "行业" in df.columns:
+                sectors = df["行业"].dropna().astype(str).str.strip().tolist()
+                sectors = [s for s in sectors if s]
+                sectors = list(dict.fromkeys(sectors))
+                if sectors:
+                    logger.info(f"✅ 概念资金流板块拉取成功: {len(sectors)} 个")
+                    return sectors
+        except Exception as e:
+            logger.error(f"❌ 所有概念板块数据源均失败: {e}")
+
+        return []
+
 
     # ==================== LLM 分析 ====================
 
