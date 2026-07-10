@@ -305,7 +305,7 @@ async function handleUpdateEtf() {
     })
     ElMessage.success('更新成功')
     editDialogVisible.value = false
-    await loadEtfs()
+    loadEtfs()
   } catch (e: any) {
     showError(e?.message || '更新失败')
   }
@@ -321,7 +321,7 @@ async function removeEtf(row: EtfItem) {
     })
     await etfsApi.remove(row.fund_code)
     ElMessage.success('已移除')
-    await loadEtfs()
+    loadEtfs()
   } catch (e: any) {
     if (e !== 'cancel' && e?.message) {
       showError(e.message)
@@ -371,7 +371,9 @@ async function handleBatchImport() {
     const result = await etfsApi.batchAdd(items)
     batchResult.value = result.data
     ElMessage.success(result.message || '导入完成')
-    await loadEtfs()
+    batchDialogVisible.value = false
+    // 静默刷新列表（不显示 loading 转圈，后台慢慢加载行情数据）
+    loadEtfs()
   } catch (e: any) {
     showError(e?.message || '批量导入失败')
   } finally {
