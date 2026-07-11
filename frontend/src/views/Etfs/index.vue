@@ -252,11 +252,10 @@ function slopeClass(val?: number): string {
   return 'text-muted'                    // 走平=灰
 }
 
-// 格式化度数显示：-2.9 → "-2.9°"，0.0 → "0°"
+// 格式化度数显示：四舍五入取整，去负号（颜色已区分），如 -2.9 → "3°"
 function slopeVal(val?: number): string {
   if (val === undefined || val === null) return ''
-  if (val === 0) return '0°'
-  return `${val.toFixed(1)}°`
+  return `${Math.round(Math.abs(val))}°`
 }
 
 function typeTagType(type: string): '' | 'success' | 'warning' | 'info' | 'danger' {
