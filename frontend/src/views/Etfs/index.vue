@@ -280,32 +280,36 @@ function slopeVal(val?: number): string {
   return `${Math.round(Math.abs(val))}°`
 }
 
-// 趋势判断：根据 3 个时间点（prev2→prev→now）度数变化方向，
-// 得到"涨幅扩大/涨幅缩小/跌幅扩大/跌幅缩小/走平"的文字结论。
-// 以 MA5 的变化为基准（比 MA5 vs MA10 更灵敏）。
+// 趋势判断：根据 prev→now 度数变化方向，得到趋势结论。
+// 覆盖所有场景（含 now=0 趋势反转、now≈0 但 prev 有明显方向）：
+// - 两者都接近 0 → 走平
+// - now 明显为正，或 now≈0 但 prev 为负（从跌收敛） → 涨方向
+// - now 明显为负，或 now≈0 但 prev 为正（从涨收敛） → 跌方向
 function trendLabel(d?: { prev2?: number; prev?: number; now?: number }): string {
   if (!d || d.now == null || d.prev == null) return ''
   const now = d.now
   const prev = d.prev
+  const THRESH = 0.5  // 度数阈值：|x| < 0.5° 视为走平区间
+  const DELTA = 0.3   // 变化量阈值：|now-prev| > 0.3° 视为有变化
 
-  // now/prev 都接近 0 → 走平
-  if (Math.abs(now) < 0.5 && Math.abs(prev) < 0.5) return '走平'
+  // 两者都接近 0 → 真正走平
+  if (Math.abs(now) < THRESH && Math.abs(prev) < THRESH) return '走平'
 
-  // 当前在上升（now > 0）
-  if (now > 0) {
-    if (now > prev + 0.3) return '涨幅扩大'
-    if (now < prev - 0.3) return '涨幅缩小'
+  // 判断当前方向：now 明显为正=涨，now 明显为负=跌，
+  // now≈0 时看 prev 方向（从涨收敛=涨幅缩小，从跌收敛=跌幅缩小）
+  const isUp = now > 0 || (Math.abs(now) < THRESH && prev > THRESH)
+
+  if (isUp) {
+    // 涨方向：度数在变大=扩大，在变小=缩小，基本不变=延续
+    if (now > prev + DELTA) return '涨幅扩大'
+    if (now < prev - DELTA) return '涨幅缩小'
     return '涨幅延续'
   }
 
-  // 当前在下跌（now < 0）
-  if (now < 0) {
-    if (now < prev - 0.3) return '跌幅扩大'
-    if (now > prev + 0.3) return '跌幅缩小'
-    return '跌幅延续'
-  }
-
-  return ''
+  // 跌方向
+  if (now < prev - DELTA) return '跌幅扩大'
+  if (now > prev + DELTA) return '跌幅缩小'
+  return '跌幅延续'
 }
 
 function trendClass(d?: { prev2?: number; prev?: number; now?: number }): string {
