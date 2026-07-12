@@ -8,6 +8,13 @@
             <el-icon><Upload /></el-icon>
             批量导入
           </el-button>
+          <el-button @click="handleRefresh" :loading="refreshing">
+            <el-icon><Refresh /></el-icon>
+            刷新行情
+          </el-button>
+          <span v-if="lastRefreshTime" class="refresh-time">
+            {{ isTrading ? '盘中' : '盘后' }} · {{ lastRefreshTime }}
+          </span>
         </div>
         <el-input
           v-model="searchKeyword"
@@ -201,7 +208,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Upload, Delete } from '@element-plus/icons-vue'
+import { Search, Upload, Delete, Refresh } from '@element-plus/icons-vue'
 import { getEtfTypeClass } from '@/utils/industryColor'
 import { etfsApi, type EtfItem, type AddEtfReq } from '@/api/etfs'
 import { showError } from '@/utils/message'
@@ -209,7 +216,10 @@ import { showError } from '@/utils/message'
 // ---- 状态 ----
 const etfs = ref<EtfItem[]>([])
 const loading = ref(false)
+const refreshing = ref(false)
 const searchKeyword = ref('')
+const lastRefreshTime = ref('')  // 最后刷新时间显示
+const isTrading = ref(false)     // 当前是否交易时段
 
 // 批量导入
 const batchDialogVisible = ref(false)
@@ -303,6 +313,13 @@ function trendClass(d?: { prev2?: number; prev?: number; now?: number }): string
   return 'trend-flat'
 }
 
+// 格式化当前时间 HH:MM:SS
+function formatTime(): string {
+  const d = new Date()
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
 // ---- 数据加载 ----
 // 首次加载显示 loading；有旧数据时静默刷新（不转圈），拉取成功后才更新
 async function loadEtfs() {
@@ -311,10 +328,26 @@ async function loadEtfs() {
   try {
     const res = await etfsApi.list()
     etfs.value = res.data || []
+    lastRefreshTime.value = formatTime()
   } catch (e: any) {
     if (isFirstLoad) showError(e?.message || '加载 ETF 列表失败')
   } finally {
     if (isFirstLoad) loading.value = false
+  }
+}
+
+// 手动刷新行情
+async function handleRefresh() {
+  refreshing.value = true
+  try {
+    const res = await etfsApi.list()
+    etfs.value = res.data || []
+    lastRefreshTime.value = formatTime()
+    ElMessage.success(`已刷新 ${etfs.value.length} 只 ETF 行情`)
+  } catch (e: any) {
+    showError(e?.message || '刷新行情失败')
+  } finally {
+    refreshing.value = false
   }
 }
 
@@ -389,21 +422,18 @@ async function handleBatchImport() {
   }
 }
 
-// ---- 自动刷新：盘中递归轮询（刷新成功后立刻下一次），盘后不刷新 ----
+// ---- 自动刷新：盘中每 10 秒自动刷新，盘后不自动刷新 ----
 
-// 判断是否在 A 股交易时段（9:25-11:30, 13:00-15:00，周一至周五）
-function isTradingTime(): boolean {
+// 判断是否在 A 股交易时段（9:00-11:30, 13:00-15:30，周一至周五）
+function checkTradingTime(): boolean {
   const now = new Date()
   const day = now.getDay()
   if (day === 0 || day === 6) return false  // 周末
 
-  const h = now.getHours()
-  const m = now.getMinutes()
-  const minutes = h * 60 + m
-
-  // 集合竞价 9:20 + 连续竞价 9:30-11:30 + 13:00-15:00
-  if (minutes >= 560 && minutes <= 690) return true   // 9:20-11:30
-  if (minutes >= 780 && minutes <= 900) return true   // 13:00-15:00
+  const minutes = now.getHours() * 60 + now.getMinutes()
+  // 9:00-11:30 / 13:00-15:30
+  if (minutes >= 540 && minutes <= 690) return true
+  if (minutes >= 780 && minutes <= 930) return true
   return false
 }
 
@@ -412,22 +442,25 @@ let autoRefreshActive = false
 async function autoRefreshLoop() {
   if (!autoRefreshActive) return
 
-  // 非交易时段：每 30 秒检查一次是否进入交易时段
-  if (!isTradingTime()) {
+  const trading = checkTradingTime()
+  isTrading.value = trading
+
+  if (!trading) {
+    // 非交易时段：每 30 秒检查一次是否进入交易时段
     setTimeout(autoRefreshLoop, 30000)
     return
   }
 
-  // 交易时段：拉取数据，成功后立刻下一轮
+  // 交易时段：每 10 秒自动刷新
   try {
     const res = await etfsApi.list()
     etfs.value = res.data || []
+    lastRefreshTime.value = formatTime()
   } catch {
     // 静默忽略
   }
-  // 递归（成功或失败都继续下一轮，保持盘中持续刷新）
   if (autoRefreshActive) {
-    setTimeout(autoRefreshLoop, 2000)  // 2 秒间隔，接近实时
+    setTimeout(autoRefreshLoop, 10000)
   }
 }
 
@@ -465,8 +498,16 @@ onBeforeUnmount(() => {
 
 .action-buttons {
   display: flex;
+  align-items: center;
   gap: 8px;
   flex-shrink: 0;
+}
+
+.refresh-time {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
 }
 
 .etfs-list-card {
