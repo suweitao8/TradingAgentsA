@@ -294,12 +294,12 @@ function trendLabel(d?: { prev2?: number; prev?: number; now?: number }): string
 function trendClass(d?: { prev2?: number; prev?: number; now?: number }): string {
   if (!d || d.now == null || d.prev == null) return 'trend-flat'
   const label = trendLabel(d)
-  // 颜色按"好转 vs 恶化"：
-  // 小=趋势收敛/减缓=好转=红色（积极信号）
-  // 大=趋势加剧/加速=恶化=绿色（消极信号）
-  // 续=基本不变=灰色
-  if (label.includes('小')) return 'trend-up-weak'
-  if (label.includes('大')) return 'trend-down-strong'
+  // 颜色跟随涨跌方向（与度数箭头颜色一致）：
+  // 涨（涨大/涨小）→ 红色（均线在上行=好事）
+  // 跌（跌大/跌小）→ 绿色（均线在下行=坏事）
+  // 平衡 → 灰色
+  if (label.startsWith('涨')) return 'trend-up-weak'
+  if (label.startsWith('跌')) return 'trend-down-weak'
   return 'trend-flat'
 }
 
