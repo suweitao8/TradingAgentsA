@@ -30,7 +30,6 @@
         style="width: 100%"
         border
         :row-class-name="({ row }) => getEtfTypeClass(row.fund_type)"
-        @row-contextmenu="handleRowContextMenu"
       >
         <el-table-column type="index" label="#" width="45" align="center" />
 
@@ -143,22 +142,15 @@
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
-      </el-table>
 
-      <!-- 右键菜单 -->
-      <el-dropdown
-        trigger="contextmenu"
-        placement="bottom-start"
-        :visible="contextMenuVisible"
-        @visible-change="(v: boolean) => contextMenuVisible = v"
-      >
-        <template #default><span /></template>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item @click="removeEtf(contextMenuRow)" divided>移除</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
+        <el-table-column label="" width="55" align="center" fixed="right">
+          <template #default="{ row }">
+            <el-button size="small" text type="danger" @click="removeEtf(row)">
+              <el-icon><Delete /></el-icon>
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
       <!-- 空状态 -->
       <el-empty v-if="!loading && etfs.length === 0" description="还没有 ETF，点击「批量导入」添加">
@@ -195,7 +187,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Upload } from '@element-plus/icons-vue'
+import { Search, Upload, Delete } from '@element-plus/icons-vue'
 import { getEtfTypeClass } from '@/utils/industryColor'
 import { etfsApi, type EtfItem, type AddEtfReq } from '@/api/etfs'
 import { showError } from '@/utils/message'
