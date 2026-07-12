@@ -215,6 +215,16 @@ const handleRowContextMenu = (row: EtfItem, _column: any, event: MouseEvent) => 
   contextMenuVisible.value = true
 }
 
+// 右键菜单
+const contextMenuVisible = ref(false)
+const contextMenuRow = ref<EtfItem | null>(null)
+
+const handleRowContextMenu = (row: EtfItem, _column: any, event: MouseEvent) => {
+  event.preventDefault()
+  contextMenuRow.value = row
+  contextMenuVisible.value = true
+}
+
 // 批量导入
 const batchDialogVisible = ref(false)
 const batchInputText = ref('')
