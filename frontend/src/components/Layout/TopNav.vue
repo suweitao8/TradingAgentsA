@@ -48,8 +48,9 @@
 
       <!-- 右侧：操作按钮 -->
       <div class="nav-actions">
-        <!-- 更多下拉 -->
-        <el-dropdown trigger="hover" :hide-on-click="false" @command="onNavCommand">
+        <!-- 更多下拉（暂时隐藏，后续按需恢复） -->
+        <!-- eslint-disable vue/no-parsing-error -->
+        <!-- <el-dropdown trigger="hover" :hide-on-click="false" @command="onNavCommand">
           <button class="action-btn more-btn" :class="{ active: isMoreActive }">
             <el-icon><MoreFilled /></el-icon>
           </button>
@@ -64,7 +65,7 @@
               <el-dropdown-item command="/about">关于</el-dropdown-item>
             </el-dropdown-menu>
           </template>
-        </el-dropdown>
+        </el-dropdown> -->
 
         <!-- 通知 -->
         <el-tooltip content="通知" placement="bottom">
