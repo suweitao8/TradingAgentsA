@@ -542,7 +542,6 @@ async def get_etf_ma_slopes(codes: list) -> dict:
                 "ma_slope_1m": {"ma5": dict(_zero3), "ma10": dict(_zero3)},
                 "ma_slope_5m": {"ma5": dict(_zero3), "ma10": dict(_zero3)},
                 "ma_slope_15m": {"ma5": dict(_zero3), "ma10": dict(_zero3)},
-                "ma_slope_30m": {"ma5": dict(_zero3), "ma10": dict(_zero3)},
             }
 
     return result
@@ -572,18 +571,15 @@ async def _fetch_and_calc_slopes(codes: list) -> dict:
                 "ma_slope_1m": {"ma5": dict(_zero3), "ma10": dict(_zero3)},
                 "ma_slope_5m": {"ma5": dict(_zero3), "ma10": dict(_zero3)},
                 "ma_slope_15m": {"ma5": dict(_zero3), "ma10": dict(_zero3)},
-                "ma_slope_30m": {"ma5": dict(_zero3), "ma10": dict(_zero3)},
             }
 
         closes_5m = _aggregate_closes(closes_1m, 5)
         closes_15m = _aggregate_closes(closes_1m, 15)
-        closes_30m = _aggregate_closes(closes_1m, 30)
 
         return code, {
             "ma_slope_1m": {"ma5": _calc_ma_slope(closes_1m, 5), "ma10": _calc_ma_slope(closes_1m, 10)},
             "ma_slope_5m": {"ma5": _calc_ma_slope(closes_5m, 5), "ma10": _calc_ma_slope(closes_5m, 10)},
             "ma_slope_15m": {"ma5": _calc_ma_slope(closes_15m, 5), "ma10": _calc_ma_slope(closes_15m, 10)},
-            "ma_slope_30m": {"ma5": _calc_ma_slope(closes_30m, 5), "ma10": _calc_ma_slope(closes_30m, 10)},
         }
 
     tasks = [_fetch_one(code) for code in codes]

@@ -130,7 +130,7 @@ class EtfsService:
             for it in items:
                 code = it.get("fund_code")
                 slopes = slope_data.get(code, {})
-                for period in ("1m", "5m", "15m", "30m"):
+                for period in ("1m", "5m", "15m"):
                     key = f"ma_slope_{period}"
                     if key in slopes:
                         it[key] = slopes[key]
@@ -140,7 +140,7 @@ class EtfsService:
             logger.warning(f"ETF 均线斜率计算失败: {e}")
             _zero3 = {"prev2": 0, "prev": 0, "now": 0}
             for it in items:
-                for period in ("1m", "5m", "15m", "30m"):
+                for period in ("1m", "5m", "15m"):
                     it[f"ma_slope_{period}"] = {"ma5": dict(_zero3), "ma10": dict(_zero3)}
 
         return items
