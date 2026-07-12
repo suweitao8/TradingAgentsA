@@ -274,21 +274,21 @@ function trendLabel(d?: { prev2?: number; prev?: number; now?: number }): string
   // 当前方向
   const isUp = now > 0 || (Math.abs(now) < THRESH && prev > THRESH)
 
-  // 量化变化值（绝对值取整，正负号由文字"扩大/缩小"表达）
+  // 量化变化值（绝对值取整）
+  // 变化量 <1° 视为平衡（无实质变化）
   const delta = now - prev
   const deltaStr = `${Math.round(Math.abs(delta))}`
 
+  if (Math.abs(delta) < 1) return '平衡'
+
   if (isUp) {
-    // 涨方向：delta>0 斜率变陡=涨大，delta<0 收敛=涨小
-    if (delta > 0.3) return `涨大 ${deltaStr}°`
-    if (delta < -0.3) return `涨小 ${deltaStr}°`
-    return '涨续'
+    if (delta > 0) return `涨大 ${deltaStr}°`
+    return `涨小 ${deltaStr}°`
   }
 
   // 跌方向
-  if (delta < -0.3) return `跌大 ${deltaStr}°`
-  if (delta > 0.3) return `跌小 ${deltaStr}°`
-  return '跌续'
+  if (delta < 0) return `跌大 ${deltaStr}°`
+  return `跌小 ${deltaStr}°`
 }
 
 function trendClass(d?: { prev2?: number; prev?: number; now?: number }): string {
