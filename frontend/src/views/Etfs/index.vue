@@ -300,21 +300,20 @@ function trendLabel(d?: { prev2?: number; prev?: number; now?: number }): string
   // 当前方向
   const isUp = now > 0 || (Math.abs(now) < THRESH && prev > THRESH)
 
-  // 量化变化值（带符号，四舍五入）
+  // 量化变化值（绝对值取整，正负号由文字"扩大/缩小"表达）
   const delta = now - prev
-  const da = Math.abs(delta)
-  const deltaStr = da >= 1 ? `${Math.round(delta)}` : delta.toFixed(1)
+  const deltaStr = `${Math.round(Math.abs(delta))}`
 
   if (isUp) {
     // 涨方向：delta>0 斜率变陡=涨扩大，delta<0 收敛=涨缩小
-    if (delta > 0.3) return `涨扩大 +${deltaStr}°`
+    if (delta > 0.3) return `涨扩大 ${deltaStr}°`
     if (delta < -0.3) return `涨缩小 ${deltaStr}°`
     return '涨延续'
   }
 
   // 跌方向
   if (delta < -0.3) return `跌扩大 ${deltaStr}°`
-  if (delta > 0.3) return `跌缩小 +${deltaStr}°`
+  if (delta > 0.3) return `跌缩小 ${deltaStr}°`
   return '跌延续'
 }
 
