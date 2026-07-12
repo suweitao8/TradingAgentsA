@@ -320,15 +320,12 @@ function trendLabel(d?: { prev2?: number; prev?: number; now?: number }): string
 function trendClass(d?: { prev2?: number; prev?: number; now?: number }): string {
   if (!d || d.now == null || d.prev == null) return 'trend-flat'
   const label = trendLabel(d)
-  // 颜色跟随当前均线方向（与度数箭头颜色一致）：
-  // now > 0（上行）→ 红色系；now < 0（下行）→ 绿色系
-  // 扩大=深色背景（趋势加剧），缩小=浅色背景（趋势收敛）
-  if (label.startsWith('涨大')) return 'trend-up-strong'
-  if (label.startsWith('涨小')) return 'trend-up-weak'
-  if (label.startsWith('涨续')) return 'trend-up-weak'
-  if (label.startsWith('跌大')) return 'trend-down-strong'
-  if (label.startsWith('跌小')) return 'trend-down-weak'
-  if (label.startsWith('跌续')) return 'trend-down-weak'
+  // 颜色按"好转 vs 恶化"：
+  // 小=趋势收敛/减缓=好转=红色（积极信号）
+  // 大=趋势加剧/加速=恶化=绿色（消极信号）
+  // 续=基本不变=灰色
+  if (label.includes('小')) return 'trend-up-weak'
+  if (label.includes('大')) return 'trend-down-strong'
   return 'trend-flat'
 }
 
