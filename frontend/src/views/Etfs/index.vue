@@ -79,15 +79,23 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="1分MA" width="95" align="center">
+        <el-table-column label="1分MA" width="130" align="center">
+          <template #header>
+            <div class="ma-header">1分MA</div>
+            <div class="ma-sub-header">
+              <span>2分前</span><span>1分前</span><span>当前</span>
+            </div>
+          </template>
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_1m">
-              <div class="ma-row" title="上行=之前(MA5 MA10) 下行=当前(MA5 MA10)">
+              <div class="ma-row" title="MA5 均线度数">
+                <span :class="slopeClass(row.ma_slope_1m.ma5?.prev2)">{{ slopeArrow(row.ma_slope_1m.ma5?.prev2) }}{{ slopeVal(row.ma_slope_1m.ma5?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_1m.ma5?.prev)">{{ slopeArrow(row.ma_slope_1m.ma5?.prev) }}{{ slopeVal(row.ma_slope_1m.ma5?.prev) }}</span>
-                <span :class="slopeClass(row.ma_slope_1m.ma10?.prev)">{{ slopeArrow(row.ma_slope_1m.ma10?.prev) }}{{ slopeVal(row.ma_slope_1m.ma10?.prev) }}</span>
-              </div>
-              <div class="ma-row">
                 <span :class="slopeClass(row.ma_slope_1m.ma5?.now)">{{ slopeArrow(row.ma_slope_1m.ma5?.now) }}{{ slopeVal(row.ma_slope_1m.ma5?.now) }}</span>
+              </div>
+              <div class="ma-row" title="MA10 均线度数">
+                <span :class="slopeClass(row.ma_slope_1m.ma10?.prev2)">{{ slopeArrow(row.ma_slope_1m.ma10?.prev2) }}{{ slopeVal(row.ma_slope_1m.ma10?.prev2) }}</span>
+                <span :class="slopeClass(row.ma_slope_1m.ma10?.prev)">{{ slopeArrow(row.ma_slope_1m.ma10?.prev) }}{{ slopeVal(row.ma_slope_1m.ma10?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_1m.ma10?.now)">{{ slopeArrow(row.ma_slope_1m.ma10?.now) }}{{ slopeVal(row.ma_slope_1m.ma10?.now) }}</span>
               </div>
             </div>
@@ -95,15 +103,23 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="5分MA" width="95" align="center">
+        <el-table-column label="5分MA" width="130" align="center">
+          <template #header>
+            <div class="ma-header">5分MA</div>
+            <div class="ma-sub-header">
+              <span>2分前</span><span>1分前</span><span>当前</span>
+            </div>
+          </template>
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_5m">
-              <div class="ma-row">
+              <div class="ma-row" title="MA5 均线度数">
+                <span :class="slopeClass(row.ma_slope_5m.ma5?.prev2)">{{ slopeArrow(row.ma_slope_5m.ma5?.prev2) }}{{ slopeVal(row.ma_slope_5m.ma5?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_5m.ma5?.prev)">{{ slopeArrow(row.ma_slope_5m.ma5?.prev) }}{{ slopeVal(row.ma_slope_5m.ma5?.prev) }}</span>
-                <span :class="slopeClass(row.ma_slope_5m.ma10?.prev)">{{ slopeArrow(row.ma_slope_5m.ma10?.prev) }}{{ slopeVal(row.ma_slope_5m.ma10?.prev) }}</span>
-              </div>
-              <div class="ma-row">
                 <span :class="slopeClass(row.ma_slope_5m.ma5?.now)">{{ slopeArrow(row.ma_slope_5m.ma5?.now) }}{{ slopeVal(row.ma_slope_5m.ma5?.now) }}</span>
+              </div>
+              <div class="ma-row" title="MA10 均线度数">
+                <span :class="slopeClass(row.ma_slope_5m.ma10?.prev2)">{{ slopeArrow(row.ma_slope_5m.ma10?.prev2) }}{{ slopeVal(row.ma_slope_5m.ma10?.prev2) }}</span>
+                <span :class="slopeClass(row.ma_slope_5m.ma10?.prev)">{{ slopeArrow(row.ma_slope_5m.ma10?.prev) }}{{ slopeVal(row.ma_slope_5m.ma10?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_5m.ma10?.now)">{{ slopeArrow(row.ma_slope_5m.ma10?.now) }}{{ slopeVal(row.ma_slope_5m.ma10?.now) }}</span>
               </div>
             </div>
@@ -111,15 +127,23 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="15分MA" width="95" align="center">
+        <el-table-column label="15分MA" width="130" align="center">
+          <template #header>
+            <div class="ma-header">15分MA</div>
+            <div class="ma-sub-header">
+              <span>2分前</span><span>1分前</span><span>当前</span>
+            </div>
+          </template>
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_15m">
-              <div class="ma-row">
+              <div class="ma-row" title="MA5 均线度数">
+                <span :class="slopeClass(row.ma_slope_15m.ma5?.prev2)">{{ slopeArrow(row.ma_slope_15m.ma5?.prev2) }}{{ slopeVal(row.ma_slope_15m.ma5?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_15m.ma5?.prev)">{{ slopeArrow(row.ma_slope_15m.ma5?.prev) }}{{ slopeVal(row.ma_slope_15m.ma5?.prev) }}</span>
-                <span :class="slopeClass(row.ma_slope_15m.ma10?.prev)">{{ slopeArrow(row.ma_slope_15m.ma10?.prev) }}{{ slopeVal(row.ma_slope_15m.ma10?.prev) }}</span>
-              </div>
-              <div class="ma-row">
                 <span :class="slopeClass(row.ma_slope_15m.ma5?.now)">{{ slopeArrow(row.ma_slope_15m.ma5?.now) }}{{ slopeVal(row.ma_slope_15m.ma5?.now) }}</span>
+              </div>
+              <div class="ma-row" title="MA10 均线度数">
+                <span :class="slopeClass(row.ma_slope_15m.ma10?.prev2)">{{ slopeArrow(row.ma_slope_15m.ma10?.prev2) }}{{ slopeVal(row.ma_slope_15m.ma10?.prev2) }}</span>
+                <span :class="slopeClass(row.ma_slope_15m.ma10?.prev)">{{ slopeArrow(row.ma_slope_15m.ma10?.prev) }}{{ slopeVal(row.ma_slope_15m.ma10?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_15m.ma10?.now)">{{ slopeArrow(row.ma_slope_15m.ma10?.now) }}{{ slopeVal(row.ma_slope_15m.ma10?.now) }}</span>
               </div>
             </div>
@@ -127,15 +151,23 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="30分MA" width="95" align="center">
+        <el-table-column label="30分MA" width="130" align="center">
+          <template #header>
+            <div class="ma-header">30分MA</div>
+            <div class="ma-sub-header">
+              <span>2分前</span><span>1分前</span><span>当前</span>
+            </div>
+          </template>
           <template #default="{ row }">
             <div class="ma-slope-cell" v-if="row.ma_slope_30m">
-              <div class="ma-row">
+              <div class="ma-row" title="MA5 均线度数">
+                <span :class="slopeClass(row.ma_slope_30m.ma5?.prev2)">{{ slopeArrow(row.ma_slope_30m.ma5?.prev2) }}{{ slopeVal(row.ma_slope_30m.ma5?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_30m.ma5?.prev)">{{ slopeArrow(row.ma_slope_30m.ma5?.prev) }}{{ slopeVal(row.ma_slope_30m.ma5?.prev) }}</span>
-                <span :class="slopeClass(row.ma_slope_30m.ma10?.prev)">{{ slopeArrow(row.ma_slope_30m.ma10?.prev) }}{{ slopeVal(row.ma_slope_30m.ma10?.prev) }}</span>
-              </div>
-              <div class="ma-row">
                 <span :class="slopeClass(row.ma_slope_30m.ma5?.now)">{{ slopeArrow(row.ma_slope_30m.ma5?.now) }}{{ slopeVal(row.ma_slope_30m.ma5?.now) }}</span>
+              </div>
+              <div class="ma-row" title="MA10 均线度数">
+                <span :class="slopeClass(row.ma_slope_30m.ma10?.prev2)">{{ slopeArrow(row.ma_slope_30m.ma10?.prev2) }}{{ slopeVal(row.ma_slope_30m.ma10?.prev2) }}</span>
+                <span :class="slopeClass(row.ma_slope_30m.ma10?.prev)">{{ slopeArrow(row.ma_slope_30m.ma10?.prev) }}{{ slopeVal(row.ma_slope_30m.ma10?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_30m.ma10?.now)">{{ slopeArrow(row.ma_slope_30m.ma10?.now) }}{{ slopeVal(row.ma_slope_30m.ma10?.now) }}</span>
               </div>
             </div>
@@ -197,16 +229,6 @@ const etfs = ref<EtfItem[]>([])
 const loading = ref(false)
 const searchKeyword = ref('')
 
-// 右键菜单
-const contextMenuVisible = ref(false)
-const contextMenuRow = ref<EtfItem | null>(null)
-
-const handleRowContextMenu = (row: EtfItem, _column: any, event: MouseEvent) => {
-  event.preventDefault()
-  contextMenuRow.value = row
-  contextMenuVisible.value = true
-}
-
 // 批量导入
 const batchDialogVisible = ref(false)
 const batchInputText = ref('')
@@ -248,17 +270,6 @@ function slopeClass(val?: number): string {
 function slopeVal(val?: number): string {
   if (val === undefined || val === null) return ''
   return `${Math.round(Math.abs(val))}°`
-}
-
-function typeTagType(type: string): '' | 'success' | 'warning' | 'info' | 'danger' {
-  const map: Record<string, '' | 'success' | 'warning' | 'info' | 'danger'> = {
-    宽基: '',
-    行业: 'success',
-    主题: 'warning',
-    跨境: 'info',
-    策略: 'danger',
-  }
-  return map[type] || 'info'
 }
 
 // ---- 数据加载 ----
@@ -475,16 +486,35 @@ onBeforeUnmount(() => {
 .ma-slope-cell {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   line-height: 1.4;
   font-size: 11px;
   font-family: 'Courier New', monospace;
 }
 
+/* 每行 3 等分（2分前/1分前/当前），MA5 一行、MA10 一行 */
 .ma-row {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  column-gap: 2px;
+}
+
+/* MA 列分组表头 */
+.ma-header {
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.ma-sub-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 2px;
+  font-size: 10px;
+  color: var(--el-text-color-placeholder);
+  font-weight: 400;
+  margin-top: 1px;
 }
 
 .ma-arrow {
