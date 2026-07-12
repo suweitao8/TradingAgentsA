@@ -83,7 +83,7 @@
           <template #header>
             <div class="ma-header">1分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
-              <span>2分前</span><span>1分前</span><span>当前</span><span>趋势</span>
+              <span>2分</span><span>1分</span><span>当前</span><span>趋势</span>
             </div>
           </template>
           <template #default="{ row }">
@@ -109,7 +109,7 @@
           <template #header>
             <div class="ma-header">5分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
-              <span>10分前</span><span>5分前</span><span>当前</span><span>趋势</span>
+              <span>10分</span><span>5分</span><span>当前</span><span>趋势</span>
             </div>
           </template>
           <template #default="{ row }">
@@ -135,7 +135,7 @@
           <template #header>
             <div class="ma-header">15分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
-              <span>30分前</span><span>15分前</span><span>当前</span><span>趋势</span>
+              <span>30分</span><span>15分</span><span>当前</span><span>趋势</span>
             </div>
           </template>
           <template #default="{ row }">
@@ -161,7 +161,7 @@
           <template #header>
             <div class="ma-header">30分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
-              <span>60分前</span><span>30分前</span><span>当前</span><span>趋势</span>
+              <span>60分</span><span>30分</span><span>当前</span><span>趋势</span>
             </div>
           </template>
           <template #default="{ row }">
@@ -552,7 +552,14 @@ onBeforeUnmount(() => {
   font-family: 'Courier New', monospace;
 }
 
-/* 每行 4 格（2分前/1分前/当前/趋势），MA5 一行、MA10 一行 */
+/* 去掉周期列的 cell 左右 padding，让表头和数据行的 grid 宽度一致、竖线对齐 */
+:deep(.ma-slope-cell),
+:deep(.ma-sub-header) {
+  width: 100%;
+}
+
+/* 每行 4 格（2分/1分/当前/趋势），MA5 一行、MA10 一行。
+   表头 ma-sub-header 用同样的 grid 列定义 + border 确保竖线对齐 */
 .ma-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1.3fr;
@@ -560,6 +567,7 @@ onBeforeUnmount(() => {
   column-gap: 0;
 
   > span {
+    text-align: center;
     padding: 0 4px;
     border-right: 1px solid var(--el-border-color-lighter);
 
@@ -592,6 +600,7 @@ onBeforeUnmount(() => {
   margin-top: 1px;
 
   > span {
+    text-align: center;
     padding: 0 4px;
     border-right: 1px solid var(--el-border-color-lighter);
 
