@@ -48,25 +48,6 @@
 
       <!-- 右侧：操作按钮 -->
       <div class="nav-actions">
-        <!-- 更多下拉（暂时隐藏，后续按需恢复） -->
-        <!-- eslint-disable vue/no-parsing-error -->
-        <!-- <el-dropdown trigger="hover" :hide-on-click="false" @command="onNavCommand">
-          <button class="action-btn more-btn" :class="{ active: isMoreActive }">
-            <el-icon><MoreFilled /></el-icon>
-          </button>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="/analysis/single">单股分析</el-dropdown-item>
-              <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
-              <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
-              <el-dropdown-item command="/tasks" divided>任务中心</el-dropdown-item>
-              <el-dropdown-item command="/data-collection">数据采集</el-dropdown-item>
-              <el-dropdown-item command="/learning" divided>学习中心</el-dropdown-item>
-              <el-dropdown-item command="/about">关于</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown> -->
-
         <!-- 通知 -->
         <el-tooltip content="通知" placement="bottom">
           <el-badge :value="unreadCount" :hidden="unreadCount === 0">
