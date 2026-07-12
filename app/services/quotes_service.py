@@ -309,6 +309,58 @@ def fetch_etf_detail(code: str) -> dict:
         return {}
 
 
+def fetch_etfs_by_secids(codes: list) -> dict:
+    """用东方财富 ulist 接口批量获取多只 ETF 的完整行情。
+
+    ``qt/ulist.np/get`` + ``secids`` 参数能精确查询任意 ETF（不限板块），
+    且返回换手率(f8)/量比(f10)——这是 ``stock/get`` 个股接口对 ETF 不返回的字段。
+    用于 spot 快照（b:MK0021/MK0023）中找不到的 ETF（如商品 ETF 159985）兜底。
+
+    Args:
+        codes: ETF 代码列表（6 位数字）
+
+    Returns:
+        {code: {"close", "pct_chg", "turnover_rate", "volume_ratio", "name"}}
+    """
+    codes = [c.strip().zfill(6) for c in codes if c]
+    if not codes:
+        return {}
+
+    try:
+        secids = ",".join(_etf_secid(c) for c in codes)
+        url = "https://push2delay.eastmoney.com/api/qt/ulist.np/get"
+        params = {
+            "ut": "bd1d9ddb04089700cf9c27f6f7426281",
+            "fltt": "2",
+            "fields": "f2,f3,f6,f8,f10,f12,f14",
+            "secids": secids,
+        }
+        resp = _kline_session.get(url, params=params, timeout=8)
+        if resp.status_code != 200:
+            logger.warning(f"ETF ulist 查询 HTTP {resp.status_code}")
+            return {}
+        data = resp.json().get("data") or {}
+        diff = data.get("diff") or []
+        result = {}
+        for item in diff:
+            code = str(item.get("f12", "")).strip().zfill(6)
+            if not code:
+                continue
+            result[code] = {
+                "close": _safe_float(item.get("f2")),
+                "pct_chg": _safe_float(item.get("f3")),
+                "amount": _safe_float(item.get("f6")),
+                "turnover_rate": _safe_float(item.get("f8")),
+                "volume_ratio": _safe_float(item.get("f10")),
+                "name": item.get("f14", ""),
+            }
+        logger.info(f"ETF ulist 批量查询: 请求 {len(codes)} 只, 返回 {len(result)} 只")
+        return result
+    except Exception as e:
+        logger.warning(f"ETF ulist 批量查询失败: {e}")
+        return {}
+
+
 def _fetch_kline_closes(code: str, lmt: int = 30) -> list:
     """从东方财富拉取 ETF 1 分钟 K 线的收盘价序列。
 

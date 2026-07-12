@@ -33,7 +33,7 @@
       >
         <el-table-column type="index" label="#" width="45" align="center" />
 
-        <el-table-column prop="fund_code" label="代码" width="75" align="center">
+        <el-table-column prop="fund_code" label="代码" width="85" align="center">
           <template #default="{ row }">
             <router-link :to="`/stocks/${row.fund_code}`" class="fund-code-link">
               {{ row.fund_code }}

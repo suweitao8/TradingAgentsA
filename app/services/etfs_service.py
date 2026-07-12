@@ -79,16 +79,18 @@ class EtfsService:
         except Exception as e:
             logger.warning(f"ETF 行情富集失败: {e}")
 
-        # 对 spot 快照中找不到的 ETF（价格为空），用个股接口兜底获取完整行情
+        # 对 spot 快照中找不到的 ETF（价格为空），用 ulist 批量接口兜底
+        # ulist.np/get + secids 能查任意 ETF 且返回换手率/量比（stock/get 对 ETF 不返回）
         missing_codes = [it["fund_code"] for it in items
                          if it.get("current_price") is None and it.get("fund_code")]
         if missing_codes:
             try:
-                from app.services.quotes_service import fetch_etf_detail
+                from app.services.quotes_service import fetch_etfs_by_secids
+                details = await asyncio.to_thread(fetch_etfs_by_secids, missing_codes)
                 for it in items:
                     if it.get("current_price") is not None:
                         continue
-                    detail = await asyncio.to_thread(fetch_etf_detail, it["fund_code"])
+                    detail = details.get(it["fund_code"])
                     if detail:
                         it["current_price"] = detail.get("close")
                         it["change_percent"] = detail.get("pct_chg")
@@ -97,7 +99,7 @@ class EtfsService:
                         if detail.get("name"):
                             it["fund_name"] = detail["name"]
             except Exception as e:
-                logger.warning(f"ETF 个股兜底失败: {e}")
+                logger.warning(f"ETF ulist 兜底失败: {e}")
 
         # 对 spot 快照中找不到的 ETF（名称仍是假名），从 Redis etf_name:{code} 兜底
         try:
