@@ -438,25 +438,24 @@ def _aggregate_closes(closes_1m: list, period: int) -> list:
 def _calc_ma_slope(closes: list, window: int) -> dict:
     """计算 MA(window) 最近 3 个时间点的斜率度数。
 
-    返回 {"prev2": float, "prev": float, "now": float}
+    返回 {"prev2": float|None, "prev": float|None, "now": float|None}
     - now:   当前根斜率 = MA(t0) - MA(t-1)
     - prev:  上一根斜率 = MA(t-1) - MA(t-2)
     - prev2: 上上根斜率 = MA(t-2) - MA(t-3)
-    分别对应前端表格中 3 列（当前分钟/一分钟前/两分钟前）。
-    数据不足时返回 0.0
+    数据不足时对应时间点返回 None（前端显示「-」，而非假 0）。
+    30 分周期 MA10 需要 11 根，1 天 240 根 1 分 K 线只够聚合 8 根，
+    因此 30 分 MA10 必然数据不足 → None。
     """
     import math
 
     def _slope(vals, offset=0):
         if len(vals) < window + 1 + offset:
-            return 0.0
+            return None
         end_a = len(vals) - offset
         end_b = len(vals) - 1 - offset
         ma_a = sum(vals[end_a - window:end_a]) / window
         ma_b = sum(vals[end_b - window:end_b]) / window
         diff = ma_a - ma_b
-        # 转角度：arctan(diff * 100) 放大到有区分度的度数范围
-        # 微弱趋势 ±2-3°，明显趋势 ±15-25°，剧烈趋势 ±45°+
         return round(math.degrees(math.atan(diff * 100)), 1)
 
     return {
