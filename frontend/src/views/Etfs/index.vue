@@ -41,7 +41,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="fund_name" label="名称" min-width="120" show-overflow-tooltip>
+        <el-table-column prop="fund_name" label="名称" min-width="80" show-overflow-tooltip>
           <template #default="{ row }">
             <span>{{ row.fund_name }}</span>
           </template>
@@ -79,7 +79,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="1分周期" width="190" align="center">
+        <el-table-column label="1分周期" width="210" align="center">
           <template #header>
             <div class="ma-header">1分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
@@ -105,7 +105,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="5分周期" width="190" align="center">
+        <el-table-column label="5分周期" width="210" align="center">
           <template #header>
             <div class="ma-header">5分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
@@ -131,7 +131,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="15分周期" width="190" align="center">
+        <el-table-column label="15分周期" width="210" align="center">
           <template #header>
             <div class="ma-header">15分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
@@ -157,7 +157,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="30分周期" width="190" align="center">
+        <el-table-column label="30分周期" width="210" align="center">
           <template #header>
             <div class="ma-header">30分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
