@@ -72,12 +72,30 @@ class EtfsService:
                     it["change_percent"] = q.get("pct_chg")
                     it["turnover_rate"] = q.get("turnover_rate")
                     it["volume_ratio"] = q.get("volume_ratio")
-                    # 自动修正假名（批量导入时只输代码自动补的 ETF{代码}）
+                    # 自动修正假名
                     real_name = q.get("name")
                     if real_name and (it.get("fund_name", "").startswith("ETF") or not it.get("fund_name")):
                         it["fund_name"] = real_name
         except Exception as e:
             logger.warning(f"ETF 行情富集失败: {e}")
+
+        # 对 spot 快照中找不到的 ETF（价格为空），用个股接口兜底获取价格/涨跌幅/名称
+        missing_codes = [it["fund_code"] for it in items
+                         if it.get("current_price") is None and it.get("fund_code")]
+        if missing_codes:
+            try:
+                from app.services.quotes_service import fetch_etf_detail
+                for it in items:
+                    if it.get("current_price") is not None:
+                        continue
+                    detail = await asyncio.to_thread(fetch_etf_detail, it["fund_code"])
+                    if detail:
+                        it["current_price"] = detail.get("close")
+                        it["change_percent"] = detail.get("pct_chg")
+                        if detail.get("name"):
+                            it["fund_name"] = detail["name"]
+            except Exception as e:
+                logger.warning(f"ETF 个股兜底失败: {e}")
 
         # 对 spot 快照中找不到的 ETF（名称仍是假名），从 Redis etf_name:{code} 兜底
         try:
