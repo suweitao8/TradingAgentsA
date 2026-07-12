@@ -15,8 +15,8 @@ export interface EtfItem {
   change_percent?: number | null
   turnover_rate?: number | null  // 换手率(%)
   volume_ratio?: number | null   // 量比
-  // 分时均线斜率（1=上升, -1=下降, 0=走平）
-  // now=当前斜率, prev=上一根斜率
+  // 分时均线斜率（度数）：3 个时间点
+  // now=当前分钟, prev=一分钟前, prev2=两分钟前
   ma_slope_1m?: { ma5: SlopeDir; ma10: SlopeDir }
   ma_slope_5m?: { ma5: SlopeDir; ma10: SlopeDir }
   ma_slope_15m?: { ma5: SlopeDir; ma10: SlopeDir }
@@ -26,6 +26,7 @@ export interface EtfItem {
 interface SlopeDir {
   now: number
   prev: number
+  prev2: number
 }
 
 /** 添加 ETF 请求 */

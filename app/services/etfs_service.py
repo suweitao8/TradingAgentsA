@@ -120,9 +120,11 @@ class EtfsService:
             logger.debug(f"ETF 名称兜底跳过: {e}")
 
         # 批量拉取分时均线斜率（MA5/MA10，1分/5分/15分/30分）
+        # 每个周期返回 3 个时间点度数：prev2/prev/now
         try:
             from app.services.quotes_service import get_etf_ma_slopes
             slope_data = await get_etf_ma_slopes(codes)
+            _zero3 = {"prev2": 0, "prev": 0, "now": 0}
             for it in items:
                 code = it.get("fund_code")
                 slopes = slope_data.get(code, {})
@@ -131,12 +133,13 @@ class EtfsService:
                     if key in slopes:
                         it[key] = slopes[key]
                     else:
-                        it[key] = {"ma5": 0, "ma10": 0}
+                        it[key] = {"ma5": dict(_zero3), "ma10": dict(_zero3)}
         except Exception as e:
             logger.warning(f"ETF 均线斜率计算失败: {e}")
+            _zero3 = {"prev2": 0, "prev": 0, "now": 0}
             for it in items:
                 for period in ("1m", "5m", "15m", "30m"):
-                    it[f"ma_slope_{period}"] = {"ma5": 0, "ma10": 0}
+                    it[f"ma_slope_{period}"] = {"ma5": dict(_zero3), "ma10": dict(_zero3)}
 
         return items
 
