@@ -442,19 +442,26 @@ def _calc_ma_slope(closes: list, window: int) -> dict:
     - now:   当前根斜率 = MA(t0) - MA(t-1)
     - prev:  上一根斜率 = MA(t-1) - MA(t-2)
     - prev2: 上上根斜率 = MA(t-2) - MA(t-3)
-    数据不足时对应时间点返回 None（前端显示「-」，而非假 0）。
-    30 分周期 MA10 需要 11 根，1 天 240 根 1 分 K 线只够聚合 8 根，
-    因此 30 分 MA10 必然数据不足 → None。
+
+    数据不足时 window 自适应缩小：用可用的最多根数算 MA，
+    至少需要 2 根才能算出斜率差值。
+    （30 分周期聚合后只有 8 根，标准 MA10 需要 11 根算不出，
+    缩小 window 后用 8 根算近似 MA，保证有趋势值而非全 None。）
     """
     import math
 
     def _slope(vals, offset=0):
-        if len(vals) < window + 1 + offset:
+        n = len(vals)
+        if n < 2 + offset:
             return None
-        end_a = len(vals) - offset
-        end_b = len(vals) - 1 - offset
-        ma_a = sum(vals[end_a - window:end_a]) / window
-        ma_b = sum(vals[end_b - window:end_b]) / window
+        # 数据不足时 window 自适应：最多用到 n-1-offset 根
+        w = min(window, n - 1 - offset)
+        if w < 2:
+            return None
+        end_a = n - offset
+        end_b = n - 1 - offset
+        ma_a = sum(vals[end_a - w:end_a]) / w
+        ma_b = sum(vals[end_b - w:end_b]) / w
         diff = ma_a - ma_b
         return round(math.degrees(math.atan(diff * 100)), 1)
 
