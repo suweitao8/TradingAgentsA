@@ -259,10 +259,10 @@ def _etf_secid(code: str) -> str:
 
 
 def fetch_etf_detail(code: str) -> dict:
-    """从东方财富个股实时接口获取单只 ETF 的价格/涨跌幅/名称。
+    """从东方财富个股实时接口获取单只 ETF 的价格/涨跌幅/换手率/量比/名称。
 
     用于 spot 全市场快照（b:MK0021）中找不到的 ETF（如港股通 ETF）兜底。
-    返回 {"close": float, "pct_chg": float, "name": str}，失败返回 {}。
+    返回 {"close", "pct_chg", "turnover_rate", "volume_ratio", "name"}，失败返回 {}。
     """
     try:
         secid = _etf_secid(code)
@@ -270,21 +270,27 @@ def fetch_etf_detail(code: str) -> dict:
         params = {
             "secid": secid,
             "ut": "bd1d9ddb04089700cf9c27f6f7426281",
-            "fields": "f43,f58,f170",
+            "fields": "f43,f58,f170,f8,f10",
         }
         resp = _kline_session.get(url, params=params, timeout=5)
         if resp.status_code != 200:
             return {}
         data = resp.json().get("data") or {}
-        # f43=最新价(×1000) f170=涨跌幅(×100) f58=名称
+        # f43=最新价(×1000) f170=涨跌幅(×100) f58=名称 f8=换手率 f10=量比
         price = data.get("f43")
         pct = data.get("f170")
         name = data.get("f58", "")
+        turnover = data.get("f8")
+        vol_ratio = data.get("f10")
         result = {}
         if price is not None and price != "-":
             result["close"] = float(price) / 1000
         if pct is not None and pct != "-":
             result["pct_chg"] = float(pct) / 100
+        if turnover is not None and turnover != "-":
+            result["turnover_rate"] = float(turnover)
+        if vol_ratio is not None and vol_ratio != "-":
+            result["volume_ratio"] = float(vol_ratio)
         if name:
             result["name"] = name
         return result
