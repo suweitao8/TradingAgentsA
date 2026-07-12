@@ -79,11 +79,11 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="1分周期" width="175" align="center">
+        <el-table-column label="1分周期" width="190" align="center">
           <template #header>
             <div class="ma-header">1分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
-              <span>2分前</span><span>1分前</span><span>当前</span>
+              <span>2分前</span><span>1分前</span><span>当前</span><span>趋势</span>
             </div>
           </template>
           <template #default="{ row }">
@@ -92,28 +92,24 @@
                 <span :class="slopeClass(row.ma_slope_1m.ma5?.prev2)">{{ slopeArrow(row.ma_slope_1m.ma5?.prev2) }}{{ slopeVal(row.ma_slope_1m.ma5?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_1m.ma5?.prev)">{{ slopeArrow(row.ma_slope_1m.ma5?.prev) }}{{ slopeVal(row.ma_slope_1m.ma5?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_1m.ma5?.now)">{{ slopeArrow(row.ma_slope_1m.ma5?.now) }}{{ slopeVal(row.ma_slope_1m.ma5?.now) }}</span>
-              </div>
-              <div class="ma-trend" :class="trendClass(row.ma_slope_1m.ma5)">
-                {{ trendLabel(row.ma_slope_1m.ma5) }}
+                <span class="ma-trend" :class="trendClass(row.ma_slope_1m.ma5)">{{ trendLabel(row.ma_slope_1m.ma5) }}</span>
               </div>
               <div class="ma-row" title="MA10 均线度数">
                 <span :class="slopeClass(row.ma_slope_1m.ma10?.prev2)">{{ slopeArrow(row.ma_slope_1m.ma10?.prev2) }}{{ slopeVal(row.ma_slope_1m.ma10?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_1m.ma10?.prev)">{{ slopeArrow(row.ma_slope_1m.ma10?.prev) }}{{ slopeVal(row.ma_slope_1m.ma10?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_1m.ma10?.now)">{{ slopeArrow(row.ma_slope_1m.ma10?.now) }}{{ slopeVal(row.ma_slope_1m.ma10?.now) }}</span>
-              </div>
-              <div class="ma-trend" :class="trendClass(row.ma_slope_1m.ma10)">
-                {{ trendLabel(row.ma_slope_1m.ma10) }}
+                <span class="ma-trend" :class="trendClass(row.ma_slope_1m.ma10)">{{ trendLabel(row.ma_slope_1m.ma10) }}</span>
               </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="5分周期" width="175" align="center">
+        <el-table-column label="5分周期" width="190" align="center">
           <template #header>
             <div class="ma-header">5分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
-              <span>10分前</span><span>5分前</span><span>当前</span>
+              <span>10分前</span><span>5分前</span><span>当前</span><span>趋势</span>
             </div>
           </template>
           <template #default="{ row }">
@@ -122,28 +118,24 @@
                 <span :class="slopeClass(row.ma_slope_5m.ma5?.prev2)">{{ slopeArrow(row.ma_slope_5m.ma5?.prev2) }}{{ slopeVal(row.ma_slope_5m.ma5?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_5m.ma5?.prev)">{{ slopeArrow(row.ma_slope_5m.ma5?.prev) }}{{ slopeVal(row.ma_slope_5m.ma5?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_5m.ma5?.now)">{{ slopeArrow(row.ma_slope_5m.ma5?.now) }}{{ slopeVal(row.ma_slope_5m.ma5?.now) }}</span>
-              </div>
-              <div class="ma-trend" :class="trendClass(row.ma_slope_5m.ma5)">
-                {{ trendLabel(row.ma_slope_5m.ma5) }}
+                <span class="ma-trend" :class="trendClass(row.ma_slope_5m.ma5)">{{ trendLabel(row.ma_slope_5m.ma5) }}</span>
               </div>
               <div class="ma-row" title="MA10 均线度数">
                 <span :class="slopeClass(row.ma_slope_5m.ma10?.prev2)">{{ slopeArrow(row.ma_slope_5m.ma10?.prev2) }}{{ slopeVal(row.ma_slope_5m.ma10?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_5m.ma10?.prev)">{{ slopeArrow(row.ma_slope_5m.ma10?.prev) }}{{ slopeVal(row.ma_slope_5m.ma10?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_5m.ma10?.now)">{{ slopeArrow(row.ma_slope_5m.ma10?.now) }}{{ slopeVal(row.ma_slope_5m.ma10?.now) }}</span>
-              </div>
-              <div class="ma-trend" :class="trendClass(row.ma_slope_5m.ma10)">
-                {{ trendLabel(row.ma_slope_5m.ma10) }}
+                <span class="ma-trend" :class="trendClass(row.ma_slope_5m.ma10)">{{ trendLabel(row.ma_slope_5m.ma10) }}</span>
               </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="15分周期" width="175" align="center">
+        <el-table-column label="15分周期" width="190" align="center">
           <template #header>
             <div class="ma-header">15分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
-              <span>30分前</span><span>15分前</span><span>当前</span>
+              <span>30分前</span><span>15分前</span><span>当前</span><span>趋势</span>
             </div>
           </template>
           <template #default="{ row }">
@@ -152,28 +144,24 @@
                 <span :class="slopeClass(row.ma_slope_15m.ma5?.prev2)">{{ slopeArrow(row.ma_slope_15m.ma5?.prev2) }}{{ slopeVal(row.ma_slope_15m.ma5?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_15m.ma5?.prev)">{{ slopeArrow(row.ma_slope_15m.ma5?.prev) }}{{ slopeVal(row.ma_slope_15m.ma5?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_15m.ma5?.now)">{{ slopeArrow(row.ma_slope_15m.ma5?.now) }}{{ slopeVal(row.ma_slope_15m.ma5?.now) }}</span>
-              </div>
-              <div class="ma-trend" :class="trendClass(row.ma_slope_15m.ma5)">
-                {{ trendLabel(row.ma_slope_15m.ma5) }}
+                <span class="ma-trend" :class="trendClass(row.ma_slope_15m.ma5)">{{ trendLabel(row.ma_slope_15m.ma5) }}</span>
               </div>
               <div class="ma-row" title="MA10 均线度数">
                 <span :class="slopeClass(row.ma_slope_15m.ma10?.prev2)">{{ slopeArrow(row.ma_slope_15m.ma10?.prev2) }}{{ slopeVal(row.ma_slope_15m.ma10?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_15m.ma10?.prev)">{{ slopeArrow(row.ma_slope_15m.ma10?.prev) }}{{ slopeVal(row.ma_slope_15m.ma10?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_15m.ma10?.now)">{{ slopeArrow(row.ma_slope_15m.ma10?.now) }}{{ slopeVal(row.ma_slope_15m.ma10?.now) }}</span>
-              </div>
-              <div class="ma-trend" :class="trendClass(row.ma_slope_15m.ma10)">
-                {{ trendLabel(row.ma_slope_15m.ma10) }}
+                <span class="ma-trend" :class="trendClass(row.ma_slope_15m.ma10)">{{ trendLabel(row.ma_slope_15m.ma10) }}</span>
               </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="30分周期" width="175" align="center">
+        <el-table-column label="30分周期" width="190" align="center">
           <template #header>
             <div class="ma-header">30分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
-              <span>60分前</span><span>30分前</span><span>当前</span>
+              <span>60分前</span><span>30分前</span><span>当前</span><span>趋势</span>
             </div>
           </template>
           <template #default="{ row }">
@@ -182,17 +170,13 @@
                 <span :class="slopeClass(row.ma_slope_30m.ma5?.prev2)">{{ slopeArrow(row.ma_slope_30m.ma5?.prev2) }}{{ slopeVal(row.ma_slope_30m.ma5?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_30m.ma5?.prev)">{{ slopeArrow(row.ma_slope_30m.ma5?.prev) }}{{ slopeVal(row.ma_slope_30m.ma5?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_30m.ma5?.now)">{{ slopeArrow(row.ma_slope_30m.ma5?.now) }}{{ slopeVal(row.ma_slope_30m.ma5?.now) }}</span>
-              </div>
-              <div class="ma-trend" :class="trendClass(row.ma_slope_30m.ma5)">
-                {{ trendLabel(row.ma_slope_30m.ma5) }}
+                <span class="ma-trend" :class="trendClass(row.ma_slope_30m.ma5)">{{ trendLabel(row.ma_slope_30m.ma5) }}</span>
               </div>
               <div class="ma-row" title="MA10 均线度数">
                 <span :class="slopeClass(row.ma_slope_30m.ma10?.prev2)">{{ slopeArrow(row.ma_slope_30m.ma10?.prev2) }}{{ slopeVal(row.ma_slope_30m.ma10?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_30m.ma10?.prev)">{{ slopeArrow(row.ma_slope_30m.ma10?.prev) }}{{ slopeVal(row.ma_slope_30m.ma10?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_30m.ma10?.now)">{{ slopeArrow(row.ma_slope_30m.ma10?.now) }}{{ slopeVal(row.ma_slope_30m.ma10?.now) }}</span>
-              </div>
-              <div class="ma-trend" :class="trendClass(row.ma_slope_30m.ma10)">
-                {{ trendLabel(row.ma_slope_30m.ma10) }}
+                <span class="ma-trend" :class="trendClass(row.ma_slope_30m.ma10)">{{ trendLabel(row.ma_slope_30m.ma10) }}</span>
               </div>
             </div>
             <span v-else class="text-muted">-</span>
@@ -552,12 +536,12 @@ onBeforeUnmount(() => {
   font-family: 'Courier New', monospace;
 }
 
-/* 每行 3 等分（2分前/1分前/当前），MA5 一行、MA10 一行 */
+/* 每行 4 格（2分前/1分前/当前/趋势），MA5 一行、MA10 一行 */
 .ma-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1.3fr;
   align-items: center;
-  column-gap: 2px;
+  column-gap: 3px;
 }
 
 /* MA 列分组表头 */
@@ -575,23 +559,23 @@ onBeforeUnmount(() => {
 
 .ma-sub-header {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  column-gap: 2px;
+  grid-template-columns: 1fr 1fr 1fr 1.3fr;
+  column-gap: 3px;
   font-size: 10px;
   color: var(--el-text-color-placeholder);
   font-weight: 400;
   margin-top: 1px;
 }
 
-/* 趋势标签 */
+/* 趋势标签（内联在 ma-row 第 4 格） */
 .ma-trend {
-  margin-top: 2px;
-  padding: 1px 4px;
+  padding: 1px 2px;
   border-radius: 3px;
   font-size: 10px;
   font-weight: 600;
   text-align: center;
   line-height: 1.3;
+  white-space: nowrap;
 }
 
 .trend-up-strong {
