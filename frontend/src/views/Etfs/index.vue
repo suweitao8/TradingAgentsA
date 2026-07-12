@@ -285,38 +285,46 @@ function slopeVal(val?: number): string {
 // - 两者都接近 0 → 走平
 // - now 明显为正，或 now≈0 但 prev 为负（从跌收敛） → 涨方向
 // - now 明显为负，或 now≈0 但 prev 为正（从涨收敛） → 跌方向
+// 趋势判断：根据 prev→now 度数变化，量化为 方向+变化值。
+// delta = now - prev（正值=斜率变陡，负值=斜率收敛）
+// 显示如「涨扩大 +5°」「跌缩小 3°」「涨延续」「走平」
 function trendLabel(d?: { prev2?: number; prev?: number; now?: number }): string {
   if (!d || d.now == null || d.prev == null) return ''
   const now = d.now
   const prev = d.prev
-  const THRESH = 0.5  // 度数阈值：|x| < 0.5° 视为走平区间
-  const DELTA = 0.3   // 变化量阈值：|now-prev| > 0.3° 视为有变化
+  const THRESH = 0.5  // |x| < 0.5° 视为走平区间
 
   // 两者都接近 0 → 真正走平
   if (Math.abs(now) < THRESH && Math.abs(prev) < THRESH) return '走平'
 
-  // 判断当前方向：now 明显为正=涨，now 明显为负=跌，
-  // now≈0 时看 prev 方向（从涨收敛=涨幅缩小，从跌收敛=跌幅缩小）
+  // 当前方向
   const isUp = now > 0 || (Math.abs(now) < THRESH && prev > THRESH)
 
+  // 量化变化值（带符号，四舍五入）
+  const delta = now - prev
+  const da = Math.abs(delta)
+  const deltaStr = da >= 1 ? `${Math.round(delta)}` : delta.toFixed(1)
+
   if (isUp) {
-    // 涨方向：度数在变大=扩大，在变小=缩小，基本不变=延续
-    if (now > prev + DELTA) return '涨幅扩大'
-    if (now < prev - DELTA) return '涨幅缩小'
-    return '涨幅延续'
+    // 涨方向：delta>0 斜率变陡=涨扩大，delta<0 收敛=涨缩小
+    if (delta > 0.3) return `涨扩大 +${deltaStr}°`
+    if (delta < -0.3) return `涨缩小 ${deltaStr}°`
+    return '涨延续'
   }
 
   // 跌方向
-  if (now < prev - DELTA) return '跌幅扩大'
-  if (now > prev + DELTA) return '跌幅缩小'
-  return '跌幅延续'
+  if (delta < -0.3) return `跌扩大 ${deltaStr}°`
+  if (delta > 0.3) return `跌缩小 +${deltaStr}°`
+  return '跌延续'
 }
 
 function trendClass(d?: { prev2?: number; prev?: number; now?: number }): string {
   if (!d || d.now == null || d.prev == null) return 'trend-flat'
   const label = trendLabel(d)
-  if (label.includes('涨幅')) return label.includes('扩大') ? 'trend-up-strong' : 'trend-up-weak'
-  if (label.includes('跌幅')) return label.includes('缩小') ? 'trend-up-weak' : 'trend-down-strong'
+  if (label.startsWith('涨扩大')) return 'trend-up-strong'
+  if (label.startsWith('涨缩小')) return 'trend-up-weak'
+  if (label.startsWith('跌扩大')) return 'trend-down-strong'
+  if (label.startsWith('跌缩小')) return 'trend-down-weak'
   return 'trend-flat'
 }
 
