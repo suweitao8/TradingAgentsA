@@ -35,13 +35,6 @@
           <el-dropdown-menu>
             <el-dropdown-item command="/etfs">ETF</el-dropdown-item>
             <el-dropdown-item command="/favorites">股票</el-dropdown-item>
-            <el-dropdown-item command="/analysis/single" divided>单股分析</el-dropdown-item>
-            <el-dropdown-item command="/analysis/batch">批量分析</el-dropdown-item>
-            <el-dropdown-item command="/reports">分析报告</el-dropdown-item>
-            <el-dropdown-item command="/tasks">任务中心</el-dropdown-item>
-            <el-dropdown-item command="/data-collection">数据采集</el-dropdown-item>
-            <el-dropdown-item command="/learning" divided>学习中心</el-dropdown-item>
-            <el-dropdown-item command="/about">关于</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -103,7 +96,6 @@ import {
   Star,
   TrendCharts,
   DataAnalysis,
-  MoreFilled,
   Menu,
   Bell,
   Setting,
@@ -126,18 +118,6 @@ const navLinks = [
 const isActive = (link: { path: string }) => {
   return route.path === link.path || route.path.startsWith(link.path + '/')
 }
-
-// 「更多」下拉涵盖了分析/报告/任务中心/学习中心/数据采集/关于
-const isMoreActive = computed(() => {
-  return (
-    route.path.startsWith('/analysis') ||
-    route.path.startsWith('/reports') ||
-    route.path.startsWith('/tasks') ||
-    route.path.startsWith('/learning') ||
-    route.path.startsWith('/data-collection') ||
-    route.path.startsWith('/about')
-  )
-})
 
 const onNavCommand = (command: string) => {
   router.push(command)
@@ -337,17 +317,6 @@ onUnmounted(() => {
   &:hover {
     background: var(--glass-bg-surface-hover);
     color: var(--accent-cyan);
-  }
-}
-
-// 「更多」按钮：去掉 hover 圆圈背景
-.action-btn.more-btn {
-  background: transparent;
-  &:hover {
-    background: transparent;
-  }
-  &.active {
-    background: transparent;
   }
 }
 
