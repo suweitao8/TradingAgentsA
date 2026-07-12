@@ -552,7 +552,16 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1.3fr;
   align-items: center;
-  column-gap: 3px;
+  column-gap: 0;
+
+  > span {
+    padding: 0 4px;
+    border-right: 1px solid var(--el-border-color-lighter);
+
+    &:last-child {
+      border-right: none;
+    }
+  }
 }
 
 /* MA 列分组表头 */
@@ -571,11 +580,20 @@ onBeforeUnmount(() => {
 .ma-sub-header {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1.3fr;
-  column-gap: 3px;
+  column-gap: 0;
   font-size: 10px;
   color: var(--el-text-color-placeholder);
   font-weight: 400;
   margin-top: 1px;
+
+  > span {
+    padding: 0 4px;
+    border-right: 1px solid var(--el-border-color-lighter);
+
+    &:last-child {
+      border-right: none;
+    }
+  }
 }
 
 /* 趋势标签（内联在 ma-row 第 4 格） */
