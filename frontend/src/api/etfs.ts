@@ -20,7 +20,6 @@ export interface EtfItem {
   ma_slope_1m?: { ma5: SlopeDir; ma10: SlopeDir }
   ma_slope_5m?: { ma5: SlopeDir; ma10: SlopeDir }
   ma_slope_15m?: { ma5: SlopeDir; ma10: SlopeDir }
-  ma_slope_30m?: { ma5: SlopeDir; ma10: SlopeDir }
 }
 
 interface SlopeDir {

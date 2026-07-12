@@ -157,32 +157,6 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="30分周期" width="210" align="center">
-          <template #header>
-            <div class="ma-header">30分周期<span class="ma-line-hint">（5日/10日）</span></div>
-            <div class="ma-sub-header">
-              <span>60分</span><span>30分</span><span>当前</span><span>趋势</span>
-            </div>
-          </template>
-          <template #default="{ row }">
-            <div class="ma-slope-cell" v-if="row.ma_slope_30m">
-              <div class="ma-row" title="MA5 均线度数">
-                <span :class="slopeClass(row.ma_slope_30m.ma5?.prev2)">{{ slopeArrow(row.ma_slope_30m.ma5?.prev2) }}{{ slopeVal(row.ma_slope_30m.ma5?.prev2) }}</span>
-                <span :class="slopeClass(row.ma_slope_30m.ma5?.prev)">{{ slopeArrow(row.ma_slope_30m.ma5?.prev) }}{{ slopeVal(row.ma_slope_30m.ma5?.prev) }}</span>
-                <span :class="slopeClass(row.ma_slope_30m.ma5?.now)">{{ slopeArrow(row.ma_slope_30m.ma5?.now) }}{{ slopeVal(row.ma_slope_30m.ma5?.now) }}</span>
-                <span class="ma-trend" :class="trendClass(row.ma_slope_30m.ma5)">{{ trendLabel(row.ma_slope_30m.ma5) }}</span>
-              </div>
-              <div class="ma-row" title="MA10 均线度数">
-                <span :class="slopeClass(row.ma_slope_30m.ma10?.prev2)">{{ slopeArrow(row.ma_slope_30m.ma10?.prev2) }}{{ slopeVal(row.ma_slope_30m.ma10?.prev2) }}</span>
-                <span :class="slopeClass(row.ma_slope_30m.ma10?.prev)">{{ slopeArrow(row.ma_slope_30m.ma10?.prev) }}{{ slopeVal(row.ma_slope_30m.ma10?.prev) }}</span>
-                <span :class="slopeClass(row.ma_slope_30m.ma10?.now)">{{ slopeArrow(row.ma_slope_30m.ma10?.now) }}{{ slopeVal(row.ma_slope_30m.ma10?.now) }}</span>
-                <span class="ma-trend" :class="trendClass(row.ma_slope_30m.ma10)">{{ trendLabel(row.ma_slope_30m.ma10) }}</span>
-              </div>
-            </div>
-            <span v-else class="text-muted">-</span>
-          </template>
-        </el-table-column>
-
         <el-table-column label="" width="55" align="center" fixed="right">
           <template #default="{ row }">
             <el-button size="small" text type="danger" @click="removeEtf(row)">
