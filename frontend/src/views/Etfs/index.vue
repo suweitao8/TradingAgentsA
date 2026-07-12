@@ -305,16 +305,16 @@ function trendLabel(d?: { prev2?: number; prev?: number; now?: number }): string
   const deltaStr = `${Math.round(Math.abs(delta))}`
 
   if (isUp) {
-    // 涨方向：delta>0 斜率变陡=涨扩大，delta<0 收敛=涨缩小
-    if (delta > 0.3) return `涨扩大 ${deltaStr}°`
-    if (delta < -0.3) return `涨缩小 ${deltaStr}°`
-    return '涨延续'
+    // 涨方向：delta>0 斜率变陡=涨大，delta<0 收敛=涨小
+    if (delta > 0.3) return `涨大 ${deltaStr}°`
+    if (delta < -0.3) return `涨小 ${deltaStr}°`
+    return '涨续'
   }
 
   // 跌方向
-  if (delta < -0.3) return `跌扩大 ${deltaStr}°`
-  if (delta > 0.3) return `跌缩小 ${deltaStr}°`
-  return '跌延续'
+  if (delta < -0.3) return `跌大 ${deltaStr}°`
+  if (delta > 0.3) return `跌小 ${deltaStr}°`
+  return '跌续'
 }
 
 function trendClass(d?: { prev2?: number; prev?: number; now?: number }): string {
@@ -323,12 +323,12 @@ function trendClass(d?: { prev2?: number; prev?: number; now?: number }): string
   // 颜色跟随当前均线方向（与度数箭头颜色一致）：
   // now > 0（上行）→ 红色系；now < 0（下行）→ 绿色系
   // 扩大=深色背景（趋势加剧），缩小=浅色背景（趋势收敛）
-  if (label.startsWith('涨扩大')) return 'trend-up-strong'
-  if (label.startsWith('涨缩小')) return 'trend-up-weak'
-  if (label.startsWith('涨延续')) return 'trend-up-weak'
-  if (label.startsWith('跌扩大')) return 'trend-down-strong'
-  if (label.startsWith('跌缩小')) return 'trend-down-weak'
-  if (label.startsWith('跌延续')) return 'trend-down-weak'
+  if (label.startsWith('涨大')) return 'trend-up-strong'
+  if (label.startsWith('涨小')) return 'trend-up-weak'
+  if (label.startsWith('涨续')) return 'trend-up-weak'
+  if (label.startsWith('跌大')) return 'trend-down-strong'
+  if (label.startsWith('跌小')) return 'trend-down-weak'
+  if (label.startsWith('跌续')) return 'trend-down-weak'
   return 'trend-flat'
 }
 
