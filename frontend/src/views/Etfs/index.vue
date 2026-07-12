@@ -81,7 +81,7 @@
 
         <el-table-column label="1分周期" width="145" align="center">
           <template #header>
-            <div class="ma-header">1分周期</div>
+            <div class="ma-header">1分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
               <span>2分前</span><span>1分前</span><span>当前</span>
             </div>
@@ -108,7 +108,7 @@
 
         <el-table-column label="5分周期" width="145" align="center">
           <template #header>
-            <div class="ma-header">5分周期</div>
+            <div class="ma-header">5分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
               <span>10分前</span><span>5分前</span><span>当前</span>
             </div>
@@ -135,7 +135,7 @@
 
         <el-table-column label="15分周期" width="145" align="center">
           <template #header>
-            <div class="ma-header">15分周期</div>
+            <div class="ma-header">15分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
               <span>30分前</span><span>15分前</span><span>当前</span>
             </div>
@@ -162,7 +162,7 @@
 
         <el-table-column label="30分周期" width="145" align="center">
           <template #header>
-            <div class="ma-header">30分周期</div>
+            <div class="ma-header">30分周期<span class="ma-line-hint">（5日/10日）</span></div>
             <div class="ma-sub-header">
               <span>60分前</span><span>30分前</span><span>当前</span>
             </div>
@@ -553,6 +553,12 @@ onBeforeUnmount(() => {
   font-weight: 600;
   font-size: 12px;
   line-height: 1.2;
+
+  .ma-line-hint {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--el-text-color-placeholder);
+  }
 }
 
 .ma-sub-header {
