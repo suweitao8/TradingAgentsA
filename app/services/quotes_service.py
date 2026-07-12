@@ -167,59 +167,69 @@ class QuotesService:
     def _fetch_etf_spot(self) -> Dict[str, Dict[str, Optional[float]]]:
         """通过东方财富 ETF 行情接口拉取全市场 ETF 快照。
 
-        ETF 的 fs 参数为 ``b:MK002``（沪深 ETF 基金），与 A 股的
-        ``m:0 t:6,...`` 不同。字段映射相同（f2/f3/f6/f8/f10/f12）。
+        拉取两个板块并合并：
+        - ``b:MK0021``：沪深 ETF 基金（约 1263 只，普通 A 股 ETF）
+        - ``b:MK0023``：跨境 ETF（约 236 只，港股通/QDII 等）
+        跨境 ETF 不在 MK0021 里，若不合并则港股通 ETF（如 159131/513120）
+        会缺失换手率/量比。
         """
         try:
             import requests
 
             url = "https://82.push2delay.eastmoney.com/api/qt/clist/get"
-            base_params = {
-                "po": "1",
-                "np": "1",
-                "ut": "bd1d9ddb04089700cf9c27f6f7426281",
-                "fltt": "2",
-                "invt": "2",
-                "fid": "f12",
-                "fs": "b:MK0021",  # 沪深 ETF 基金
-                "fields": "f2,f3,f6,f8,f10,f12,f14",  # f14=名称
-            }
+
+            def _fetch_board(fs: str, max_pages: int) -> Dict[str, Dict[str, Optional[float]]]:
+                """拉取单个板块的全量快照。"""
+                board_result: Dict[str, Dict[str, Optional[float]]] = {}
+                base_params = {
+                    "po": "1", "np": "1",
+                    "ut": "bd1d9ddb04089700cf9c27f6f7426281",
+                    "fltt": "2", "invt": "2",
+                    "fid": "f12", "fs": fs,
+                    "fields": "f2,f3,f6,f8,f10,f12,f14",
+                }
+                page_no = 1
+                total = None
+                while page_no <= max_pages:
+                    params = {**base_params, "pn": str(page_no), "pz": "20"}
+                    try:
+                        resp = requests.get(url, params=params, timeout=8)
+                        if resp.status_code != 200:
+                            logger.warning(f"东方财富 ETF spot [{fs}] 第{page_no}页 HTTP {resp.status_code}")
+                            break
+                        data = resp.json().get("data") or {}
+                        if total is None:
+                            total = data.get("total", 0)
+                        diff = data.get("diff") or []
+                        if not diff:
+                            break
+                        for item in diff:
+                            code = str(item.get("f12", "")).strip().zfill(6)
+                            if not code:
+                                continue
+                            board_result[code] = {
+                                "close": _safe_float(item.get("f2")),
+                                "pct_chg": _safe_float(item.get("f3")),
+                                "amount": _safe_float(item.get("f6")),
+                                "turnover_rate": _safe_float(item.get("f8")),
+                                "volume_ratio": _safe_float(item.get("f10")),
+                                "name": item.get("f14", ""),
+                            }
+                        if total and len(board_result) >= total:
+                            break
+                        page_no += 1
+                    except Exception as e:
+                        logger.warning(f"东方财富 ETF spot [{fs}] 第{page_no}页失败: {e}")
+                        break
+                return board_result
 
             result: Dict[str, Dict[str, Optional[float]]] = {}
-            page_size = 20
-            page_no = 1
-            total = None
-            while True:
-                params = {**base_params, "pn": str(page_no), "pz": str(page_size)}
-                resp = requests.get(url, params=params, timeout=8)
-                if resp.status_code != 200:
-                    logger.warning(f"东方财富 ETF spot 第{page_no}页 HTTP {resp.status_code}")
-                    break
-                data = resp.json().get("data") or {}
-                if total is None:
-                    total = data.get("total", 0)
-                diff = data.get("diff") or []
-                if not diff:
-                    break
-                for item in diff:
-                    code = str(item.get("f12", "")).strip().zfill(6)
-                    if not code:
-                        continue
-                    result[code] = {
-                        "close": _safe_float(item.get("f2")),
-                        "pct_chg": _safe_float(item.get("f3")),
-                        "amount": _safe_float(item.get("f6")),
-                        "turnover_rate": _safe_float(item.get("f8")),
-                        "volume_ratio": _safe_float(item.get("f10")),
-                        "name": item.get("f14", ""),
-                    }
-                if total and len(result) >= total:
-                    break
-                page_no += 1
-                if page_no > 100:  # ETF 约 900 只 / 20 = 45 页，安全上限 100
-                    break
+            # 主板块：沪深 ETF（普通 A 股 ETF，约 1263 只）
+            result.update(_fetch_board("b:MK0021", max_pages=100))
+            # 跨境板块：港股通/QDII ETF（约 236 只，MK0021 不含这些）
+            result.update(_fetch_board("b:MK0023", max_pages=20))
 
-            logger.info(f"东方财富 ETF spot 拉取完成: {len(result)} 条")
+            logger.info(f"东方财富 ETF spot 拉取完成: {len(result)} 条（MK0021+MK0023 合并）")
             return result
         except Exception as e:
             logger.error(f"获取东方财富 ETF 实时快照失败: {e}")
