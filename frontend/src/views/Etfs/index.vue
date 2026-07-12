@@ -79,9 +79,9 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="1分MA" width="130" align="center">
+        <el-table-column label="1分周期" width="145" align="center">
           <template #header>
-            <div class="ma-header">1分MA</div>
+            <div class="ma-header">1分周期</div>
             <div class="ma-sub-header">
               <span>2分前</span><span>1分前</span><span>当前</span>
             </div>
@@ -98,16 +98,19 @@
                 <span :class="slopeClass(row.ma_slope_1m.ma10?.prev)">{{ slopeArrow(row.ma_slope_1m.ma10?.prev) }}{{ slopeVal(row.ma_slope_1m.ma10?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_1m.ma10?.now)">{{ slopeArrow(row.ma_slope_1m.ma10?.now) }}{{ slopeVal(row.ma_slope_1m.ma10?.now) }}</span>
               </div>
+              <div class="ma-trend" :class="trendClass(row.ma_slope_1m.ma5)">
+                {{ trendLabel(row.ma_slope_1m.ma5) }}
+              </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="5分MA" width="130" align="center">
+        <el-table-column label="5分周期" width="145" align="center">
           <template #header>
-            <div class="ma-header">5分MA</div>
+            <div class="ma-header">5分周期</div>
             <div class="ma-sub-header">
-              <span>2分前</span><span>1分前</span><span>当前</span>
+              <span>10分前</span><span>5分前</span><span>当前</span>
             </div>
           </template>
           <template #default="{ row }">
@@ -122,16 +125,19 @@
                 <span :class="slopeClass(row.ma_slope_5m.ma10?.prev)">{{ slopeArrow(row.ma_slope_5m.ma10?.prev) }}{{ slopeVal(row.ma_slope_5m.ma10?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_5m.ma10?.now)">{{ slopeArrow(row.ma_slope_5m.ma10?.now) }}{{ slopeVal(row.ma_slope_5m.ma10?.now) }}</span>
               </div>
+              <div class="ma-trend" :class="trendClass(row.ma_slope_5m.ma5)">
+                {{ trendLabel(row.ma_slope_5m.ma5) }}
+              </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="15分MA" width="130" align="center">
+        <el-table-column label="15分周期" width="145" align="center">
           <template #header>
-            <div class="ma-header">15分MA</div>
+            <div class="ma-header">15分周期</div>
             <div class="ma-sub-header">
-              <span>2分前</span><span>1分前</span><span>当前</span>
+              <span>30分前</span><span>15分前</span><span>当前</span>
             </div>
           </template>
           <template #default="{ row }">
@@ -146,16 +152,19 @@
                 <span :class="slopeClass(row.ma_slope_15m.ma10?.prev)">{{ slopeArrow(row.ma_slope_15m.ma10?.prev) }}{{ slopeVal(row.ma_slope_15m.ma10?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_15m.ma10?.now)">{{ slopeArrow(row.ma_slope_15m.ma10?.now) }}{{ slopeVal(row.ma_slope_15m.ma10?.now) }}</span>
               </div>
+              <div class="ma-trend" :class="trendClass(row.ma_slope_15m.ma5)">
+                {{ trendLabel(row.ma_slope_15m.ma5) }}
+              </div>
             </div>
             <span v-else class="text-muted">-</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="30分MA" width="130" align="center">
+        <el-table-column label="30分周期" width="145" align="center">
           <template #header>
-            <div class="ma-header">30分MA</div>
+            <div class="ma-header">30分周期</div>
             <div class="ma-sub-header">
-              <span>2分前</span><span>1分前</span><span>当前</span>
+              <span>60分前</span><span>30分前</span><span>当前</span>
             </div>
           </template>
           <template #default="{ row }">
@@ -169,6 +178,9 @@
                 <span :class="slopeClass(row.ma_slope_30m.ma10?.prev2)">{{ slopeArrow(row.ma_slope_30m.ma10?.prev2) }}{{ slopeVal(row.ma_slope_30m.ma10?.prev2) }}</span>
                 <span :class="slopeClass(row.ma_slope_30m.ma10?.prev)">{{ slopeArrow(row.ma_slope_30m.ma10?.prev) }}{{ slopeVal(row.ma_slope_30m.ma10?.prev) }}</span>
                 <span :class="slopeClass(row.ma_slope_30m.ma10?.now)">{{ slopeArrow(row.ma_slope_30m.ma10?.now) }}{{ slopeVal(row.ma_slope_30m.ma10?.now) }}</span>
+              </div>
+              <div class="ma-trend" :class="trendClass(row.ma_slope_30m.ma5)">
+                {{ trendLabel(row.ma_slope_30m.ma5) }}
               </div>
             </div>
             <span v-else class="text-muted">-</span>
@@ -270,6 +282,42 @@ function slopeClass(val?: number): string {
 function slopeVal(val?: number): string {
   if (val === undefined || val === null) return ''
   return `${Math.round(Math.abs(val))}°`
+}
+
+// 趋势判断：根据 3 个时间点（prev2→prev→now）度数变化方向，
+// 得到"涨幅扩大/涨幅缩小/跌幅扩大/跌幅缩小/走平"的文字结论。
+// 以 MA5 的变化为基准（比 MA5 vs MA10 更灵敏）。
+function trendLabel(d?: { prev2?: number; prev?: number; now?: number }): string {
+  if (!d || d.now == null || d.prev == null) return ''
+  const now = d.now
+  const prev = d.prev
+
+  // now/prev 都接近 0 → 走平
+  if (Math.abs(now) < 0.5 && Math.abs(prev) < 0.5) return '走平'
+
+  // 当前在上升（now > 0）
+  if (now > 0) {
+    if (now > prev + 0.3) return '涨幅扩大'
+    if (now < prev - 0.3) return '涨幅缩小'
+    return '涨幅延续'
+  }
+
+  // 当前在下跌（now < 0）
+  if (now < 0) {
+    if (now < prev - 0.3) return '跌幅扩大'
+    if (now > prev + 0.3) return '跌幅缩小'
+    return '跌幅延续'
+  }
+
+  return ''
+}
+
+function trendClass(d?: { prev2?: number; prev?: number; now?: number }): string {
+  if (!d || d.now == null || d.prev == null) return 'trend-flat'
+  const label = trendLabel(d)
+  if (label.includes('涨幅')) return label.includes('扩大') ? 'trend-up-strong' : 'trend-up-weak'
+  if (label.includes('跌幅')) return label.includes('缩小') ? 'trend-up-weak' : 'trend-down-strong'
+  return 'trend-flat'
 }
 
 // ---- 数据加载 ----
@@ -515,6 +563,43 @@ onBeforeUnmount(() => {
   color: var(--el-text-color-placeholder);
   font-weight: 400;
   margin-top: 1px;
+}
+
+/* 趋势标签 */
+.ma-trend {
+  margin-top: 2px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.trend-up-strong {
+  background: rgba(var(--el-color-danger-rgb), 0.15);
+  color: var(--el-color-danger);
+}
+
+.trend-up-weak {
+  background: rgba(var(--el-color-danger-rgb), 0.07);
+  color: var(--el-color-danger);
+  opacity: 0.75;
+}
+
+.trend-down-strong {
+  background: rgba(var(--el-color-success-rgb), 0.15);
+  color: var(--el-color-success);
+}
+
+.trend-down-weak {
+  background: rgba(var(--el-color-success-rgb), 0.07);
+  color: var(--el-color-success);
+  opacity: 0.75;
+}
+
+.trend-flat {
+  color: var(--el-text-color-placeholder);
 }
 
 .ma-arrow {
